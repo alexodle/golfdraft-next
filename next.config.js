@@ -1,6 +1,16 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-}
+const withPlugins = require("next-compose-plugins");
+const withLess = require("next-with-less");
 
-module.exports = nextConfig
+const plugins = [
+  /* ...other plugins... */
+  [withLess, {
+    lessLoaderOptions: {
+      /* ... */
+    },
+  }],
+  /* ...other plugins... */
+];
+
+module.exports = withPlugins(plugins, {
+  reactStrictMode: true,
+});

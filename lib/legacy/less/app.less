@@ -1,0 +1,72 @@
+.golfdraft-panel {
+  overflow-y: scroll;
+}
+
+.dict-definition {
+  color: #777;
+}
+
+.draft-clock {
+  font-size: 3.5em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.tablerow-enter {
+  background-color: #dff0d8;
+  transition: background-color 2s ease-in;
+
+  &.tablerow-enter-active {
+    background-color: white;
+  }
+}
+
+.pick-order-list{
+  .my-user {
+    font-weight: bold;
+  }
+
+  .current-user {
+    background-color: #f5f5f5;
+  }
+
+  .info-label {
+    font-size: 0.5em;
+  }
+}
+
+.user-details-table {
+  .score-used {
+    font-weight: bold;
+    background-color: #dff0d8;
+  }
+
+  .missed-cut-text {
+    display: none;
+  }
+
+  .missed-cut {
+    color: #a94442;
+
+    .missed-cut-text {
+      display: initial;
+    }
+    .thru-text {
+      display: none;
+    }
+  }
+}
+
+.standings-table {
+  .selected-user-row {
+    background-color: #f5f5f5;
+  }
+
+  tr:hover {
+    cursor: pointer;
+  }
+}
+
+.draft-status {
+  font-size: larger;
+}
