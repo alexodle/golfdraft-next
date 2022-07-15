@@ -1,6 +1,4 @@
 import { JSDOM } from 'jsdom';
-import { WGR } from '../server/ServerTypes';
-import * as _ from 'lodash';
 import * as request from 'request';
 
 const AMATEUR_REGEX = /\(Am\)$/i;
@@ -17,8 +15,13 @@ function download(url: string): Promise<string> {
   });
 }
 
-export async function rawWgrReader(url: string): Promise<WGR[]> {
-  const wgrs: WGR[] = [];
+export type WgrEntry = Readonly<{
+  name: string;
+  wgr: number;
+}>
+
+export async function rawWgrReader(url: string): Promise<WgrEntry[]> {
+  const wgrs: WgrEntry[] = [];
 
   const body = await download(url);
   const dom = new JSDOM(body);
@@ -26,12 +29,12 @@ export async function rawWgrReader(url: string): Promise<WGR[]> {
   const trs = dom.window.document.body.querySelectorAll('#ranking_table > .table_container > table > tbody > tr');
   trs.forEach(tr => {
     const tds = tr.querySelectorAll('td');
-    const wgr = _.parseInt(tds.item(0).textContent);
+    const wgr = +(tds.item(0).textContent);
     const name = tr.querySelector('td.name')
       .textContent
       .trim()
       .replace(AMATEUR_REGEX, '');
-    wgrs.push({ wgr, name } as WGR);
+    wgrs.push({ wgr, name } as WgrEntry);
   });
   
   return wgrs;

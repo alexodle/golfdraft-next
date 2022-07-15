@@ -1,14 +1,13 @@
-import { GDUser, GDUser2 } from '../models';
-import supabase from '../supabase';
-import { UseQueryResult, useQuery } from 'react-query';
 import { keyBy } from 'lodash';
-import { useCallback, useMemo } from 'react';
+import { useQuery, UseQueryResult } from 'react-query';
+import { GDUser } from '../models';
+import supabase from '../supabase';
 
-const USER_TABLE = 'user';
+const USER_TABLE = 'gd_user';
 
-export type IndexedUsers = Record<number, GDUser2>;
+export type IndexedUsers = Record<number, GDUser>;
 
-export function useCurrentUser(): GDUser2 | undefined {
+export function useCurrentUser(): GDUser | undefined {
   const currentUserId = getCurrentUserClient()?.id;
   const userLookup = useAllUsers(); 
   if (!currentUserId) {
@@ -31,8 +30,8 @@ export function useAllUsers(): UseQueryResult<IndexedUsers> {
   });
 }
 
-export async function getAllUsers(): Promise<GDUser2[]> {
-  const result = await supabase.from<GDUser2>(USER_TABLE).select('*');
+export async function getAllUsers(): Promise<GDUser[]> {
+  const result = await supabase.from<GDUser>(USER_TABLE).select('*');
   if (result.error) {
     console.dir(result.error);
     throw new Error('Failed to fetch users');
@@ -44,6 +43,10 @@ export async function getCurrentUserServer(req: any, res: any): Promise<GDUser |
   return (await supabase.auth.api.getUserByCookie(req, res)).user as GDUser | null;
 }
 
-function getCurrentUserClient(): GDUser | null {
-  return supabase.auth.user() as GDUser | null;
+interface SBUser {
+  id: string;
+}
+
+function getCurrentUserClient(): SBUser | null {
+  return supabase.auth.user() as SBUser | null;
 }

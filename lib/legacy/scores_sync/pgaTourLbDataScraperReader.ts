@@ -19,7 +19,7 @@ class PgaTourScraperReader implements Reader {
 }
 
 async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
-  const browser = await puppeteer.launch()
+  const browser = await puppeteer.launch({ defaultViewport: { width: 800, height: 1000 } })
   try {
     const page = await browser.newPage()
     await page.goto(leaderboardHTMLUrl)
@@ -27,7 +27,7 @@ async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
     // HACK - taking a screenshot seems to force the table to load, when nothing else will
     await page.screenshot({ path: '/tmp/last.png' })
 
-    await page.waitForSelector('table.leaderboard', { timeout: 1000*60 })
+    await page.waitForSelector('table.leaderboard tbody tr.line-row', { timeout: 1000*60 })
     const contents = await page.content()
     return contents
   } finally {
@@ -38,6 +38,7 @@ async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
 export function parse(html: string | Buffer, par: number): ReaderResult {
   const $ = load(html)
   const rows = $('table.leaderboard tbody tr.line-row');
+
   const golfers: UpdateGolfer[] = rows.map((_i, tr) => {
     const name = $(tr).find('td.player-name .player-name-col').text()
       .replace(' #', '')
@@ -76,6 +77,7 @@ export function parse(html: string | Buffer, par: number): ReaderResult {
     const g: UpdateGolfer = { golfer: name, scores: scores.map(s => s || 0), day: day + 1, thru }
     return g
   }).get()
+
   return { par, golfers }
 }
 

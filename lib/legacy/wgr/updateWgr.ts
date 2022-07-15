@@ -1,8 +1,16 @@
-import {Access} from '../server/access';
-import {rawWgrReader} from './rawWgrReader';
+import { keyBy } from 'lodash';
+import { getGolfers, upsertGolfers } from '../../data/golfers';
+import { getTourney } from '../../data/tourney';
+import { Golfer, TourneyConfig } from '../../models';
+import { rawWgrReader } from './rawWgrReader';
+import { adminSupabase } from '../../supabase';
 
-export async function updateWgr(access: Access) {
-  const tourneyCfg = await access.getTourneyConfig();
+export async function updateWgr(tourneyId: number) {
+  const [tourney, golfers] = await Promise.all([
+    getTourney(tourneyId, adminSupabase()),
+    getGolfers(tourneyId, adminSupabase()),
+  ]);
+  const tourneyCfg = JSON.parse(tourney.config) as TourneyConfig;
 
   const url = tourneyCfg.wgr.url;
   const nameMap = tourneyCfg.wgr.nameMap;
@@ -10,11 +18,19 @@ export async function updateWgr(access: Access) {
   console.log("downloading and parsing");
   let wgrEntries = await rawWgrReader(url);
   console.log("parsed %d entries", wgrEntries.length);
+  
+  const golfersByName = keyBy([...golfers], g => g.name);
+  
+  const updated = wgrEntries.flatMap<Golfer>(({ name, wgr }) => {
+    const resolvedName = nameMap[name] ?? name;
+    const golfer = golfersByName[resolvedName];
+    if (!golfer) {
+      console.log(`Golfer not found (WGR): ${name} -> ${resolvedName}`);
+      return [];
+    }
+    return { ...golfer, wgr };
+  });
 
-  wgrEntries = wgrEntries.map(entry => ({
-    name: nameMap[entry.name] || entry.name,
-    wgr: entry.wgr
-  }));
-  await access.replaceWgrs(wgrEntries);
+  upsertGolfers(updated);
   console.log('success');
 }

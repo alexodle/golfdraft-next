@@ -1,87 +1,79 @@
-import {keyBy} from 'lodash';
-import {initNewTourney, getAccess, ensureUsers, getUsers, updateAppState} from '../access';
-import * as mongooseUtil from '../mongooseUtil';
+import { keyBy } from 'lodash';
+import { upsertAppState } from '../../../data/appState';
+import { getDraftPicks, setDraftPicks } from '../../../data/draft';
+import { upsertTourney } from '../../../data/tourney';
+import { getAllUsers } from '../../../data/users';
+import { TourneyConfig } from '../../../models';
+import readerConfig, { ReaderType } from '../../scores_sync/readerConfig';
 import * as updateScore from '../../scores_sync/updateScore';
 import * as updateTourneyStandings from '../../scores_sync/updateTourneyStandings';
-import {loadConfig} from '../tourneyConfigReader';
+import { updateWgr } from '../../wgr/updateWgr';
+import { loadConfig } from '../tourneyConfigReader';
 import * as tourneyUtils from '../tourneyUtils';
-import { readFileSync } from 'fs';
-import readerConfig from '../../scores_sync/readerConfig';
-import {User, TourneyConfigSpec} from '../ServerTypes';
-import {updateWgr} from '../../wgr/updateWgr';
 
-function assert(cond, msg) {
+function assert(cond: unknown, msg: string) {
   if (!cond) {
     throw new Error('Assert: ' + msg);
   }
 }
 
-function ensureTruthy(obj, msg) {
+function ensureTruthy<T>(obj: T, msg: string): T {
   assert(!!obj, msg);
   return obj;
 }
 
-function nameToUsername(name: string) {
-  return name
-    .toLowerCase()
-    .replace(' ', '_');
-}
-
-export async function initTourney(tourneyCfg: TourneyConfigSpec): Promise<string> {
-  const tourneyId = await initNewTourney(tourneyCfg);
-  const access = getAccess(tourneyId);
+export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
+  const tourney = await upsertTourney({
+    name: tourneyCfg.name,
+    draftHasStarted: false,
+    isDraftPaused: false,
+    allowClock: true,
+    startDateEpochMillis: new Date(tourneyCfg.startDate).getTime(),
+    lastUpdatedEpochMillis: Date.now(),
+    config: JSON.stringify(tourneyCfg),
+  });
   
-  const userInitCfg: {[key: string]: { password: string }} = JSON.parse(readFileSync('init_user_cfg.json', 'utf8'));
-  const userSpecs: User[] = tourneyCfg.draftOrder.map(name => ({
-    name: name,
-    username: nameToUsername(name),
-    password: userInitCfg[name].password,
-  } as User));
-  await ensureUsers(userSpecs);
-  
-  const users = await getUsers();
+  const users = await getAllUsers();
   const usersByName = keyBy(users, u => u.name);
 
   const sortedUsers = tourneyCfg.draftOrder.map(name => ensureTruthy(usersByName[name], `User not found: ${name}`));
-  const pickOrder = tourneyUtils.snakeDraftOrder(sortedUsers);
-  await access.setPickOrder(pickOrder);
+  const pickOrder = tourneyUtils.snakeDraftOrder(tourney.id, sortedUsers);
+
+  const existingPicks = await getDraftPicks(tourney.id);
+  if (existingPicks.some(p => p.golferId)) {
+    throw new Error(`Cannot init tourney after draft has already started`);
+  }
+
+  await setDraftPicks(tourney.id, pickOrder);
   
   await updateScore.run(
-    access,
-    readerConfig[tourneyCfg.scoresSync.syncType].reader,
+    tourney.id,
+    readerConfig[tourneyCfg.scores.type as ReaderType].reader,
     tourneyCfg,
     true
   );
-  await updateTourneyStandings.run(access);
+  await updateTourneyStandings.run(tourney.id);
 
-  await updateAppState({
-    activeTourneyId: tourneyId,
-    isDraftPaused: false,
-    allowClock: true,
-    draftHasStarted: false,
-    autoPickUsers: []
+  await upsertAppState({
+    activeTourneyId: tourney.id,
   });
 
   console.log("Updating WGR");
-  await updateWgr(access);
+  await updateWgr(tourney.id);
 
-  return tourneyId;
+  return tourney.id;
 }
 
 async function run(configPath: string) {
   const tourneyCfg = loadConfig(configPath);
-  try {
-    await mongooseUtil.connect();
-    console.log(JSON.stringify(tourneyCfg, null, 2));
-    await initTourney(tourneyCfg);
-  } finally {
-    mongooseUtil.close();
-  }
+  console.log(JSON.stringify(tourneyCfg, null, 2));
+  
+  await initTourney(tourneyCfg);
 }
 
 if (require.main === module) {
   if (process.argv.length !== 3) {
-    console.error('Usage: node initTourney.js <tourney_config>');
+    console.error(`Usage: ${process.argv[0]} ${process.argv[1]} <tourney_config>`);
     process.exit(1);
   }
   

@@ -1,118 +1,148 @@
-import {User} from '@supabase/supabase-js';
-
-export interface AppState {
+export type AppState = Readonly<{
+  id: 1
   activeTourneyId: number;
-}
+}>
 
-export interface WorstDayScore {
-  day: number; 
-  golferId: number; 
-  score: number;
-}
-
-export interface Tourney {
+export type Tourney = Readonly<{
   id: number;
   name: string;
   draftHasStarted: boolean;
   isDraftPaused: boolean;
   allowClock: boolean;
-  currentDay?: number;
-  worstScoresForDay: string; // WorstDayScore[]
   startDateEpochMillis: number;
   lastUpdatedEpochMillis: number;
   /** TourneyConfig */
   config: string;
-}
+}>
 
-export interface TourneyConfig {
-  par: { type: Number, default: -1 },
-  scoresSync: {
-    syncType: String,
-    url: String,
-    nameMap: [{ src: String, dest: String }],
+export type TourneyConfig = Readonly<{
+  name: string;
+  startDate: string;
+  par: number;
+  scores: {
+    type: string;
+    url: string;
+    nameMap: Record<string, string>;
   },
-  draftOrder: [String],
+  draftOrder: string[];
   wgr: {
-    url: String,
-    nameMap: [{ src: String, dest: String }],
+    url: string;
+    nameMap: Record<string, string>;
   }
-}
+}>
 
-export interface DraftAutoPick {
+export type DraftAutoPick = Readonly<{
   tourneyId: number;
   userId: number;
   autoPick: boolean;
-}
+}>
 
-export interface GDUser2 {
+export type GDUser = Readonly<{
   id: number;
   name: string;
   username: string;
-}
+}>
 
-export interface GDUser extends Omit<User, 'user_metadata'> {
-  user_metadata: {
-    name: string;
-  }
-}
-
-export interface Golfer {
+export type Golfer = Readonly<{
   id: number;
   tourneyId: number;
   name: string;
-  wgr: number;
-}
+  wgr?: number;
+}>
 
-export interface DraftPickOrder {
+type BaseDraftPick = Readonly<{
   tourneyId: number;
+  userId: number;
   pickNumber: number;
-  userId: number;
-}
+}>
 
-export interface DraftPick {
-  tourneyId: number;
-  userId: number;
+export type PendingDraftPick = BaseDraftPick & Readonly<{
+  golferId?: undefined;
+  timestampEpochMillis?: undefined;
+  clientTimestampEpochMillis?: undefined;
+}>
+
+export type CompletedDraftPick = BaseDraftPick & Readonly<{
   golferId: number;
-  pickNumber: number;
   timestampEpochMillis: number;
   clientTimestampEpochMillis: number;
-}
+}>
 
-export interface DraftPickList {
+export type DraftPick = PendingDraftPick | CompletedDraftPick;
+
+export type DraftPickList = Readonly<{
   tourneyId: number;
   userId: number;
   golferIds: number[];
-}
+}>
 
-export interface GolferScore {
-  golferId: string;
+type BaseGolferScore = Readonly<{
+  golferId: number;
+  tourneyId: number;
   day: number;
   thru?: number;
-  scores: string;
-}
+}>
 
-export interface TourneyStandings {
+export type GolferScore = BaseGolferScore & Readonly<{
+  scores: (number | 'MC')[];
+}>
+
+export type DbGolferScore = BaseGolferScore & Readonly<{
+  scores: string;
+}>
+
+export type GolferScoreOverride = { golferId: number } & Omit<Partial<GolferScore>, 'golferId'>;
+
+export type DbGolferScoreOverride = { golferId: number } & Omit<Partial<DbGolferScore>, 'golferId'>;
+
+type BaseTourneyStandings = Readonly<{
   tourneyId: number;
-  playerId: number;
+  currentDay?: number;
+}>
+
+export type TourneyStandings = BaseTourneyStandings & Readonly<{
+  worstScoresForDay: WorstDayScore[];
+}>
+
+export type DbTourneyStandings = BaseTourneyStandings & Readonly<{
+  /** WorstDayScore[]; */
+  worstScoresForDay?: string;
+}>
+
+type BaseTourneyStandingPlayerScore = Readonly<{
+  tourneyId: number;
+  userId: number;
   totalScore: number;
   standing: number;
   isTied: boolean;
-}
+  currentDay?: number;
+}>
 
-export interface TourneyStandingScores {
-  tourneyId: number;
-  playerId: number;
+export type TourneyStandingPlayerScore = BaseTourneyStandingPlayerScore & Readonly<{
+  dayScores: TourneyStandingPlayerDayScore[];
+}>
+
+export type DbTourneyStandingPlayerScore = BaseTourneyStandingPlayerScore & Readonly<{
+  /** DbTourneyStandingPlayerDayScore[] */
+  dayScores: string;
+}>
+
+export type TourneyStandingPlayerDayScore = Readonly<{
   day: number;
   totalScore: number;
+  golferScores: TourneyStandingGolferScore[];
+}>
 
-  /** TourneyStandingGolferScore[] */
-  golferScores: string;
-}
-
-export interface TourneyStandingGolferScore {
+export type TourneyStandingGolferScore = Readonly<{
   golferId: number;
   score: number;
-  thru: number;
+  thru: number | null;
   missedCut: boolean;
   scoreUsed: boolean;
-}
+}>
+
+export type WorstDayScore = Readonly<{
+  day: number; 
+  golferId: number; 
+  score: number;
+}>

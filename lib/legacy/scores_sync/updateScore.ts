@@ -1,15 +1,16 @@
-import { chain, every, has, includes, isFinite, isNull, keyBy, range } from 'lodash';
-import * as moment from 'moment';
+import { every, has, includes, isFinite, keyBy, omitBy, pick, range } from 'lodash';
+import moment from 'moment';
+import { getGolfers, upsertGolfers } from '../../data/golfers';
+import { getGolferScoreOverrides, updateScores } from '../../data/scores';
+import { touchTourney } from '../../data/tourney';
+import { Golfer, GolferScore, GolferScoreOverride, TourneyConfig } from '../../models';
 import constants from '../common/constants';
-import { Access } from '../server/access';
-import { Golfer, GolferScore, ScoreOverride, TourneyConfigSpec } from '../server/ServerTypes';
 import { Reader, ReaderResult } from './Types';
 import * as updateTourneyStandings from './updateTourneyStandings';
-import { safeWriteGzippedTmpFile } from './util';
 
 const DAYS = constants.NDAYS;
 const MISSED_CUT = constants.MISSED_CUT;
-const OVERRIDE_KEYS = ['golfer', 'day', 'scores'];
+const OVERRIDE_KEYS: (keyof GolferScoreOverride)[] = ['golferId', 'day', 'scores'];
 
 export function validate(result: ReaderResult): boolean {
   if (has(result, 'par') && !includes([70, 71, 72], result.par)) {
@@ -42,35 +43,23 @@ export function validate(result: ReaderResult): boolean {
   });
 }
 
-export function mergeOverrides(scores: GolferScore[], scoreOverrides: ScoreOverride[]): GolferScore[] {
-  const overridesByGolfer: { [key: string]: {} } = chain(scoreOverrides)
-    .map(o => {
-      return chain(o)
+export function mergeOverrides(scores: GolferScore[], scoreOverrides: GolferScoreOverride[]): GolferScore[] {
+  const overridesByGolfer: Record<number, GolferScoreOverride> = keyBy(scoreOverrides, o => o.golferId);
 
-        // Remove all empty values from scoreOverrides
-        .omitBy(isNull)
-
-        // Whitelist the values we can take
-        .pick(OVERRIDE_KEYS)
-        .value();
-    })
-    .keyBy(o => o.golfer.toString())
-    .value();
-
-  const newScores = scores.map(s => {
-    const override = overridesByGolfer[s.golfer.toString()];
+  const newScores = scores.map<GolferScore>(s => {
+    const override = overridesByGolfer[s.golferId];
     if (override) {
-      s = { ...s, ...override } as GolferScore;
+      const toUse = pick(omitBy(override, (v) => v !== null && v !== undefined), OVERRIDE_KEYS);
+      s = { ...s, ...toUse } as GolferScore;
     }
-    s.golfer = s.golfer.toString();
     return s;
   });
 
   return newScores;
 }
 
-export async function run(access: Access, reader: Reader, config: TourneyConfigSpec, populateGolfers = false) {
-  const url = config.scoresSync.url;
+export async function run(tourneyId: number, reader: Reader, config: TourneyConfig, populateGolfers = false) {
+  const url = config.scores.url;
   const ts = moment().format('YMMDD_HHmmss');
 
   const rawTourney = await reader.run(config, url);
@@ -82,37 +71,36 @@ export async function run(access: Access, reader: Reader, config: TourneyConfigS
   }
 
   // Update all names
-  const nameMap = config.scoresSync.nameMap;
+  const nameMap = config.scores.nameMap;
   rawTourney.golfers.forEach(g => g.golfer = nameMap[g.golfer] || g.golfer);
 
   // Ensure golfers
+  let golfers: Golfer[];
   if (populateGolfers) {
-    const golfers = rawTourney.golfers.map(g => ({ name: g.golfer } as Golfer));
-    await access.ensureGolfers(golfers);
+    const golfersPre = rawTourney.golfers.map<Omit<Golfer, 'id'>>(g => ({ tourneyId, name: g.golfer }));
+    golfers = await upsertGolfers(golfersPre);
+  } else {
+    golfers = await getGolfers(tourneyId);
   }
 
-  const results = await Promise.all([
-    access.getGolfers(),
-    access.getScoreOverrides()
-  ]);
-  const gs = results[0] as Golfer[];
-  const scoreOverrides = results[1] as ScoreOverride[];
+  const scoreOverrides = await getGolferScoreOverrides(tourneyId);
 
   // Build scores with golfer id
-  const golfersByName = keyBy(gs, gs => gs.name);
-  const scores = rawTourney.golfers.map(g => {
+  const golfersByName = keyBy(golfers, gs => gs.name);
+  const scores = rawTourney.golfers.map<GolferScore>(g => {
     const golferName = g.golfer;
     if (!golfersByName[golferName]) {
       throw new Error("ERROR: Could not find golfer: " + golferName);
     }
 
-    const golfer = golfersByName[golferName]._id;
+    const golferId = golfersByName[golferName].id;
     return {
-      golfer: golfer,
+      tourneyId,
+      golferId,
       day: g.day,
-      thru: g.thru,
+      thru: g.thru ?? undefined,
       scores: g.scores
-    } as GolferScore;
+    };
   });
 
   // Merge in overrides
@@ -122,15 +110,14 @@ export async function run(access: Access, reader: Reader, config: TourneyConfigS
   }
 
   // Save
-  await access.updateScores(finalScores);
-  safeWriteGzippedTmpFile(`${ts}-scores`, JSON.stringify(finalScores));
+  await updateScores(finalScores);
 
   // Calculate standings
-  const tourneyStanding = await updateTourneyStandings.run(access);
-  safeWriteGzippedTmpFile(`${ts}-standings`, JSON.stringify(tourneyStanding));
+  const tourneyStanding = await updateTourneyStandings.run(tourneyId);
+  console.log(tourneyStanding);
 
   // Mark as updated
-  await access.touchLastUpdated();
+  touchTourney(tourneyId);
 
   console.log("HOORAY! - scores updated");
 }

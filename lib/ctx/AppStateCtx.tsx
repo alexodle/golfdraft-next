@@ -1,5 +1,4 @@
 import React, { createContext, useContext } from 'react';
-import { Indexed } from "../legacy/common/types/CommonTypes";
 import { ChatMessage, IndexedGolfers, IndexedUsers, Tourney, TourneyStandings, User } from "../legacy/js/types/ClientTypes";
 import { DraftProps } from "../legacy/js/types/SharedProps";
 
@@ -8,7 +7,7 @@ export interface AppStateType {
   tourneyName: string;
   isViewingActiveTourney: boolean;
   currentUser?: User;
-  activeUsers: Indexed<string>;
+  activeUsers: Set<number>;
   golfers: IndexedGolfers;
   users: IndexedUsers;
   draft: DraftProps;
@@ -19,9 +18,9 @@ export interface AppStateType {
   isPaused: boolean;
   allowClock: boolean;
   draftHasStarted: boolean;
-  autoPickUsers: Indexed<string>;
-  pickListUsers: Indexed<string>;
-  allTourneys: Indexed<Tourney>;
+  autoPickUsers: Set<string>;
+  pickListUsers: Set<string>;
+  allTourneys: Record<number, Tourney>;
   tourneyId: number;
 }
 

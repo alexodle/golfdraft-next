@@ -44,10 +44,6 @@ export interface Golfer {
   id: number;
   tourneyId: number;
   name: string;
-}
-
-export interface Wgr {
-  name: string;
   wgr?: number;
 }
 

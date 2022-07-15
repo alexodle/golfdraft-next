@@ -4,7 +4,7 @@ import pgaTourHistoricHtmlReader from './pgaTourHistoricHtmlReader';
 import pgaTourLbDataReader from './pgaTourLbDataReader';
 import pgaTourLbDataScraperReader from './pgaTourLbDataScraperReader';
 
-export default {
+const readerConfig = {
 
   pgatour: {
     reader: pgatourReader
@@ -28,4 +28,8 @@ export default {
     reader: pgaTourLbDataScraperReader
   },
 
-};
+} as const;
+
+export type ReaderType = keyof (typeof readerConfig);
+
+export default readerConfig;

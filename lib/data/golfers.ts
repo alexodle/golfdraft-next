@@ -2,7 +2,8 @@ import { keyBy } from 'lodash';
 import { useQuery, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { Golfer } from '../models';
-import supabase from '../supabase';
+import {default as supabaseClient, adminSupabase} from '../supabase';
+import {omit} from 'lodash';
 
 const GOLFERS_TABLE = 'golfer';
 
@@ -16,10 +17,20 @@ export function useGolfers(): UseQueryResult<IndexedGolfers> {
   });
 }
 
-export async function getGolfers(tourneyId: number): Promise<Golfer[]> {
+export async function getGolfers(tourneyId: number, supabase = supabaseClient): Promise<Golfer[]> {
   const result = await supabase.from<Golfer>(GOLFERS_TABLE).select('*').filter('tourneyId', 'eq', tourneyId);
   if (!result.data) {
     throw new Error(`No golfers found`);
+  }
+  return result.data;
+}
+
+export async function upsertGolfers(golfers: Omit<Golfer, 'id'>[]): Promise<Golfer[]> {
+  const withoutId = golfers.map(g => omit(g, 'id'));
+  const result = await adminSupabase().from<Golfer>(GOLFERS_TABLE).upsert(withoutId, { returning: 'representation', onConflict: 'tourneyId, name' });
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error(`Failed to upsert golfers`);
   }
   return result.data;
 }

@@ -1,15 +1,9 @@
-import {getActiveTourneyAccess} from '../server/access';
-import * as mongooseUtil from '../server/mongooseUtil';
-import {updateWgr} from './updateWgr';
+import { getActiveTourneyId } from '../../data/appState';
+import { updateWgr } from './updateWgr';
 
 async function run() {
-  try {
-    await mongooseUtil.connect();
-    const access = await getActiveTourneyAccess();
-    await updateWgr(access);
-  } finally {
-    mongooseUtil.close();
-  }
+  const tourneyId = await getActiveTourneyId();
+  await updateWgr(tourneyId);
 }
 
 if (require.main === module) {

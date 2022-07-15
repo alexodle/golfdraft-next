@@ -3,17 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 5000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "moment": "^2.29.3",
+    "cheerio": "^1.0.0-rc.11",
+    "jsdom": "^19.0.0",
+    "moment": "^2.29.4",
     "next": "12.1.6",
+    "puppeteer": "^14.4.1",
     "react": "18.1.0",
     "react-dom": "^18.1.0",
     "react-query": "^3.39.0",
+    "request": "^2.88.2",
     "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
