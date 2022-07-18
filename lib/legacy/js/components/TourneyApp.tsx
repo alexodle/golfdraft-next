@@ -26,7 +26,7 @@ interface TourneyAppState {
 
 function getState(state: TourneyAppState, props: TourneyAppProps) {
   return {
-    userDetailsUser: state.userDetailsUser || props.currentUser._id
+    userDetailsUser: state.userDetailsUser || props.currentUser.id
   };
 }
 

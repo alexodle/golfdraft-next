@@ -17,7 +17,7 @@ function hydrate(seedData: BootstrapPayload) {
   DraftActions.draftUpdate(draft);
   ScoreActions.scoreUpdate({
     tourneyStandings: seedData.tourneyStandings,
-    lastUpdated: seedData.tourney.lastUpdated
+    lastUpdated: seedData.tourney.lastUpdatedEpochMillis
   });
   SettingsActions.setAppState(seedData.appState);
   AppActions.setActiveTourneyId(seedData.activeTourneyId);
@@ -26,8 +26,8 @@ function hydrate(seedData: BootstrapPayload) {
   UserActions.setPickListUsers(seedData.pickListUsers);
 
   if (seedData.user) {
-    UserActions.hydrateCurrentUser(seedData.user._id);
-    DraftActions.setPickList(seedData.userPickList);
+    UserActions.hydrateCurrentUser(seedData.user.id);
+    DraftActions.setPickList(seedData.userPickList ?? []);
   }
 }
 

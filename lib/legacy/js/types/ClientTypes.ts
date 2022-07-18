@@ -1,52 +1,26 @@
-import * as CommonTypes from '../../common/types/CommonTypes';
-import { Indexed } from '../../common/types/CommonTypes';
-export type { Indexed };
+import { Tourney, AppState, DraftPick, CompletedDraftPick, Golfer, GDUser, TourneyStandings, TourneyStandingPlayerScore } from "../../../models";
 
-export type Tourney = CommonTypes.Tourney;
-
-export interface AppSettings extends CommonTypes.AppSettings {
-  autoPickUsers: Indexed<number>;
-}
-
-export type User = CommonTypes.User;
-export type IndexedUsers = Indexed<User>;
-
-export interface DraftPick extends CommonTypes.DraftPick {
-  userId: number;
-  golferId: number;
-  clientTimestampEpochMillis: number;
-}
-
-export interface DraftPickOrder extends CommonTypes.DraftPickOrder {
-  userId: number;
-}
-
-export type Golfer = CommonTypes.Golfer;
-export type IndexedGolfers = Indexed<Golfer>;
-
-export type TourneyStandings = CommonTypes.TourneyStandings;
-
-export interface ChatMessage extends CommonTypes.ChatMessage {
-  userId?: number;
+export interface AppSettings extends Omit<AppState, 'id'> {
+  autoPickUsers: Record<number, number>;
 }
 
 export interface Draft {
-  picks: DraftPick[];
-  pickOrder: DraftPickOrder[];
+  picks: CompletedDraftPick[];
+  pickOrder: DraftPick[];
   serverTimestampEpochMillis: number;
-  currentPick?: DraftPickOrder;
+  currentPick: DraftPick | null;
 }
 
 export interface BootstrapPayload {
   golfers: Golfer[];
-  users: User[];
+  users: GDUser[];
   draft: Draft;
-  tourneyStandings: TourneyStandings;
+  tourneyStandings: TourneyStandings & { standings: TourneyStandingPlayerScore[] };
   tourney: Tourney;
-  userPickList: number[] | undefined;
+  userPickList: number[] | null;
   pickListUsers: number[];
   appState: AppSettings;
-  user: User;
+  user: GDUser;
   activeTourneyId: number;
-  allTourneys: Tourney[];
+  allTourneys: Pick<Tourney, 'id' | 'name' | 'startDateEpochMillis'>[];
 }

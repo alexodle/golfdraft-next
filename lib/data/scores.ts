@@ -1,5 +1,6 @@
-import { DbGolferScore, GolferScore, DbGolferScoreOverride, GolferScoreOverride } from '../models';
-import { default as supabaseClient, adminSupabase, SupabaseClient } from '../supabase';
+import { supabaseClient } from '@supabase/auth-helpers-nextjs';
+import { DbGolferScore, DbGolferScoreOverride, GolferScore, GolferScoreOverride } from '../models';
+import { adminSupabase } from '../supabase';
 
 const GOLFER_SCORE_TABLE = 'golfer_score';
 const GOLFER_SCORE_OVERRIDE_TABLE = 'golfer_score_override';

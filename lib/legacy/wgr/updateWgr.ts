@@ -25,7 +25,6 @@ export async function updateWgr(tourneyId: number) {
     const resolvedName = nameMap[name] ?? name;
     const golfer = golfersByName[resolvedName];
     if (!golfer) {
-      console.log(`Golfer not found (WGR): ${name} -> ${resolvedName}`);
       return [];
     }
     return { ...golfer, wgr };

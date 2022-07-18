@@ -10,7 +10,7 @@ describe('tourneyUtils', function () {
   describe('snakeDraftOrder', function () {
 
     it('behaves in a snake-like fashion', function () {
-      tourneyUtils.snakeDraftOrder([{ _id: 'User1' }, { _id: 'User2'}] as User[])
+      tourneyUtils.snakeDraftOrder([{ id: 'User1' }, { id: 'User2'}] as User[])
         .should.eql([
           { pickNumber: 0, user: 'User1' },
           { pickNumber: 1, user: 'User2' },

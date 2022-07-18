@@ -3,7 +3,7 @@ import DraftConstants from '../constants/DraftConstants';
 
 export default class DraftActions {
 
-  static makePick(golferId: string) {
+  static makePick(golferId: number) {
     AppDispatcher.handleViewAction({
       actionType: DraftConstants.DRAFT_PICK,
       golfer: golferId
@@ -23,21 +23,21 @@ export default class DraftActions {
     });
   }
 
-  static draftForUser(userId: string) {
+  static draftForUser(userId: number) {
     AppDispatcher.handleViewAction({
       actionType: DraftConstants.DRAFT_FOR_USER,
       user: userId
     });
   }
 
-  static stopDraftingForUser(userId: string) {
+  static stopDraftingForUser(userId: number) {
     AppDispatcher.handleViewAction({
       actionType: DraftConstants.STOP_DRAFT_FOR_USER,
       user: userId
     });
   }
 
-  static updatePendingPickList(pendingPickList: string[]) {
+  static updatePendingPickList(pendingPickList: number[]) {
     AppDispatcher.handleViewAction({
       actionType: DraftConstants.UPDATE_PENDING_PICK_LIST,
       pendingPickList: pendingPickList
@@ -56,7 +56,7 @@ export default class DraftActions {
     });
   }
 
-  static setPickList(pickList: string[]) {
+  static setPickList(pickList: number[]) {
     AppDispatcher.handleViewAction({
       actionType: DraftConstants.SET_PICK_LIST,
       pickList: pickList

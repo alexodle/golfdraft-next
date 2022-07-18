@@ -56,7 +56,7 @@ class AutoComplete extends React.PureComponent<AutoCompleteProps, AutoCompleteSt
       isEmpty(oldChoices) ||
       isEmpty(newChoices) ||
       !newChoices[currentIndex] ||
-      oldChoices[currentIndex]._id !== newChoices[currentIndex]._id
+      oldChoices[currentIndex].id !== newChoices[currentIndex].id
     ) {
 
       this.setState({ selectedIndex: 0 });
@@ -84,7 +84,7 @@ class AutoComplete extends React.PureComponent<AutoCompleteProps, AutoCompleteSt
         >
           {choices.map(u => {
             return (
-              <option key={u._id} value={u.name}>{u.name}</option>
+              <option key={u.id} value={u.name}>{u.name}</option>
             );
           })}
         </select>

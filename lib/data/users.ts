@@ -1,25 +1,40 @@
+import {
+  getUser, supabaseServerClient
+} from '@supabase/auth-helpers-nextjs';
 import { keyBy } from 'lodash';
+import { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from 'next';
 import { useQuery, UseQueryResult } from 'react-query';
 import { GDUser } from '../models';
-import supabase from '../supabase';
+import { supabaseClient } from '@supabase/auth-helpers-nextjs';
+import { useUser } from '@supabase/auth-helpers-react';
+import { useEffect, useMemo } from 'react';
+import { useRouter } from 'next/router';
 
 const USER_TABLE = 'gd_user';
 
 export type IndexedUsers = Record<number, GDUser>;
 
 export function useCurrentUser(): GDUser | undefined {
-  const currentUserId = getCurrentUserClient()?.id;
+  const { user, error } = useUser();
+  const { push } = useRouter();
+  if (error) {
+    throw error;
+  }
+  
   const userLookup = useAllUsers(); 
-  if (!currentUserId) {
-    throw new Error('No current user');
-  }
-  if (!userLookup.data) {
-    return undefined;
-  }
-  const me = userLookup.data[+currentUserId];
-  if (!me) {
-    throw new Error(`User not found: ${currentUserId}`);
-  }
+  const me = useMemo(() => {
+    if (!userLookup.data || !user?.id) {
+      return undefined;
+    }
+    return Object.values(userLookup.data ?? {}).find(u => u.profileId === user.id);
+  }, [userLookup, user?.id]);
+
+  useEffect(() => {
+    if (userLookup.data && !me) {
+      push('/pending');
+    } 
+  }, [push, userLookup.data, me]);
+
   return me;
 }
 
@@ -30,7 +45,7 @@ export function useAllUsers(): UseQueryResult<IndexedUsers> {
   });
 }
 
-export async function getAllUsers(): Promise<GDUser[]> {
+export async function getAllUsers(supabase = supabaseClient): Promise<GDUser[]> {
   const result = await supabase.from<GDUser>(USER_TABLE).select('*');
   if (result.error) {
     console.dir(result.error);
@@ -39,14 +54,18 @@ export async function getAllUsers(): Promise<GDUser[]> {
   return result.data;
 }
 
-export async function getCurrentUserServer(req: any, res: any): Promise<GDUser | null> {
-  return (await supabase.auth.api.getUserByCookie(req, res)).user as GDUser | null;
-}
+export async function getCurrentUserServer(ctx: { req: NextApiRequest, res: NextApiResponse}): Promise<GDUser | 'pending'> {
+  const supbase = supabaseServerClient(ctx);
 
-interface SBUser {
-  id: string;
-}
+  const { user: sessionUser, error } = await getUser(ctx);
+  if (!sessionUser) {
+    throw (error ?? new Error(`Could not get current user`));
+  }
 
-function getCurrentUserClient(): SBUser | null {
-  return supabase.auth.user() as SBUser | null;
+  let user = (await supbase.from<GDUser>(USER_TABLE).select('*').eq('profileId', sessionUser.id).single()).data;
+  if (!user) {
+    return 'pending';
+  }
+
+  return user;
 }

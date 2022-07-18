@@ -1,30 +1,31 @@
-import * as React from 'react';
+import React from 'react';
+import { useCurrentTourney } from '../../../data/tourney';
+import { useCurrentUser } from '../../../data/users';
+import Loading from '../../../Loading';
 import LogoutButton from './LogoutButton';
-import { User } from '../types/ClientTypes';
 
-export interface AppHeaderProps {
-  tourneyName: string;
-  currentUser: User;
-  drafting?: boolean;
-}
+export const AppHeader: React.FC = () => {
+  const { data: tourney } = useCurrentTourney();
+  const currentUser = useCurrentUser();
 
-export default class AppHeader extends React.Component<AppHeaderProps, {}> {
-
-  render() {
-    return (
-      <div className='page-header draft-page-header'>
-        <div className='header-title-section'>
-          <h1>
-            Welcome to the Pool Party<br />
-            <small>{this.props.tourneyName}</small>
-          </h1>
-        </div>
-        <div className='header-user-section'>
-          <span className='name'>{this.props.currentUser.name}</span>
-          <LogoutButton currentUser={this.props.currentUser} />
-        </div>
-      </div>
-    );
+  if (!tourney || !currentUser) {
+    return <Loading />;
   }
 
-};
+  return (
+    <div className='page-header draft-page-header'>
+      <div className='header-title-section'>
+        <h1>
+          Welcome to the Pool Party<br />
+          <small>{tourney.name}</small>
+        </h1>
+      </div>
+      <div className='header-user-section'>
+        <span className='name'>{currentUser.name}</span>
+        <LogoutButton />
+      </div>
+    </div>
+  );
+}
+
+export default AppHeader;

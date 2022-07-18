@@ -1,15 +1,15 @@
 import * as _ from 'lodash';
+import { Golfer } from '../../../models';
 import AppConstants from '../constants/AppConstants';
 import AppDispatcher from '../dispatcher/AppDispatcher';
 import Store from './Store';
-import {Golfer, IndexedGolfers} from '../types/ClientTypes';
 
-let _golfers: IndexedGolfers = null;
+let _golfers: Record<number, Golfer> = null;
 
 class GolferStoreImpl extends Store {
   changeEvent() { return 'GolferStore:change'; }
   getAll() { return _golfers; }
-  getGolfer(id: string) {
+  getGolfer(id: number) {
     return _golfers[id];
   }
 }
@@ -21,7 +21,7 @@ AppDispatcher.register(function (payload) {
 
   switch(action.actionType) {
     case AppConstants.SET_GOLFERS:
-      _golfers = _.keyBy(action.golfers, '_id');
+      _golfers = _.keyBy(action.golfers, 'id');
       GolferStore.emitChange();
       break;
   }

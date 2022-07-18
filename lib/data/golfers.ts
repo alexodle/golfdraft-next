@@ -1,9 +1,9 @@
-import { keyBy } from 'lodash';
+import { supabaseClient } from '@supabase/auth-helpers-nextjs';
+import { keyBy, omit } from 'lodash';
 import { useQuery, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { Golfer } from '../models';
-import {default as supabaseClient, adminSupabase} from '../supabase';
-import {omit} from 'lodash';
+import { adminSupabase } from '../supabase';
 
 const GOLFERS_TABLE = 'golfer';
 

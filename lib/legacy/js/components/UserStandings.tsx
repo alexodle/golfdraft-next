@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import * as cx from 'classnames';
+import cx from 'classnames';
 import * as React from 'react';
 import * as utils from '../../common/utils';
 import constants from '../../common/constants';
@@ -24,9 +24,9 @@ export default class UserStandings extends React.Component<UserStandingsProps, {
 
     const trs = _.map(tourneyStandings.playerScores, (ps, i) => {
       const p = UserStore.getUser(ps.player);
-      const userIsMe = this.props.currentUser._id === p._id;
-      const userIsSelected = this.props.selectedUser === p._id;
-      const viewUser = _.partial(this._onUserSelect, p._id);
+      const userIsMe = this.props.currentUser.id === p.id;
+      const userIsSelected = this.props.selectedUser === p.id;
+      const viewUser = _.partial(this._onUserSelect, p.id);
 
       const holesLeft = _.sumBy(ps.dayScores[currentDayIndex].golferScores, gs => {
         if (gs.missedCut) {
@@ -42,7 +42,7 @@ export default class UserStandings extends React.Component<UserStandingsProps, {
 
       return (
         <tr
-          key={p._id}
+          key={p.id}
           className={cx({
             'selected-user-row': userIsSelected
           })}

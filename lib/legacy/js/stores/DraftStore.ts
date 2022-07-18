@@ -1,18 +1,19 @@
 import { difference, includes, uniq, without } from 'lodash';
+import { CompletedDraftPick, DraftPick } from '../../../models';
 import AppConstants from '../constants/AppConstants';
 import DraftConstants from '../constants/DraftConstants';
 import AppDispatcher from '../dispatcher/AppDispatcher';
 import { fetch, postJson } from '../fetch';
-import { DraftPick, DraftPickOrder } from '../types/ClientTypes';
 import Store from './Store';
 import UserStore from './UserStore';
+import TourneyStore from './TourneyStore';
 
-let _picks: DraftPick[] = [];
-let _pickOrder: DraftPickOrder[] = [];
-let _pickForUsers: string[] = [];
+let _picks: CompletedDraftPick[] = [];
+let _pickOrder: DraftPick[] = [];
+let _pickForUsers: Set<number> = new Set();
 
-let _pickList: string[] = null;
-let _pendingPickList: string[] = null;
+let _pickList: number[] | null = null;
+let _pendingPickList: number[] | null = null;
 
 function resetPickList() {
   _pickList = null;
@@ -23,31 +24,39 @@ function getCurrentPickNumber() {
   return _picks.length;
 }
 
-function getCurrentPick(): DraftPickOrder {
+function getCurrentPick(): DraftPick | null {
   const pickNumber = getCurrentPickNumber();
   if (pickNumber === _pickOrder.length) {
     return null;
   }
   return {
-    user: _pickOrder[pickNumber].user,
+    tourneyId: TourneyStore.getActiveTourneyId(),
+    userId: _pickOrder[pickNumber].userId,
     pickNumber: pickNumber
   };
 }
 
-function addPick(golfer) {
+function addPick(golfer: number) {
   const timestamp = new Date();
-  const pick = {
-    ...getCurrentPick(),
-    golfer: golfer,
-    timestamp: timestamp,
-    clientTimestamp: timestamp
+
+  const currentPick = getCurrentPick();
+  if (!currentPick) {
+    throw new Error(`Pick not allowed`);
+  }
+
+  const pick: CompletedDraftPick = {
+    ...currentPick,
+    golferId: golfer,
+    timestampEpochMillis: timestamp.getTime(),
+    clientTimestampEpochMillis: timestamp.getTime()
   };
+
   _picks.push(pick);
   return pick;
 }
 
 function filterPicksFromPickLists() {
-  const pickedGids = _picks.map(p => p.golfer);
+  const pickedGids = _picks.map(p => p.golferId);
   if (_pickList !== _pendingPickList) {
     _pickList = difference(_pickList, pickedGids);
     _pendingPickList = difference(_pendingPickList, pickedGids);
@@ -57,7 +66,7 @@ function filterPicksFromPickLists() {
   }
 }
 
-function setPickList(pickList: string[]) {
+function setPickList(pickList: number[]) {
   _pickList = pickList;
   _pendingPickList = _pickList;
   filterPicksFromPickLists();
@@ -74,8 +83,8 @@ class DraftStoreImpl extends Store {
     if (!currentPick || !currentUser) return false;
 
     return (
-      currentPick.user === currentUser._id ||
-      includes(_pickForUsers, currentPick.user)
+      currentPick.userId === currentUser.id ||
+      _pickForUsers.has(currentPick.userId)
     );
   }
   getPickingForUsers() { return _pickForUsers }
@@ -125,12 +134,14 @@ AppDispatcher.register(async payload => {
       break;
 
     case DraftConstants.DRAFT_FOR_USER:
-      _pickForUsers = uniq(_pickForUsers.concat([action.user]));
+      _pickForUsers = new Set(_pickForUsers).add(action.user);
       DraftStore.emitChange();
       break;
 
     case DraftConstants.STOP_DRAFT_FOR_USER:
-      _pickForUsers = without(_pickForUsers, action.user);
+      _pickForUsers = new Set(_pickForUsers);
+      _pickForUsers.delete(action.user);
+
       DraftStore.emitChange();
       break;
 
@@ -144,7 +155,7 @@ AppDispatcher.register(async payload => {
       if (currentUser && !action.isHydration) {
         // TODO - Move to separate server sync
         const data = await fetch('/draft/pickList');
-        if (data.userId === currentUser._id) {
+        if (data.userId === currentUser.id) {
           setPickList(data.pickList);
           DraftStore.emitChange();
         }

@@ -64,7 +64,7 @@ export async function broadcastProxyPickListPickMessage(currentUser, draftPick, 
 export async function broadcastPickMessage(currentUser, draftPick, draft) {
   const pickInfo = await loadPick(draft, draftPick);
   const {pickUser, pickGolfer} = pickInfo;
-  const isProxyPick = !utils.oidsAreEqual(pickUser._id, currentUser._id);
+  const isProxyPick = !utils.oidsAreEqual(pickUser.id, currentUser.id);
 
   let message = pickUser.name + ' picks ' + pickGolfer.name;
   if (isProxyPick) {

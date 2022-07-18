@@ -23,10 +23,10 @@ export class TourneyHistory extends React.Component<TourneyHistoryProps, {}> {
         <p><a href='/export'>Export all results</a></p>
         <ol>
           {sortedTourneys.map(t => {
-            if (t._id === activeTourneyId) {
-              return (<li key={t._id}><a href={`/${t._id}/`}><b>{t.name}</b></a></li>);
+            if (t.id === activeTourneyId) {
+              return (<li key={t.id}><a href={`/${t.id}/`}><b>{t.name}</b></a></li>);
             }
-            return (<li key={t._id}><a href={`/${t._id}/`}>{t.name}</a></li>);
+            return (<li key={t.id}><a href={`/${t.id}/`}>{t.name}</a></li>);
           })}
         </ol>
       </section>

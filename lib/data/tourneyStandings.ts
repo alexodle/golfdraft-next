@@ -1,13 +1,15 @@
-import { DbTourneyStandingPlayerScore, DbTourneyStandings, TourneyStandingGolferScore, TourneyStandingPlayerDayScore, TourneyStandingPlayerScore, TourneyStandings, WorstDayScore } from '../models';
-import supabase, {adminSupabase} from '../supabase';
+import { DbTourneyStandingPlayerScore, DbTourneyStandings, TourneyStandingGolferScore, TourneyStandingPlayerDayScore, TourneyStandingPlayerScore, TourneyStandings as ModelTourneyStandings, WorstDayScore } from '../models';
+import { adminSupabase } from '../supabase';
+import { supabaseClient } from '@supabase/auth-helpers-nextjs';
 
 const TOURNEY_STANDINGS_TABLE = 'tourney_standings';
 const TOURNEY_STANDINGS_PLAYER_SCORES_TABLE = 'tourney_standings_player_scores';
 
-export async function getTourneyStandings(tourneyId: number): Promise<TourneyStandings & {
-  playerScores: TourneyStandingPlayerScore[]
-}
-> {
+export type TourneyStandings = ModelTourneyStandings & Readonly<{
+  standings: TourneyStandingPlayerScore[]
+}>;
+
+export async function getTourneyStandings(tourneyId: number, supabase = supabaseClient): Promise<TourneyStandings> {
   const result = await supabase
     .from<DbTourneyStandings & { tourney_standings_player_scores: DbTourneyStandingPlayerScore[] }>(TOURNEY_STANDINGS_TABLE)
     .select(`
@@ -21,7 +23,7 @@ export async function getTourneyStandings(tourneyId: number): Promise<TourneySta
 
   if (result.error) {
     console.dir(result.error);
-    throw new Error(`Failed to fetch tourney: ${tourneyId}`);
+    throw new Error(`Failed to fetch tourney stadings: ${tourneyId}`);
   }
 
   const { worstScoresForDay, tourney_standings_player_scores: dbPlayerScores, ...tourneyStandings } = result.data;
@@ -29,7 +31,7 @@ export async function getTourneyStandings(tourneyId: number): Promise<TourneySta
   return {
     ...tourneyStandings,
     worstScoresForDay: worstScoresForDay ? JSON.parse(worstScoresForDay) as WorstDayScore[] : [],
-    playerScores: dbPlayerScores.map(s => ({
+    standings: dbPlayerScores.map(s => ({
       ...s,
       dayScores: JSON.parse(s.dayScores) as TourneyStandingPlayerDayScore[],
     })),

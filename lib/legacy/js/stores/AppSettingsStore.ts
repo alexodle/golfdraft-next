@@ -3,15 +3,16 @@ import AppConstants from '../constants/AppConstants';
 import AppDispatcher from '../dispatcher/AppDispatcher';
 import Store from './Store';
 import {AppSettings} from '../types/ClientTypes';
+import { Tourney } from '../../../models';
 
-let _appState: AppSettings = null;
+let _tourney: Tourney = null;
 
 class AppSettingsStoreImpl extends Store {
   changeEvent() { return 'AppSettingsStore:change'; }
-  getIsPaused() { return _appState.isDraftPaused; }
-  getAllowClock() { return _appState.allowClock; }
-  getDraftHasStarted() { return _appState.draftHasStarted; }
-  getAutoPickUsers() { return _appState.autoPickUsers; }
+  getIsPaused() { return _tourney.isDraftPaused; }
+  getAllowClock() { return _tourney.allowClock; }
+  getDraftHasStarted() { return _tourney.draftHasStarted; }
+  getAutoPickUsers() { return _tourney.autoPickUsers; }
 }
 const AppSettingsStore = new AppSettingsStoreImpl();
 

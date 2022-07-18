@@ -1,8 +1,9 @@
-import * as React from 'react';
+import React, { ReactNode } from 'react';
 
 export interface GolfDraftPanelProps {
   heading?: JSX.Element | string;
   height?: string;
+  children?: ReactNode;
 }
 
 export default class GolfDraftPanel extends React.Component<GolfDraftPanelProps, {}> {

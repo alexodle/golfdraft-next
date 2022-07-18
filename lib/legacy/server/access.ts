@@ -80,7 +80,7 @@ export async function getUsers(): Promise<UserDoc[]> {
 }
 
 export async function getUser(userId: string): Promise<UserDoc> {
-  return models.User.findOne({ _id: userId }).exec() as Promise<UserDoc>;
+  return models.User.findOne({ id: userId }).exec() as Promise<UserDoc>;
 }
 
 export async function getUserByUsername(username: string): Promise<UserDoc> {
@@ -101,7 +101,7 @@ export function updateAppState(props: AppSettings) {
 
 export async function exportTourneyResults() {
   const tourneys = await getAllTourneys();
-  const tourneysById = keyBy(tourneys, t => t._id.toString() as string);
+  const tourneysById = keyBy(tourneys, t => t.id.toString() as string);
 
   const tourneyIdsQuery = { tourneyId: { $in: keys(tourneysById) } };
   const [users, tourneyStandings, pickOrders] = await Promise.all([
@@ -109,20 +109,20 @@ export async function exportTourneyResults() {
     models.TourneyStandings.find(tourneyIdsQuery).exec() as Promise<TourneyStandingsDoc[]>,
     models.DraftPickOrder.find(tourneyIdsQuery).exec() as Promise<DraftPickOrderDoc[]>
   ]);
-  const usersById = keyBy(users, u => u._id.toString() as string);
+  const usersById = keyBy(users, u => u.id.toString() as string);
   const pickOrdersByTourneyId = groupBy(pickOrders, o => o.tourneyId.toString());
 
   const tourneyStandingsOut = tourneyStandings.map(st => {
     const tourney = tourneysById[st.tourneyId.toString()];
-    const draftOrderByUser = chain(pickOrdersByTourneyId[tourney._id.toString()])
+    const draftOrderByUser = chain(pickOrdersByTourneyId[tourney.id.toString()])
       .groupBy(po => po.user.toString())
       .mapValues(pos => minBy(pos, po => po.pickNumber).pickNumber)
       .value();
 
     return {
-      tourney: pick(tourneysById[st.tourneyId.toString()], ['_id', 'name', 'startDate']),
+      tourney: pick(tourneysById[st.tourneyId.toString()], ['id', 'name', 'startDate']),
       userScores: st.playerScores.map(ps => ({
-        user: pick(usersById[ps.player], ['_id', 'name']),
+        user: pick(usersById[ps.player], ['id', 'name']),
         totalScore: ps.totalScore,
         standing: ps.standing,
         isTied: ps.isTied,
@@ -180,7 +180,7 @@ export async function initNewTourney(spec: TourneyConfigSpec): Promise<string> {
   await models.Tourney.update(q, tourneyObj, { upsert: true }).exec();
 
   const tourney = await models.Tourney.findOne(q).exec();
-  return tourney._id.toString();
+  return tourney.id.toString();
 }
 
 let _activeTourneyAccess: Access = null;
@@ -252,7 +252,7 @@ export class Access {
   };
 
   async getTourney(): Promise<TourneyDoc> {
-    return models.Tourney.findOne({ _id: this.tourneyId }).exec() as Promise<TourneyDoc>;
+    return models.Tourney.findOne({ id: this.tourneyId }).exec() as Promise<TourneyDoc>;
   }
 
   async getTourneyConfig(): Promise<TourneyConfigSpec> {
@@ -319,7 +319,7 @@ export class Access {
         notFoundGolferNames.add(n);
         return null;
       }
-      return g._id.toString();
+      return g.id.toString();
     });
 
     if (isEmpty(notFoundGolferNames)) {
@@ -365,7 +365,7 @@ export class Access {
   }
 
   async getGolfer(golferId: string): Promise<Golfer> {
-    const query = { _id: golferId, tourneyId: this.tourneyId };
+    const query = { id: golferId, tourneyId: this.tourneyId };
     const golfer = await models.Golfer.findOne(query).exec() as GolferDoc;
     const wgr = await models.WGR.findOne({ name: golfer.name }).exec() as WGRDoc;
     return mergeWGR(golfer, wgr);
@@ -418,10 +418,10 @@ export class Access {
     const isPickListPick = !!golferToPick;
     if (!golferToPick) {
       const remainingGolfers = chain(golfers)
-        .filter(g => !pickedGolfers[g._id.toString()])
+        .filter(g => !pickedGolfers[g.id.toString()])
         .sortBy(['wgr', 'name'])
         .value();
-      golferToPick = remainingGolfers[Math.min(constants.ABSENT_PICK_NTH_BEST_WGR - 1, remainingGolfers.length - 1)]._id;
+      golferToPick = remainingGolfers[Math.min(constants.ABSENT_PICK_NTH_BEST_WGR - 1, remainingGolfers.length - 1)].id;
     }
 
     const pick = {
@@ -446,7 +446,7 @@ export class Access {
     };
     const golferExistsQuery = {
       tourneyId: this.tourneyId,
-      _id: pick.golfer
+      id: pick.golfer
     };
     
     const [nPicks, userIsUp, golferAlreadyDrafted, golferExists] = await Promise.all([
@@ -516,7 +516,7 @@ export class Access {
   updateTourney(props) {
     props = { ...props, lastUpdated: new Date() };
     return models.Tourney.update(
-      { _id: this.tourneyId },
+      { id: this.tourneyId },
       props,
       { upsert: true }
     ).exec();
@@ -543,7 +543,7 @@ export class Access {
 
   async updateTourneyStandings(tourneyStandings: TourneyStandings) {
     const result = await models.TourneyStandings.update(
-      { _id: this.tourneyId },
+      { id: this.tourneyId },
       { $set: { tourneyId: this.tourneyId, ...tourneyStandings } },
       { upsert: true });
     this.fire(Access.EVENTS.standingsUpdate);

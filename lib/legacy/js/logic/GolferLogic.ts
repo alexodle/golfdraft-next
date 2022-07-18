@@ -1,5 +1,5 @@
+import { Golfer } from '../../../models';
 import constants from '../../common/constants';
-import {Golfer} from '../types/ClientTypes';
 
 const UNKNOWN_WGR = constants.UNKNOWN_WGR;
 

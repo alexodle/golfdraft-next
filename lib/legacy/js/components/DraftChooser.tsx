@@ -1,238 +1,164 @@
-import {Golfer, IndexedGolfers, DraftPickOrder, User, Indexed} from '../types/ClientTypes';
-import {isEmpty, isArray, sortBy, first} from 'lodash';
-import * as cx from 'classnames';
-import * as React from 'react';
-import * as utils from '../../common/utils';
+import cx from 'classnames';
+import { sortBy } from 'lodash';
+import React, { useMemo, useState } from 'react';
+import { useDraftPicker, usePickList, usePickListUsers, useRemainingGolfers } from '../../../data/draft';
+import { useGolfers } from '../../../data/golfers';
+import { useAllUsers, useCurrentUser } from '../../../data/users';
+import Loading from '../../../Loading';
+import { PendingDraftPick } from '../../../models';
 import constants from '../../common/constants';
-import DraftActions from '../actions/DraftActions';
-import GolfDraftPanel from './GolfDraftPanel';
+import * as utils from '../../common/utils';
 import GolferLogic from '../logic/GolferLogic';
-import GolferStore from '../stores/GolferStore';
-import UserStore from '../stores/UserStore';
+import GolfDraftPanel from './GolfDraftPanel';
 
-export interface DraftChooserProps {
-  golfersRemaining: IndexedGolfers;
-  currentPick: DraftPickOrder;
-  syncedPickList: string[];
-  currentUser: User;
-  pickListUsers: Indexed<string>;
-}
+type SortKey = 'pickList' | 'wgr' | 'name';
 
-interface DraftChooserState {
-  sortKey: string;
-  selectedGolfer: string;
-}
+export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraftingForUser: () => void; }> = ({
+  currentPick,
+  onStopDraftingForUser,
+}) => {
+  const [sortKey, setSortKey] = useState<SortKey>('pickList');
+  const [selectedGolferIdState, setSelectedGolferId] = useState<number | undefined>();
 
-function isProxyPick(props: DraftChooserProps) {
-  return props.currentUser._id !== props.currentPick.user;
-}
+  const { pickMutation, pickListPickMutation } = useDraftPicker();
 
-function shouldShowPickListOption(props: DraftChooserProps) {
-  return isProxyPick(props) || !isEmpty(props.syncedPickList);
-}
+  const golfersRemaining = useRemainingGolfers();
+  const currentUser = useCurrentUser();
+  const { data: allUsers } = useAllUsers();
+  const { data: golfers } = useGolfers();
 
-export default class DraftChooser extends React.Component<DraftChooserProps, DraftChooserState> {
+  const { data: pickListUsers } = usePickListUsers();
+  const { data: pickList } = usePickList();
 
-  constructor(props) {
-    super(props);
-    this.state = this._getInitialState();
-  }
+  const isProxyPick = currentUser?.id !== currentPick.userId;
 
-  _getInitialState() {
-    return this._getSelectionState(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const newState = this._getSelectionState(nextProps);
-    this.setState(newState);
-  }
-
-  render() {
-    if (this._isLoading()) {
-      return this._renderLoading();
+  const sortedGolfers = useMemo(() => {
+    if (!golfersRemaining || !golfers) {
+      return undefined;
     }
 
-    const golfersRemaining = this.props.golfersRemaining;
-    const pickListUsers = this.props.pickListUsers;
-    const currentPick = this.props.currentPick;
-    const sortKey = this.state.sortKey;
-    const isProxyPick = this._isProxyPick();
-    const sortedGolfers = this._sortedGolfers(golfersRemaining, sortKey);
-    const showPickListOption = shouldShowPickListOption(this.props);
-
-    let header = null;
-    if (!isProxyPick) {
-      header = (<h4>It&#8217;s your turn! Make your pick.</h4>);
-    } else {
-      const userName = UserStore.getUser(currentPick.user).name;
-      header = (
-        <section>
-          <h4>Make a pick for: {userName}</h4>
-          <p>
-            <a href='#' onClick={this._onStopTakingPick}>
-              I&#39;ll stop making picks for {userName}
-            </a>
-          </p>
-        </section>
-      );
-    }
-
-    return (
-      <GolfDraftPanel heading='Draft Picker'>
-        {header}
-
-        <div className='btn-group' role='group' aria-label='Sorting choices'>
-          <label>Make pick by:</label><br />
-          {!showPickListOption ? null : (
-            <button
-              type='button'
-              className={cx({
-                'btn btn-default': true,
-                'active': sortKey === 'pickList'
-              })}
-              onClick={() => this._setSortKey('pickList')}
-            >
-              {pickListUsers[currentPick.user] ? "Pick List" : `${utils.getOrdinal(constants.ABSENT_PICK_NTH_BEST_WGR)} Best WGR`}
-            </button>
-          )}
-          <button
-            type='button'
-            className={cx({
-              'btn btn-default': true,
-              'active': sortKey === 'name'
-            })}
-            onClick={() => this._setSortKey('name')}
-          >First Name</button>
-          <button
-            type='button'
-            className={cx({
-              'btn btn-default': true,
-              'active': sortKey === 'wgr'
-            })}
-            onClick={() => this._setSortKey('wgr')}
-          >World Golf Ranking</button>
-        </div>
-
-        <form role='form'>
-        {isProxyPick && sortKey === 'pickList' ? (
-          <div style={{marginTop: '1em'}}>
-            <button
-              className='btn btn-default btn-primary'
-              onClick={this._onProxyPickListPick}
-            >Pick</button>
-          </div>
-        ) : (
-          <div>
-            <div className='form-group'>
-              <label htmlFor='golfersRemaining'>Select your golfer:</label>
-              <select
-                id='golfersRemaining'
-                value={this.state.selectedGolfer}
-                onChange={this._onChange}
-                size={10}
-                className='form-control'
-              >
-                {sortedGolfers.map(g => {
-                  return (
-                    <option key={g._id} value={g._id}>
-                      {GolferLogic.renderGolfer(g)}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-            <button
-              className='btn btn-default btn-primary'
-              onClick={this._onSubmit}
-            >
-              Pick
-            </button>
-          </div>
-        )}
-        </form>
-      </GolfDraftPanel>
-    );
-  }
-
-  _renderLoading() {
-    return (
-      <GolfDraftPanel heading='Draft Picker'>
-        <span>Loading...</span>
-      </GolfDraftPanel>
-    );
-  }
-
-  _isLoading() {
-    return !isArray(this.props.syncedPickList);
-  }
-
-  _isProxyPick() {
-    return isProxyPick(this.props);
-  }
-
-  _sortedGolfers(golfers: IndexedGolfers, sortKey: string): Golfer[]  {
-    const isProxyPick = this._isProxyPick();
-    if (sortKey === 'pickList') {
+    if (sortKey === 'pickList' && pickList?.length) {
       if (isProxyPick) {
         // special case, we cannot show the full list if this a proxy pick
         return null;
       } else {
-        return this.props.syncedPickList.map(GolferStore.getGolfer);
+        return pickList.map(gid => golfers[gid]);
       }
     }
-    return sortBy(golfers, [sortKey, 'name']);
+
+    return sortBy(golfersRemaining, [sortKey, 'name']);
+  }, [sortKey, isProxyPick, pickList, golfersRemaining, golfers]);
+
+  if (!allUsers || !pickListUsers || !golfersRemaining || !currentUser || pickList === undefined || !golfers || !sortedGolfers) {
+    return <Loading />;
   }
 
-  _getSelectionState(props: DraftChooserProps) {
-    const state = this.state || {} as DraftChooserState;
-    const golfersRemaining = props.golfersRemaining;
+  const selectedGolferId = selectedGolferIdState ?? sortedGolfers[0]?.id;
+  const showPickListOption = isProxyPick || (pickList?.length ?? 0) > 0;
 
-    let sortKey = state.sortKey;
-    let selectedGolfer = state.selectedGolfer;
-
-    if (!sortKey || sortKey === 'pickList') {
-      sortKey = shouldShowPickListOption(props) ? 'pickList' : 'wgr';
-    }
-
-    if (!selectedGolfer || !golfersRemaining[selectedGolfer]) {
-      const firstGolfer = first(this._sortedGolfers(golfersRemaining, sortKey));
-      selectedGolfer = firstGolfer ? firstGolfer._id : null;
-    }
-    return {
-      selectedGolfer: selectedGolfer,
-      sortKey: sortKey
-    };
+  let header = null;
+  if (!isProxyPick) {
+    header = (<h4>{`It's your turn. Make your pick.`}</h4>);
+  } else {
+    const userName = allUsers[currentPick.userId].name;
+    header = (
+      <section>
+        <h4>Make a pick for: {userName}</h4>
+        <p>
+          <a href='#' onClick={(ev) => { ev.preventDefault(); onStopDraftingForUser(); }}>
+            {`Stop making picks for ${userName}`}
+          </a>
+        </p>
+      </section>
+    );
   }
 
-  _onChange = (ev) => {
-    this.setState({ selectedGolfer: ev.target.value });
-  }
+  return (
+    <GolfDraftPanel heading='Draft Picker'>
+      {header}
 
-  _setSortKey(sortKey) {
-    if (sortKey === this.state.sortKey) return;
+      <div className='btn-group' role='group' aria-label='Sorting choices'>
+        <label>Make pick by:</label><br />
+        {!showPickListOption ? null : (
+          <button
+            type='button'
+            className={cx({
+              'btn btn-default': true,
+              'active': sortKey === 'pickList'
+            })}
+            onClick={() => setSortKey('pickList')}
+          >
+            {pickListUsers.has(currentPick.userId) ? "Pick List" : `${utils.getOrdinal(constants.ABSENT_PICK_NTH_BEST_WGR)} Best WGR`}
+          </button>
+        )}
+        <button
+          type='button'
+          className={cx({
+            'btn btn-default': true,
+            'active': sortKey === 'name'
+          })}
+          onClick={() => setSortKey('name')}
+        >First Name</button>
+        <button
+          type='button'
+          className={cx({
+            'btn btn-default': true,
+            'active': sortKey === 'wgr'
+          })}
+          onClick={() => setSortKey('wgr')}
+        >World Golf Ranking</button>
+      </div>
 
-    const golfersRemaining = this.props.golfersRemaining;
-    const firstGolfer = first(this._sortedGolfers(golfersRemaining, sortKey));
-    const selectedGolfer = firstGolfer ? firstGolfer._id : null;
-    this.setState({
-      sortKey: sortKey,
-      selectedGolfer: selectedGolfer
-    });
-  }
+      <form role='form'>
+      {isProxyPick && sortKey === 'pickList' ? (
+        <div style={{marginTop: '1em'}}>
+          <button
+            className='btn btn-default btn-primary'
+            onClick={(ev) => {
+              ev.preventDefault();
+              pickListPickMutation.mutate(currentPick)
+            }}
+          >Pick</button>
+        </div>
+      ) : (
+        <div>
+          <div className='form-group'>
+            <label htmlFor='golfersRemaining'>Select your golfer:</label>
+            <select
+              id='golfersRemaining'
+              value={selectedGolferId}
+              onChange={(ev) => setSelectedGolferId(+ev.target.value)}
+              size={10}
+              className='form-control'
+            >
+              {sortedGolfers.map(g => {
+                return (
+                  <option key={g.id} value={g.id}>
+                    {GolferLogic.renderGolfer(g)}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          <button
+            className='btn btn-default btn-primary'
+            onClick={(ev) => {
+              ev.preventDefault();
+              if (!selectedGolferId) {
+                return;
+              }
+              pickMutation.mutate({
+                draftPick: currentPick,
+                golferId: selectedGolferId,
+            })}}
+          >
+            Pick
+          </button>
+        </div>
+      )}
+      </form>
+    </GolfDraftPanel>
+  );
+}
 
-  _onProxyPickListPick = (ev) => {
-    ev.preventDefault();
-    DraftActions.makePickListPick();
-  }
-
-  _onSubmit = (ev) => {
-    ev.preventDefault();
-    DraftActions.makePick(this.state.selectedGolfer);
-  }
-
-  _onStopTakingPick = (ev) => {
-    ev.preventDefault();
-    DraftActions.stopDraftingForUser(this.props.currentPick.user);
-  }
-
-};
+export default DraftChooser;

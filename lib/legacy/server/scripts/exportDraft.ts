@@ -43,8 +43,8 @@ async function exportDraft(access: Access, nameMap?: NameMap): Promise<DraftExpo
   ensureReplaceAllKeys(draft.picks, 'player', 'user');
   ensureReplaceAllKeys(chatMessages, 'player', 'user');
 
-  const users = nameMap || keyBy(_users, u => u._id.toString());
-  const golfers = keyBy(_golfers, g => g._id.toString());
+  const users = nameMap || keyBy(_users, u => u.id.toString());
+  const golfers = keyBy(_golfers, g => g.id.toString());
 
   const draftPicks = sortBy(draft.picks, dp => dp.pickNumber).map(dp => ({
     user: ensureTruthy(users[dp.user.toString()], `User not found: ${dp.user}`)['name'],
@@ -66,7 +66,7 @@ function maybeLoadUsernameMapFile(usernameMapFile?: string): null | NameMap {
   if (!usernameMapFile) return null;
   const nameMapContents = JSON.parse(readFileSync(usernameMapFile, 'utf-8'));
   const nameMap = {};
-  nameMapContents.nameMap.forEach(it => nameMap[it._id] = { name: it.name });
+  nameMapContents.nameMap.forEach(it => nameMap[it.id] = { name: it.name });
   return nameMap;
 }
 

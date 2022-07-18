@@ -34,10 +34,10 @@ export type TourneyConfig = Readonly<{
 export type DraftAutoPick = Readonly<{
   tourneyId: number;
   userId: number;
-  autoPick: boolean;
 }>
 
 export type GDUser = Readonly<{
+  profileId: string;
   id: number;
   name: string;
   username: string;
@@ -57,15 +57,17 @@ type BaseDraftPick = Readonly<{
 }>
 
 export type PendingDraftPick = BaseDraftPick & Readonly<{
-  golferId?: undefined;
-  timestampEpochMillis?: undefined;
-  clientTimestampEpochMillis?: undefined;
+  golferId?: null;
+  timestampEpochMillis?: null;
+  clientTimestampEpochMillis?: null;
+  pickedByUserId?: null;
 }>
 
 export type CompletedDraftPick = BaseDraftPick & Readonly<{
   golferId: number;
   timestampEpochMillis: number;
   clientTimestampEpochMillis: number;
+  pickedByUserId: number;
 }>
 
 export type DraftPick = PendingDraftPick | CompletedDraftPick;
@@ -146,3 +148,10 @@ export type WorstDayScore = Readonly<{
   golferId: number; 
   score: number;
 }>
+
+export type ChatMessage = Readonly<{
+  tourneyId: string;
+  userId: string;
+  epochMillis: number;
+  message: string;
+}>;

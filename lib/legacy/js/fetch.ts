@@ -1,7 +1,7 @@
 // fetch polyfill
 import 'whatwg-fetch';
 
-function ensureCredentials(init: RequestInit): RequestInit {
+function ensureCredentials(init?: RequestInit): RequestInit {
   return { credentials: 'same-origin', ...init };
 }
 
@@ -23,7 +23,7 @@ function normalizeUrl(url: string): string {
   return pathJoin(window.location.pathname, url);
 }
 
-async function _fetch(url: string, init: RequestInit) {
+async function _fetch(url: string, init?: RequestInit) {
   const normalizedUrl = normalizeUrl(url);
   const resp = ensureSuccess(await window.fetch(normalizedUrl, ensureCredentials(init)));
   if (!resp.json) return null;
@@ -48,21 +48,21 @@ export function post(url: string) {
   return fetch(url, { method: "POST" });
 }
 
-export function postJson(url: string, data) {
+export function postJson<T>(url: string, data: unknown): Promise<T> {
   return fetch(url, {
     method: "POST",
     body: JSON.stringify(data),
     headers: {
       "Content-Type": "application/json"
     }
-  });
+  }) as Promise<T>;
 }
 
 export function put(url: string) {
   return fetch(url, { method: "PUT" });
 }
 
-export function putJson(url: string, data) {
+export function putJson(url: string, data: unknown) {
   return fetch(url, {
     method: "PUT",
     body: JSON.stringify(data),

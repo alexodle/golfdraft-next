@@ -18,7 +18,7 @@ app.post(['/:tourneyId/chat/messages', '/:tourneyId/draft/chat/messages'], requi
     return;
   }
 
-  const message = { user: user._id, message: body.message } as ChatMessage;
+  const message = { user: user.id, message: body.message } as ChatMessage;
   await req.access.createChatMessage(message);
   res.sendStatus(200);
 });

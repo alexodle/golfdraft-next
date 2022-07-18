@@ -47,8 +47,8 @@ async function initTourneyFromExport(tourneyCfg: TourneyConfigSpec, draftExport:
   const golfersByName = keyBy(_golfers, g => g.name);
   for (const dp of draftPicks) {
     const draftPick: DraftPick = {
-      user: ensureTruthy(usersByName[dp.user], `User not found: ${dp.user}`)._id,
-      golfer: ensureTruthy(golfersByName[dp.golfer], `Golfer not found: ${dp.golfer}`)._id,
+      user: ensureTruthy(usersByName[dp.user], `User not found: ${dp.user}`).id,
+      golfer: ensureTruthy(golfersByName[dp.golfer], `Golfer not found: ${dp.golfer}`).id,
       pickNumber: dp.pickNumber,
       timestamp: null
     };
@@ -60,7 +60,7 @@ async function initTourneyFromExport(tourneyCfg: TourneyConfigSpec, draftExport:
   await chatModels.Message.deleteMany({ tourneyId }).exec();
   await chatModels.Message.insertMany(chatMessages.map(msg => ({
     tourneyId: mongoose.Types.ObjectId(tourneyId),
-    user: msg.user ? ensureTruthy(usersByName[msg.user], `User not found: ${msg.user}`)._id : null,
+    user: msg.user ? ensureTruthy(usersByName[msg.user], `User not found: ${msg.user}`).id : null,
     isBot: msg.isBot,
     message: msg.message,
     date: moment(msg.date)

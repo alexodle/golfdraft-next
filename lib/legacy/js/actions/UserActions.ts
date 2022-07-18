@@ -21,7 +21,7 @@ export default class UserActions {
    Same as setting the current user, except that this is specifically
    reserved for app startup
    */
-  static hydrateCurrentUser(userId: string) {
+  static hydrateCurrentUser(userId: number) {
     AppDispatcher.handleServerAction({
       actionType: AppConstants.CURRENT_USER_CHANGE,
       currentUser: userId,
@@ -36,14 +36,14 @@ export default class UserActions {
     });
   }
 
-  static setActiveUsers(activeUsers: string[]) {
+  static setActiveUsers(activeUsers: Set<number>) {
     AppDispatcher.handleServerAction({
       actionType: AppConstants.SET_ACTIVE_USERS,
       activeUsers,
     });
   }
 
-  static setPickListUsers(pickListUsers: string[]) {
+  static setPickListUsers(pickListUsers:  Set<number>) {
     AppDispatcher.handleServerAction({
       actionType: AppConstants.SET_PICKLIST_USERS,
       pickListUsers,

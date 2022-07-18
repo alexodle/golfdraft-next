@@ -102,7 +102,7 @@ async function defineRoutes() {
   // Ensure req is fully populated
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.user) {
-      userAccess.onUserActivity(req.session.id, req.user._id.toString(), `${req.method}::${req.path}`);
+      userAccess.onUserActivity(req.session.id, req.user.id.toString(), `${req.method}::${req.path}`);
     }
     req.access = req.access || activeTourneyAccess;
     next();
@@ -210,9 +210,9 @@ async function defineRoutes() {
       getAppState(),
       getAllTourneys(),
       access.getPickListUsers(),
-      req.user ? access.getPickList(req.user._id.toString()) : null,
+      req.user ? access.getPickList(req.user.id.toString()) : null,
     ]);
-    const tourney = find(allTourneys, t => utils.oidsAreEqual(tourneyId, t._id));
+    const tourney = find(allTourneys, t => utils.oidsAreEqual(tourneyId, t.id));
     if (!tourney) {
       res.sendStatus(404);
       return;
@@ -261,8 +261,8 @@ async function defineRoutes() {
 
   app.get(['/draft/pickList', '/:tourneyId/draft/pickList'], requireSessionApi(), async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
-    const pickList = await req.access.getPickList(user._id);
-    res.status(200).send({ userId: user._id, pickList: pickList });
+    const pickList = await req.access.getPickList(user.id);
+    res.status(200).send({ userId: user.id, pickList: pickList });
   });
 
   app.post('/draft/pickList', requireSessionApi(), async (req: Request, res: Response, next: NextFunction) => {
@@ -272,14 +272,14 @@ async function defineRoutes() {
 
     try {
       if (body.pickList) {
-        await access.updatePickList(user._id, body.pickList);
-        res.status(200).send({ userId: user._id, pickList: body.pickList });
+        await access.updatePickList(user.id, body.pickList);
+        res.status(200).send({ userId: user.id, pickList: body.pickList });
       } else {
-        const result = await access.updatePickListFromNames(user._id, body.pickListNames);
+        const result = await access.updatePickListFromNames(user.id, body.pickListNames);
         if (result.completed) {
-          res.status(200).send({ userId: user._id, pickList: result.pickList });
+          res.status(200).send({ userId: user.id, pickList: result.pickList });
         } else {
-          res.status(300).send({ userId: user._id, suggestions: result.suggestions });
+          res.status(300).send({ userId: user.id, suggestions: result.suggestions });
         }
       }
     } catch (err) {
@@ -292,7 +292,7 @@ async function defineRoutes() {
     const user = req.user;
 
     const autoPick = !!body.autoPick;
-    onAppStateUpdate(req, res, req.access.updateAutoPick(user._id, autoPick));
+    onAppStateUpdate(req, res, req.access.updateAutoPick(user.id, autoPick));
   });
 
   app.post('/draft/picks', requireSessionApi(), (req: Request, res: Response, next: NextFunction) => {

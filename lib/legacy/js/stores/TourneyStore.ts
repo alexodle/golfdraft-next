@@ -14,7 +14,7 @@ class TourneyStoreImpl extends Store {
   getCurrentTourney() { return _currentTourney; }
   getTourneyName() { return _currentTourney.name; }
   getAllTourneys() { return _allTourneys; }
-  isViewingActiveTourney() { return _activeTournyId === _currentTourney._id }
+  isViewingActiveTourney() { return _activeTournyId === _currentTourney.id }
 }
 const TourneyStore = new TourneyStoreImpl();
 
@@ -34,7 +34,7 @@ AppDispatcher.register(function (payload) {
       break;
       
     case AppConstants.SET_ALL_TOURNEYS:
-      _allTourneys = keyBy(action.allTourneys, t => t._id);
+      _allTourneys = keyBy(action.allTourneys, t => t.id);
       TourneyStore.emitChange();
       break;
   }

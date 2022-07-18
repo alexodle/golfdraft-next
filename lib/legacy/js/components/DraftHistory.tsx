@@ -1,77 +1,69 @@
-import GolferLogic from '../logic/GolferLogic';
-import GolferStore from '../stores/GolferStore';
 import * as React from 'react';
-import UserStore from '../stores/UserStore';
-import {clone, partial} from 'lodash';
+import { isCompletedDraftPick, useDraftPicks } from '../../../data/draft';
+import { useGolfers } from '../../../data/golfers';
+import { useAllUsers } from '../../../data/users';
+import Loading from '../../../Loading';
+import GolferLogic from '../logic/GolferLogic';
 import GolfDraftPanel from './GolfDraftPanel';
-import {DraftPick} from '../types/ClientTypes';
 
-export interface DraftHistoryProps {
-  selectedUserId?: string;
-  draftPicks: DraftPick[];
-  onSelectionChange?: (pid?: string) => void;
-}
+export const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange?: (pid?: number) => void }> = ({
+  selectedUserId,
+  onSelectionChange
+}) => {
+  const { data: allDraftPicks } = useDraftPicks();
+  const { data: allUsers } = useAllUsers();
+  const { data: golfers } = useGolfers();
+  
+  if (!allDraftPicks || !allUsers || !golfers) {
+    return <Loading />;
+  }
 
-export default class DraftHistory extends React.Component<DraftHistoryProps, {}> {
+  let draftPicks = allDraftPicks.filter(isCompletedDraftPick).reverse();
+  let heading: JSX.Element | string = 'Draft History';
 
-  render() {
-    const selectedUserId = this.props.selectedUserId;
-    const onPersonClick = this.props.onSelectionChange ? this._onPersonClick : null;
-    let draftPicks = clone(this.props.draftPicks).reverse();
-    let heading: JSX.Element | string;
-
-    heading = 'Draft History';
-    if (selectedUserId) {
-      draftPicks = draftPicks.filter(dp => dp.user === selectedUserId);
-      heading = (
-        <span>
-          <a href='#DraftHistory' onClick={this._onDeselectPerson}>Draft History</a>
-          <span> - </span>{UserStore.getUser(selectedUserId).name}
-        </span>
-      );
-    }
-
-    return (
-      <div>
-        <a id='DraftHistory' />
-        <GolfDraftPanel heading={heading}>
-          {!selectedUserId ? null : (
-            <p><small>
-              <b>Tip:</b> click "Draft History" (above) to view all picks again
-            </small></p>
-          )}
-          <table className='table'>
-            <thead><tr><th>#</th><th>Pool User</th><th>Golfer</th></tr></thead>
-            <tbody>
-              {draftPicks.map(p => {
-                const userName = UserStore.getUser(p.user).name;
-                return (
-                  <tr key={p.pickNumber}>
-                    <td>{p.pickNumber + 1}</td>
-                    <td>
-                      {selectedUserId ? userName : (
-                        <a href='#DraftHistory' onClick={!onPersonClick ? null : partial(onPersonClick, p.user)}>
-                          {userName}
-                        </a>
-                      )}
-                    </td>
-                    <td>{GolferLogic.renderGolfer(GolferStore.getGolfer(p.golfer))}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </GolfDraftPanel>
-      </div>
+  if (selectedUserId) {
+    draftPicks = draftPicks.filter(dp => dp.userId === selectedUserId);
+    heading = (
+      <span>
+        <a href='#DraftHistory' onClick={() => onSelectionChange?.(undefined)}>Draft History</a>
+        <span> - </span>{allUsers[selectedUserId].name}
+      </span>
     );
   }
 
-  _onPersonClick = (pid) => {
-    this.props.onSelectionChange(pid);
-  }
+  return (
+    <div>
+      <a id='DraftHistory' />
+      <GolfDraftPanel heading={heading}>
+        {!selectedUserId ? null : (
+          <p><small>
+            <b>Tip:</b> {'click "Draft History" (above) to view all picks again'}
+          </small></p>
+        )}
+        <table className='table'>
+          <thead><tr><th>#</th><th>Pool User</th><th>Golfer</th></tr></thead>
+          <tbody>
+            {draftPicks.map(p => {
+              const userName = allUsers[p.userId].name;
+              return (
+                <tr key={p.pickNumber}>
+                  <td>{p.pickNumber + 1}</td>
+                  <td>
+                    {selectedUserId ? userName : (
+                      <a href='#DraftHistory' onClick={() => onSelectionChange?.(p.userId)}>
+                        {userName}
+                      </a>
+                    )}
+                  </td>
+                  <td>{GolferLogic.renderGolfer(golfers[p.golferId])}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </GolfDraftPanel>
+    </div>
+  );
+}
 
-  _onDeselectPerson = () => {
-    this.props.onSelectionChange(null);
-  }
-
-};
+export default DraftHistory;

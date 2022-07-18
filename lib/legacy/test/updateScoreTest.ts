@@ -86,7 +86,7 @@ describe('updateScore', function () {
           { tourneyId: tid, golfer: gid3.toString(), day: 3, scores: [-1, -30, MISSED_CUT, MISSED_CUT], thru: 1 }
         ] as GolferScore[],
         [
-          { tourneyId: tid, _id: 'should be removed', golfer: gid1, day: null, scores: [-1, MISSED_CUT, MISSED_CUT, MISSED_CUT] },
+          { tourneyId: tid, id: 'should be removed', golfer: gid1, day: null, scores: [-1, MISSED_CUT, MISSED_CUT, MISSED_CUT] },
           { tourneyId: tid, golfer: gid3, day: 4, scores: [-1, MISSED_CUT, MISSED_CUT, MISSED_CUT] }
         ] as ScoreOverride[]
       ), 'golfer');

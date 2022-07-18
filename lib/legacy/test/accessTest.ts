@@ -96,10 +96,10 @@ describe('access', () => {
         'Jack Nicklaus'
       ];
       const expected = [
-        golfers['Bobby Jones']._id.toString(),
-        golfers['Gary User']._id.toString(),
-        golfers['Tiger Woods']._id.toString(),
-        golfers['Jack Nicklaus']._id.toString(),
+        golfers['Bobby Jones'].id.toString(),
+        golfers['Gary User'].id.toString(),
+        golfers['Tiger Woods'].id.toString(),
+        golfers['Jack Nicklaus'].id.toString(),
       ];
       return assertPickListResult(
         userId,
@@ -179,11 +179,11 @@ describe('access', () => {
       const access = await getActiveTourneyAccess();
 
       const newPick = {
-        user: users['User1']._id,
-        golfer: golfers['Golfer1']._id,
+        user: users['User1'].id,
+        golfer: golfers['Golfer1'].id,
         pickNumber: 0
       };
-      await access.makePickListPick(users['User1']._id.toString(), 0);
+      await access.makePickListPick(users['User1'].id.toString(), 0);
       const draft = await access.getDraft();
       draft.picks.should.containDeepOrdered([newPick]);
     });
@@ -192,15 +192,15 @@ describe('access', () => {
       const access = await getActiveTourneyAccess();
 
       const newPick = {
-        user: users['User1']._id,
-        golfer: golfers['Golfer1']._id,
+        user: users['User1'].id,
+        golfer: golfers['Golfer1'].id,
         pickNumber: 0
       };
-      await access.updatePickList(users['User1']._id.toString(), [
-        golfers['Golfer1']._id.toString(),
-        golfers['Golfer2']._id.toString()
+      await access.updatePickList(users['User1'].id.toString(), [
+        golfers['Golfer1'].id.toString(),
+        golfers['Golfer2'].id.toString()
       ]);
-      await access.makePickListPick(users['User1']._id.toString(), 0);
+      await access.makePickListPick(users['User1'].id.toString(), 0);
       const draft = await access.getDraft();
       draft.picks.should.containDeepOrdered([newPick]);
     });
@@ -245,8 +245,8 @@ describe('access', () => {
       const access = await getActiveTourneyAccess();
       try {
         await access.makePick({
-          user: users['User2']._id,
-          golfer: golfers['Golfer2']._id,
+          user: users['User2'].id,
+          golfer: golfers['Golfer2'].id,
           pickNumber: 0
         } as DraftPick);
         'Expected draft pick to fail.'.should.not.be.ok();
@@ -259,8 +259,8 @@ describe('access', () => {
       const access = await getActiveTourneyAccess();
       try {
         await access.makePick({
-          user: users['User1']._id,
-          golfer: golfers['Golfer1']._id,
+          user: users['User1'].id,
+          golfer: golfers['Golfer1'].id,
           pickNumber: 1
         } as DraftPick);
         'Expected draft pick to fail.'.should.not.be.ok();
@@ -273,8 +273,8 @@ describe('access', () => {
       const access = await getActiveTourneyAccess();
       try {
         await access.makePick({
-          user: users['User1']._id,
-          golfer: users['User2']._id,
+          user: users['User1'].id,
+          golfer: users['User2'].id,
           pickNumber: 0
         } as DraftPick);
         'Expected draft pick to fail.'.should.not.be.ok();
@@ -286,8 +286,8 @@ describe('access', () => {
     it('registers valid pick', async () => {
       const access = await getActiveTourneyAccess();
       const newPick = {
-        user: users['User1']._id,
-        golfer: golfers['Golfer1']._id,
+        user: users['User1'].id,
+        golfer: golfers['Golfer1'].id,
         pickNumber: 0
       } as DraftPick;
       await access.makePick(newPick);
@@ -299,13 +299,13 @@ describe('access', () => {
       const access = await getActiveTourneyAccess();
       const newPicks = [
         {
-          user: users['User1']._id,
-          golfer: golfers['Golfer1']._id,
+          user: users['User1'].id,
+          golfer: golfers['Golfer1'].id,
           pickNumber: 0
         },
         {
-          user: users['User2']._id,
-          golfer: golfers['Golfer1']._id,
+          user: users['User2'].id,
+          golfer: golfers['Golfer1'].id,
           pickNumber: 1
         }
       ] as DraftPick[];

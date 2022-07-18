@@ -2,7 +2,8 @@ import { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { Tourney } from '../models';
-import {default as supabaseClient, adminSupabase} from '../supabase';
+import { adminSupabase} from '../supabase';
+import { supabaseClient } from '@supabase/auth-helpers-nextjs';
 
 const TOURNEY_TABLE = 'tourney';
 

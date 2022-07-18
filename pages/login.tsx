@@ -1,6 +1,6 @@
 import { NextPage } from 'next';
 import { useState } from 'react';
-import supabase from '../lib/supabase';
+import { supabaseClient } from '@supabase/auth-helpers-nextjs';
 
 const Auth: NextPage = () => {
   const [loading, setLoading] = useState(false)
@@ -9,7 +9,7 @@ const Auth: NextPage = () => {
   const handleLogin = async (email: string) => {
     try {
       setLoading(true)
-      const { error } = await supabase.auth.signIn({ email })
+      const { error } = await supabaseClient.auth.signIn({ email })
       if (error) throw error
       alert('Check your email for the login link!')
     } catch (error) {

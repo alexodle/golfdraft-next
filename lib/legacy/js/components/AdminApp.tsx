@@ -113,7 +113,7 @@ class AdminApp extends React.Component<AdminAppProps, AdminAppState> {
       return (<PasswordInput />);
     }
 
-    const allChecked = every(props.users, u => !!props.autoPickUsers[u._id]);
+    const allChecked = every(props.users, u => !!props.autoPickUsers[u.id]);
 
     return (
       <section>
@@ -172,15 +172,15 @@ class AdminApp extends React.Component<AdminAppProps, AdminAppState> {
             <br />
             <ul className='list-unstyled'>
               {map(props.users, user => {
-                const checked = !!props.autoPickUsers[user._id];
+                const checked = !!props.autoPickUsers[user.id];
                 return (
-                  <li key={user._id}>
+                  <li key={user.id}>
                     <div className='checkbox'>
                       <label>
                         <input
                           type='checkbox'
                           checked={checked}
-                          onChange={toggleAutoPick.bind(null, user._id, !checked)}
+                          onChange={toggleAutoPick.bind(null, user.id, !checked)}
                         /> {user.name}
                       </label>
                     </div>
@@ -256,7 +256,7 @@ class AdminApp extends React.Component<AdminAppProps, AdminAppState> {
 
   _toggleAllAutoPicks = (autoPick: boolean) => {
     each(this.props.users, user => {
-      toggleAutoPick(user._id, autoPick);
+      toggleAutoPick(user.id, autoPick);
     });
   }
 

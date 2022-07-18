@@ -1,26 +1,6 @@
 import React, { createContext, useContext } from 'react';
-import { ChatMessage, IndexedGolfers, IndexedUsers, Tourney, TourneyStandings, User } from "../legacy/js/types/ClientTypes";
-import { DraftProps } from "../legacy/js/types/SharedProps";
 
 export interface AppStateType {
-  activeTourneyId: number;
-  tourneyName: string;
-  isViewingActiveTourney: boolean;
-  currentUser?: User;
-  activeUsers: Set<number>;
-  golfers: IndexedGolfers;
-  users: IndexedUsers;
-  draft: DraftProps;
-  tourneyStandings: TourneyStandings;
-  lastScoresUpdate: Date;
-  chatMessages?: ChatMessage[];
-  isAdmin: boolean;
-  isPaused: boolean;
-  allowClock: boolean;
-  draftHasStarted: boolean;
-  autoPickUsers: Set<string>;
-  pickListUsers: Set<string>;
-  allTourneys: Record<number, Tourney>;
   tourneyId: number;
 }
 
