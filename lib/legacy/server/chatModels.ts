@@ -1,12 +1,14 @@
-import {mongoose} from './mongooseUtil';
+export {};
 
-const messageSchema = new mongoose.Schema({
-  tourneyId: mongoose.Schema.Types.ObjectId,
-  user: mongoose.Schema.Types.ObjectId,
-  isBot: Boolean,
-  message: String,
-  date: Date
-});
-messageSchema.index({ tourneyId: 1 });
+// import {mongoose} from './mongooseUtil';
 
-export const Message = mongoose.model('Message', messageSchema);
+// const messageSchema = new mongoose.Schema({
+//   tourneyId: mongoose.Schema.Types.ObjectId,
+//   user: mongoose.Schema.Types.ObjectId,
+//   isBot: Boolean,
+//   message: String,
+//   date: Date
+// });
+// messageSchema.index({ tourneyId: 1 });
+
+// export const Message = mongoose.model('Message', messageSchema);

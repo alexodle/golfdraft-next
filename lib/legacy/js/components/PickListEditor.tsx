@@ -1,5 +1,5 @@
 import { isNumber, sortBy } from 'lodash';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRemainingGolfers } from '../../../data/draft';
 import { useGolfers } from '../../../data/golfers';
 import { usePickList, usePickListUpdater } from '../../../data/pickList';

@@ -1,4 +1,4 @@
-import { TourneyConfigSpec } from '../server/ServerTypes'
+import { TourneyConfig } from "../../models";
 
 export type Thru = number | null;
 export type Score = number | 'MC' | null;
@@ -16,7 +16,5 @@ export interface ReaderResult {
 }
 
 export interface Reader {
-  run: (config: TourneyConfigSpec, url: string) => Promise<ReaderResult>;
+  run: (config: TourneyConfig, url: string) => Promise<ReaderResult>;
 }
-
-export type { TourneyConfigSpec }

@@ -1,6 +1,7 @@
 import { DbTourneyStandingPlayerScore, DbTourneyStandings, TourneyStandingGolferScore, TourneyStandingPlayerDayScore, TourneyStandingPlayerScore, TourneyStandings as ModelTourneyStandings, WorstDayScore } from '../models';
 import { adminSupabase } from '../supabase';
 import { supabaseClient } from '@supabase/auth-helpers-nextjs';
+import { omit } from 'lodash';
 
 const TOURNEY_STANDINGS_TABLE = 'tourney_standings';
 const TOURNEY_STANDINGS_PLAYER_SCORES_TABLE = 'tourney_standings_player_scores';
@@ -38,17 +39,23 @@ export async function getTourneyStandings(tourneyId: number, supabase = supabase
   };
 }
 
-export async function updateTourneyStandings(tourneyStanding: TourneyStandings, playerScores: TourneyStandingPlayerScore[]): Promise<void> {
+export async function updateTourneyStandings(tourneyStanding: TourneyStandings): Promise<void> {
+  const dbTourneyStandings: DbTourneyStandings = { 
+    ...omit(tourneyStanding, 'standings'),
+    worstScoresForDay: JSON.stringify(tourneyStanding.worstScoresForDay) 
+  };
+  const playerScores = tourneyStanding.standings.map<DbTourneyStandingPlayerScore>(s => ({
+    ...s,
+    dayScores: JSON.stringify(s.dayScores),
+  }));
+  
   const [result1, result2] = await Promise.all([
     adminSupabase()
       .from<DbTourneyStandings>(TOURNEY_STANDINGS_TABLE)
-      .upsert({ ...tourneyStanding, worstScoresForDay: JSON.stringify(tourneyStanding.worstScoresForDay) }, { returning: 'minimal' }),
+      .upsert(dbTourneyStandings, { returning: 'minimal' }),
     adminSupabase()
       .from<DbTourneyStandingPlayerScore>(TOURNEY_STANDINGS_PLAYER_SCORES_TABLE)
-      .upsert(playerScores.map(s => ({
-        ...s,
-        dayScores: JSON.stringify(s.dayScores),
-      })))
+      .upsert(playerScores)
   ]);
 
   for (const result of [result1, result2]) {

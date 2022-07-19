@@ -4,7 +4,7 @@ import { getDraftPicks, setDraftPicks } from '../../../data/draft';
 import { upsertTourney } from '../../../data/tourney';
 import { getAllUsers } from '../../../data/users';
 import { TourneyConfig } from '../../../models';
-import readerConfig, { ReaderType } from '../../scores_sync/readerConfig';
+import readerConfig from '../../scores_sync/readerConfig';
 import * as updateScore from '../../scores_sync/updateScore';
 import * as updateTourneyStandings from '../../scores_sync/updateTourneyStandings';
 import { updateWgr } from '../../wgr/updateWgr';
@@ -23,6 +23,11 @@ function ensureTruthy<T>(obj: T, msg: string): T {
 }
 
 export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
+  const reader = readerConfig[tourneyCfg.scores.type].reader;
+  if (!reader) {
+    throw new Error(`Unsupported reader type: ${tourneyCfg.scores.type}`)
+  }
+
   const tourney = await upsertTourney({
     name: tourneyCfg.name,
     draftHasStarted: false,
@@ -37,7 +42,7 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
   const usersByName = keyBy(users, u => u.name);
 
   const sortedUsers = tourneyCfg.draftOrder.map(name => ensureTruthy(usersByName[name], `User not found: ${name}`));
-  const pickOrder = tourneyUtils.snakeDraftOrder(tourney.id, sortedUsers);
+  const pickOrder = tourneyUtils.snakeDraftOrder(tourney.id, sortedUsers.map(u => u.id));
 
   const existingPicks = await getDraftPicks(tourney.id);
   if (existingPicks.some(p => p.golferId)) {
@@ -48,7 +53,7 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
   
   await updateScore.run(
     tourney.id,
-    readerConfig[tourneyCfg.scores.type as ReaderType].reader,
+    reader,
     tourneyCfg,
     true
   );

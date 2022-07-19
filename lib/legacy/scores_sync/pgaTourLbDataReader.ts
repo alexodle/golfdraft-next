@@ -1,6 +1,7 @@
 import { parseInt } from 'lodash';
+import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
-import { Reader, ReaderResult, UpdateGolfer, TourneyConfigSpec, Score } from './Types';
+import { Reader, ReaderResult, Score, UpdateGolfer } from './Types';
 import { fetchData } from './util';
 
 const { MISSED_CUT, NHOLES, NDAYS } = constants;
@@ -26,12 +27,16 @@ interface LbDataGolfer {
   tournamentRoundId: string; // "<number>"
 }
 
-function isNullStr(str: string) {
-  return str === null || str.startsWith('--') || str === 'null';
+function isNullStr(str: string | null | undefined): boolean {
+  return !str || str.startsWith('--') || str === 'null';
 }
 
-function safeParseInt(str: string): number | null {
-  return isNullStr(str) ? null : parseInt(str);
+function isNotNullStr(str: string | null | undefined): str is string {
+  return !isNullStr(str);
+}
+
+function safeParseInt(str: string | null | undefined): number | null {
+  return isNotNullStr(str) ? parseInt(str) : null;
 }
 
 function parseRequiredInt(str: string, msg: string): number {
@@ -80,7 +85,7 @@ function parseMissedCutGolferScores(par: number, g: LbDataGolfer): Score[] {
   if (!finishedRound) {
     latestRound--;
   }
-  return g.rounds.map((r, i) => i < latestRound ? safeParseInt(r.strokes) - par : MISSED_CUT);
+  return g.rounds.map((r, i) => i < latestRound ? (safeParseInt(r.strokes) ?? 0) - par : MISSED_CUT);
 }
 
 function parseGolferScores(par: number, g: LbDataGolfer): Score[] {
@@ -93,7 +98,7 @@ function parseGolferScores(par: number, g: LbDataGolfer): Score[] {
   // Logic for getting the current round score is different than earlier rounds
   const scores = g.rounds
     .slice(0, currentRound - 1)
-    .map(r => safeParseInt(r.strokes) - par);
+    .map(r => (safeParseInt(r.strokes) ?? 0) - par);
   scores.push(currentRoundScore);
   for (let i = scores.length; i < NDAYS; i++) {
     scores.push(0);
@@ -116,7 +121,7 @@ function parseGolfer(par: number, g: LbDataGolfer): UpdateGolfer {
 }
 
 class PgaTourLbDataReader implements Reader {
-  async run(config: TourneyConfigSpec, url: string): Promise<ReaderResult> {
+  async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
     const data = await fetchData(url);
     const json = JSON.parse(data);
 

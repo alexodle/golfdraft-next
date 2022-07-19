@@ -1,23 +1,21 @@
 // Refreshes users, pick order, draft picks, and chat
 
-import * as moment from 'moment';
 import * as fs from 'fs';
-import {TourneyConfigSpec} from '../server/ServerTypes';
+import { TourneyConfig } from '../../models';
 
-function ensureReplaceKey(o, oldKey, newKey) {
+function ensureReplaceKey(o: any, oldKey: string, newKey: string) {
   if (o[oldKey]) {
     o[newKey] = o[oldKey];
     delete o[oldKey];
   }
 }
 
-export function loadConfig(tourneyCfgPath: string): TourneyConfigSpec {
-  const cfg: TourneyConfigSpec = JSON.parse(fs.readFileSync(tourneyCfgPath, 'utf8'));
-  cfg.startDate = moment(cfg.startDate).toDate();
+export function loadConfig(tourneyCfgPath: string): TourneyConfig {
+  const cfg: TourneyConfig = JSON.parse(fs.readFileSync(tourneyCfgPath, 'utf8'));
 
   // Back-compat
-  ensureReplaceKey(cfg, 'scores', 'scoresSync');
-  ensureReplaceKey(cfg.scoresSync, 'type', 'syncType');
+  ensureReplaceKey(cfg, 'scoresSync', 'scores');
+  ensureReplaceKey(cfg.scores, 'syncType', 'type');
 
   return cfg;
 }

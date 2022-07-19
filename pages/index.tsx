@@ -1,11 +1,11 @@
 import { GetServerSideProps, NextPage } from 'next';
-import { BootstrapPayload } from '../lib/legacy/js/types/ClientTypes';
 
 const Home: NextPage = () => {
   return null;
 }
 
-export const getServerSideProps: GetServerSideProps<BootstrapPayload> = async () => {
+export const getServerSideProps: GetServerSideProps = async () => {
+  // TODO: hihi redirect to live tourney if draft is over
   return { redirect: { permanent: false, destination: '/draft'} };
 }
 

@@ -86,7 +86,7 @@ type BaseGolferScore = Readonly<{
 }>
 
 export type GolferScore = BaseGolferScore & Readonly<{
-  scores: (number | 'MC')[];
+  scores: (number | 'MC' | null)[];
 }>
 
 export type DbGolferScore = BaseGolferScore & Readonly<{

@@ -1,9 +1,4 @@
-import './initTestConfig';
-
-import constants from '../common/constants';
-import reader, { calcCurrentDay } from '../scores_sync/pgaTourLbDataScraperReader';
-
-const { MISSED_CUT } = constants;
+import { calcCurrentDay } from '../scores_sync/pgaTourLbDataScraperReader';
 
 describe('PgaTourScraperReader', function () {
   describe('parse', () => {
@@ -31,19 +26,19 @@ describe('PgaTourScraperReader', function () {
   */
   describe('calcCurrentDay', () => {
     it('parses active day 0', () => {
-      calcCurrentDay([null, null, null, null], false).should.equal(0)
+      expect(calcCurrentDay([null, null, null, null], false)).toEqual(0)
     })
 
     it('parses finished day 0', () => {
-      calcCurrentDay([0, null, null, null], true).should.equal(0)
+      expect(calcCurrentDay([0, null, null, null], true)).toEqual(0)
     })
 
     it('parses active day 1', () => {
-      calcCurrentDay([0, null, null, null], false).should.equal(1)
+      expect(calcCurrentDay([0, null, null, null], false)).toEqual(1)
     })
 
     it('parses finished final day', () => {
-      calcCurrentDay([0, 0, 0, 0], true).should.equal(3)
+      expect(calcCurrentDay([0, 0, 0, 0], true)).toEqual(3)
     })
   });
 });

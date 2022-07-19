@@ -1,21 +1,21 @@
-import {clone, flatten} from 'lodash';
-import { GDUser, PendingDraftPick } from '../../models';
+import { clone, flatten } from 'lodash';
+import { PendingDraftPick } from '../../models';
 
 /**
  Given an ordered list of users, returns a set of DraftPickOrders
  in snake draft order.
  */
-export function snakeDraftOrder(tourneyId: number, userOrder: GDUser[]) : PendingDraftPick[] {
-  const reverseOrder = clone(userOrder).reverse();
+export function snakeDraftOrder(tourneyId: number, userIdOrder: number[]) : PendingDraftPick[] {
+  const reverseOrder = clone(userIdOrder).reverse();
   const fullOrder = flatten([
-    userOrder,
+    userIdOrder,
     reverseOrder,
-    userOrder,
+    userIdOrder,
     reverseOrder
   ]);
-  const pickOrder = fullOrder.map<PendingDraftPick>((user, i) => ({
+  const pickOrder = fullOrder.map<PendingDraftPick>((userId, i) => ({
     tourneyId,
-    userId: user.id,
+    userId,
     pickNumber: i + 1,
   }));
   return pickOrder;

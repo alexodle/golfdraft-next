@@ -3,13 +3,12 @@ import {
 } from '@supabase/auth-helpers-nextjs';
 import { GetServerSideProps, NextPage } from 'next';
 import { getActiveTourneyId } from '../lib/data/appState';
-import { BootstrapPayload } from '../lib/legacy/js/types/ClientTypes';
 
 const Draft: NextPage = () => {
   return null;
 }
 
-export const getServerSideProps: GetServerSideProps<BootstrapPayload> = withPageAuth({
+export const getServerSideProps: GetServerSideProps = withPageAuth({
   redirectTo: '/login',
   async getServerSideProps(ctx) {
     const activeTourneyId = await getActiveTourneyId(supabaseServerClient(ctx));

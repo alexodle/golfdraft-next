@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 export default class AppPausedStatus extends React.Component {
   render() {
@@ -12,7 +12,7 @@ export default class AppPausedStatus extends React.Component {
             <li>
               <span>a temporary stop in action or speech.</span><br />
               <span className='dict-definition'>
-                "she dropped me outside during a brief pause in the rain"<br />
+                {`"she dropped me outside during a brief pause in the rain"`}<br />
                 <em>synonyms:</em> stop, cessation, break, halt, interruption, check, lull, respite, breathing space, discontinuation, hiatus, gap, interlude;
               </span>
             </li>
@@ -25,7 +25,7 @@ export default class AppPausedStatus extends React.Component {
             <li>
               <span>interrupt action or speech briefly.</span><br />
               <span className='dict-definition'>
-                "she paused, at a loss for words"<br />
+                {`"she paused, at a loss for words"`}<br />
                 <em>synonyms:</em> stop, cease, halt, discontinue, break off, take a break;
               </span>
             </li>

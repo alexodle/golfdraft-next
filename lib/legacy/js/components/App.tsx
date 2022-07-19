@@ -1,262 +1,264 @@
-import { omit } from 'lodash';
-import * as React from 'react';
-import { Redirect, Route, Switch } from 'react-router-dom';
-import constants from '../../common/constants';
-import AppSettingsStore from '../stores/AppSettingsStore';
-import ChatStore from '../stores/ChatStore';
-import DraftStore from '../stores/DraftStore';
-import GolferStore from '../stores/GolferStore';
-import ScoreStore from '../stores/ScoreStore';
-import TourneyStore from '../stores/TourneyStore';
-import UserStore from '../stores/UserStore';
-import { ChatMessage, DraftPick, Indexed, IndexedGolfers, IndexedUsers, Location, Tourney, TourneyStandings, User } from '../types/ClientTypes';
-import { DraftProps } from '../types/SharedProps';
-import AdminApp from './AdminApp';
-import AppHeader from './AppHeader';
-import DraftApp from './DraftApp';
-import TourneyApp from './TourneyApp';
-import { TourneyHistory } from './TourneyHistory';
+export {};
 
-const RELEVANT_STORES = [
-  AppSettingsStore,
-  ChatStore,
-  DraftStore,
-  ScoreStore,
-  UserStore
-];
+// import { omit } from 'lodash';
+// import React from 'react';
+// import { Redirect, Route, Switch } from 'react-router-dom';
+// import constants from '../../common/constants';
+// import AppSettingsStore from '../stores/AppSettingsStore';
+// import ChatStore from '../stores/ChatStore';
+// import DraftStore from '../stores/DraftStore';
+// import GolferStore from '../stores/GolferStore';
+// import ScoreStore from '../stores/ScoreStore';
+// import TourneyStore from '../stores/TourneyStore';
+// import UserStore from '../stores/UserStore';
+// import { ChatMessage, DraftPick, Indexed, IndexedGolfers, IndexedUsers, Location, Tourney, TourneyStandings, User } from '../types/ClientTypes';
+// import { DraftProps } from '../types/SharedProps';
+// import AdminApp from './AdminApp';
+// import AppHeader from './AppHeader';
+// import DraftApp from './DraftApp';
+// import TourneyApp from './TourneyApp';
+// import { TourneyHistory } from './TourneyHistory';
 
-interface AppState {
-  tourneyName: string;
-  isViewingActiveTourney: boolean;
-  currentUser?: User;
-  activeUsers: Indexed<string>;
-  golfers: IndexedGolfers;
-  users: IndexedUsers;
-  draft: DraftProps;
-  tourneyStandings: TourneyStandings;
-  lastScoresUpdate: Date;
-  chatMessages?: ChatMessage[];
-  isAdmin: boolean;
-  isPaused: boolean;
-  allowClock: boolean;
-  draftHasStarted: boolean;
-  autoPickUsers: Indexed<string>;
-  pickListUsers: Indexed<string>;
-  activeTourneyId: string;
-  allTourneys: Indexed<Tourney>;
-}
+// const RELEVANT_STORES = [
+//   AppSettingsStore,
+//   ChatStore,
+//   DraftStore,
+//   ScoreStore,
+//   UserStore
+// ];
 
-interface ComponentProps extends AppState {
-  location: Location;
-  match: {
-    params: { [key: string]: string }
-  };
-  golfersRemaining: IndexedGolfers;
-}
+// interface AppState {
+//   tourneyName: string;
+//   isViewingActiveTourney: boolean;
+//   currentUser?: User;
+//   activeUsers: Indexed<string>;
+//   golfers: IndexedGolfers;
+//   users: IndexedUsers;
+//   draft: DraftProps;
+//   tourneyStandings: TourneyStandings;
+//   lastScoresUpdate: Date;
+//   chatMessages?: ChatMessage[];
+//   isAdmin: boolean;
+//   isPaused: boolean;
+//   allowClock: boolean;
+//   draftHasStarted: boolean;
+//   autoPickUsers: Indexed<string>;
+//   pickListUsers: Indexed<string>;
+//   activeTourneyId: string;
+//   allTourneys: Indexed<Tourney>;
+// }
 
-function getAppState(): AppState {
-  return {
-    activeTourneyId: TourneyStore.getActiveTourneyId(),
-    allTourneys: TourneyStore.getAllTourneys(),
+// interface ComponentProps extends AppState {
+//   location: Location;
+//   match: {
+//     params: { [key: string]: string }
+//   };
+//   golfersRemaining: IndexedGolfers;
+// }
 
-    tourneyName: TourneyStore.getTourneyName(),
-    isViewingActiveTourney: TourneyStore.isViewingActiveTourney(),
-    currentUser: UserStore.getCurrentUser(),
-    activeUsers: UserStore.getActive(),
-    golfers: GolferStore.getAll(),
-    users: UserStore.getAll(),
+// function getAppState(): AppState {
+//   return {
+//     activeTourneyId: TourneyStore.getActiveTourneyId(),
+//     allTourneys: TourneyStore.getAllTourneys(),
 
-    draft: {
-      pickOrder: DraftStore.getPickOrder(),
-      isMyDraftPick: DraftStore.getIsMyDraftPick(),
-      currentPick: DraftStore.getCurrentPick(),
-      draftPicks: DraftStore.getDraftPicks(),
-      pickingForUsers: DraftStore.getPickingForUsers(),
-      syncedPickList: DraftStore.getPickList(),
-      pendingPickList: DraftStore.getPendingPickList()
-    },
+//     tourneyName: TourneyStore.getTourneyName(),
+//     isViewingActiveTourney: TourneyStore.isViewingActiveTourney(),
+//     currentUser: UserStore.getCurrentUser(),
+//     activeUsers: UserStore.getActive(),
+//     golfers: GolferStore.getAll(),
+//     users: UserStore.getAll(),
 
-    tourneyStandings: ScoreStore.getTourneyStandings(),
-    lastScoresUpdate: ScoreStore.getLastUpdated(),
+//     draft: {
+//       pickOrder: DraftStore.getPickOrder(),
+//       isMyDraftPick: DraftStore.getIsMyDraftPick(),
+//       currentPick: DraftStore.getCurrentPick(),
+//       draftPicks: DraftStore.getDraftPicks(),
+//       pickingForUsers: DraftStore.getPickingForUsers(),
+//       syncedPickList: DraftStore.getPickList(),
+//       pendingPickList: DraftStore.getPendingPickList()
+//     },
 
-    chatMessages: ChatStore.getMessages(),
+//     tourneyStandings: ScoreStore.getTourneyStandings(),
+//     lastScoresUpdate: ScoreStore.getLastUpdated(),
 
-    isAdmin: UserStore.isAdmin(),
-    isPaused: AppSettingsStore.getIsPaused(),
-    allowClock: AppSettingsStore.getAllowClock(),
-    draftHasStarted: AppSettingsStore.getDraftHasStarted(),
-    autoPickUsers: AppSettingsStore.getAutoPickUsers(),
-    pickListUsers: UserStore.getPickListUsers()
-  };
-}
+//     chatMessages: ChatStore.getMessages(),
 
-function getGolfersRemaining(golfers: IndexedGolfers, draftPicks: DraftPick[]): IndexedGolfers {
-  const pickedGolfers = draftPicks.map(dp => dp.golfer);
-  const golfersRemaining = omit(golfers, pickedGolfers);
-  return golfersRemaining;
-}
+//     isAdmin: UserStore.isAdmin(),
+//     isPaused: AppSettingsStore.getIsPaused(),
+//     allowClock: AppSettingsStore.getAllowClock(),
+//     draftHasStarted: AppSettingsStore.getDraftHasStarted(),
+//     autoPickUsers: AppSettingsStore.getAutoPickUsers(),
+//     pickListUsers: UserStore.getPickListUsers()
+//   };
+// }
 
-class DraftWrapper extends React.Component<ComponentProps, {}> {
+// function getGolfersRemaining(golfers: IndexedGolfers, draftPicks: DraftPick[]): IndexedGolfers {
+//   const pickedGolfers = draftPicks.map(dp => dp.golfer);
+//   const golfersRemaining = omit(golfers, pickedGolfers);
+//   return golfersRemaining;
+// }
 
-  render() {
-    const props = this.props;
-    return (
-      <section>
-        <AppHeader
-          tourneyName={props.tourneyName}
-          currentUser={props.currentUser}
-          drafting
-        />
-        <DraftApp
-          currentUser={props.currentUser}
-          currentPick={props.draft.currentPick}
-          isMyDraftPick={props.draft.isMyDraftPick}
-          draftPicks={props.draft.draftPicks}
-          chatMessages={props.chatMessages}
-          isPaused={props.isPaused}
-          golfersRemaining={props.golfersRemaining}
-          pickingForUsers={props.draft.pickingForUsers}
-          pickOrder={props.draft.pickOrder}
-          activeUsers={props.activeUsers}
-          allowClock={props.allowClock}
-          syncedPickList={props.draft.syncedPickList}
-          pendingPickList={props.draft.pendingPickList}
-          draftHasStarted={props.draftHasStarted}
-          autoPickUsers={props.autoPickUsers}
-          pickListUsers={props.pickListUsers}
-          tourneyId={props.match.params.tourneyId}
-          isViewingActiveTourney={props.isViewingActiveTourney}
-        />
-      </section>
-    );
-  }
+// class DraftWrapper extends React.Component<ComponentProps, {}> {
 
-};
+//   render() {
+//     const props = this.props;
+//     return (
+//       <section>
+//         <AppHeader
+//           tourneyName={props.tourneyName}
+//           currentUser={props.currentUser}
+//           drafting
+//         />
+//         <DraftApp
+//           currentUser={props.currentUser}
+//           currentPick={props.draft.currentPick}
+//           isMyDraftPick={props.draft.isMyDraftPick}
+//           draftPicks={props.draft.draftPicks}
+//           chatMessages={props.chatMessages}
+//           isPaused={props.isPaused}
+//           golfersRemaining={props.golfersRemaining}
+//           pickingForUsers={props.draft.pickingForUsers}
+//           pickOrder={props.draft.pickOrder}
+//           activeUsers={props.activeUsers}
+//           allowClock={props.allowClock}
+//           syncedPickList={props.draft.syncedPickList}
+//           pendingPickList={props.draft.pendingPickList}
+//           draftHasStarted={props.draftHasStarted}
+//           autoPickUsers={props.autoPickUsers}
+//           pickListUsers={props.pickListUsers}
+//           tourneyId={props.match.params.tourneyId}
+//           isViewingActiveTourney={props.isViewingActiveTourney}
+//         />
+//       </section>
+//     );
+//   }
 
-class TourneyWrapper extends React.Component<ComponentProps, {}> {
+// };
 
-  render() {
-    const props = this.props;
-    return (
-      <section>
-        <AppHeader
-          tourneyName={props.tourneyName}
-          currentUser={props.currentUser}
-        />
-        <TourneyApp
-          currentUser={props.currentUser}
-          tourneyStandings={props.tourneyStandings}
-          draft={props.draft}
-          lastScoresUpdate={props.lastScoresUpdate}
-          chatMessages={props.chatMessages}
-          activeUsers={props.activeUsers}
-          isViewingActiveTourney={props.isViewingActiveTourney}
-        />
-      </section>
-    );
-  }
+// class TourneyWrapper extends React.Component<ComponentProps, {}> {
 
-};
+//   render() {
+//     const props = this.props;
+//     return (
+//       <section>
+//         <AppHeader
+//           tourneyName={props.tourneyName}
+//           currentUser={props.currentUser}
+//         />
+//         <TourneyApp
+//           currentUser={props.currentUser}
+//           tourneyStandings={props.tourneyStandings}
+//           draft={props.draft}
+//           lastScoresUpdate={props.lastScoresUpdate}
+//           chatMessages={props.chatMessages}
+//           activeUsers={props.activeUsers}
+//           isViewingActiveTourney={props.isViewingActiveTourney}
+//         />
+//       </section>
+//     );
+//   }
 
-class HistoryWrapper extends React.Component<ComponentProps, {}> {
+// };
 
-  render() {
-    return (<TourneyHistory
-      activeTourneyId={this.props.activeTourneyId}
-      allTourneys={this.props.allTourneys}
-    />);
-  }
+// class HistoryWrapper extends React.Component<ComponentProps, {}> {
 
-}
+//   render() {
+//     return (<TourneyHistory
+//       activeTourneyId={this.props.activeTourneyId}
+//       allTourneys={this.props.allTourneys}
+//     />);
+//   }
 
-class AdminWrapper extends React.Component<ComponentProps, {}> {
+// }
 
-  render() {
-    const props = this.props;
-    return (
-      <section>
-        <AppHeader
-          tourneyName={props.tourneyName}
-          currentUser={props.currentUser}
-        />
-        <AdminApp
-          isAdmin={props.isAdmin}
-          currentPick={props.draft.currentPick}
-          draftPicks={props.draft.draftPicks}
-          isPaused={props.isPaused}
-          allowClock={props.allowClock}
-          draftHasStarted={props.draftHasStarted}
-          users={props.users}
-          autoPickUsers={props.autoPickUsers}
-        />
-      </section>
-    );
-  }
+// class AdminWrapper extends React.Component<ComponentProps, {}> {
 
-};
+//   render() {
+//     const props = this.props;
+//     return (
+//       <section>
+//         <AppHeader
+//           tourneyName={props.tourneyName}
+//           currentUser={props.currentUser}
+//         />
+//         <AdminApp
+//           isAdmin={props.isAdmin}
+//           currentPick={props.draft.currentPick}
+//           draftPicks={props.draft.draftPicks}
+//           isPaused={props.isPaused}
+//           allowClock={props.allowClock}
+//           draftHasStarted={props.draftHasStarted}
+//           users={props.users}
+//           autoPickUsers={props.autoPickUsers}
+//         />
+//       </section>
+//     );
+//   }
 
-export interface AppNodeProps { }
+// };
 
-export default class AppNode extends React.Component<AppNodeProps, AppState> {
+// export interface AppNodeProps { }
 
-  constructor(props) {
-    super(props);
-    this.state = this._getInitialState();
-  }
+// export default class AppNode extends React.Component<AppNodeProps, AppState> {
 
-  _getInitialState() {
-    return getAppState();
-  }
+//   constructor(props) {
+//     super(props);
+//     this.state = this._getInitialState();
+//   }
 
-  componentDidMount() {
-    RELEVANT_STORES.forEach(s => {
-      s.addChangeListener(this._onChange);
-    });
-  }
+//   _getInitialState() {
+//     return getAppState();
+//   }
 
-  componentWillUnmount() {
-    RELEVANT_STORES.forEach(s => {
-      s.removeChangeListener(this._onChange);
-    });
-  }
+//   componentDidMount() {
+//     RELEVANT_STORES.forEach(s => {
+//       s.addChangeListener(this._onChange);
+//     });
+//   }
 
-  _requireDraftComplete(from) {
-    if (this.state.draft.currentPick) {
-      return (<Redirect to={{ pathname: `/${this.state.activeTourneyId}/draft`, state: { from } }} />);
-    }
-  }
+//   componentWillUnmount() {
+//     RELEVANT_STORES.forEach(s => {
+//       s.removeChangeListener(this._onChange);
+//     });
+//   }
 
-  render() {
-    const state = this.state;
+//   _requireDraftComplete(from) {
+//     if (this.state.draft.currentPick) {
+//       return (<Redirect to={{ pathname: `/${this.state.activeTourneyId}/draft`, state: { from } }} />);
+//     }
+//   }
 
-    // Calculated here since it's used in multiple places
-    const golfersRemaining = getGolfersRemaining(
-      state.golfers,
-      state.draft.draftPicks
-    );
+//   render() {
+//     const state = this.state;
 
-    const renderTourneyWrapper = (props) => {
-      return this._requireDraftComplete(props.location) || (
-        <TourneyWrapper {...props} {...state} golfersRemaining={golfersRemaining} />
-      );
-    }
+//     // Calculated here since it's used in multiple places
+//     const golfersRemaining = getGolfersRemaining(
+//       state.golfers,
+//       state.draft.draftPicks
+//     );
 
-    const renderDraftWrapper = (props) => (<DraftWrapper {...props} {...state} golfersRemaining={golfersRemaining} />);
-    const renderAdminWrapper = (props) => (<AdminWrapper {...props} {...state} golfersRemaining={golfersRemaining} />);
-    const renderHistoryWrapper = (props) => (<HistoryWrapper {...props} {...state} />);
+//     const renderTourneyWrapper = (props) => {
+//       return this._requireDraftComplete(props.location) || (
+//         <TourneyWrapper {...props} {...state} golfersRemaining={golfersRemaining} />
+//       );
+//     }
 
-    return (
-      <Switch>
-        <Route exact path={`/${constants.TOURNEY_ID_PARAM}/draft`} render={renderDraftWrapper} />
-        <Route exact path='/admin' render={renderAdminWrapper} />
-        <Route exact path='/history' render={renderHistoryWrapper} />
-        <Route exact path={`/${constants.TOURNEY_ID_PARAM}`} render={renderTourneyWrapper} />
-      </Switch>
-    );
-  }
+//     const renderDraftWrapper = (props) => (<DraftWrapper {...props} {...state} golfersRemaining={golfersRemaining} />);
+//     const renderAdminWrapper = (props) => (<AdminWrapper {...props} {...state} golfersRemaining={golfersRemaining} />);
+//     const renderHistoryWrapper = (props) => (<HistoryWrapper {...props} {...state} />);
 
-  _onChange = () => {
-    this.setState(getAppState());
-  }
+//     return (
+//       <Switch>
+//         <Route exact path={`/${constants.TOURNEY_ID_PARAM}/draft`} render={renderDraftWrapper} />
+//         <Route exact path='/admin' render={renderAdminWrapper} />
+//         <Route exact path='/history' render={renderHistoryWrapper} />
+//         <Route exact path={`/${constants.TOURNEY_ID_PARAM}`} render={renderTourneyWrapper} />
+//       </Switch>
+//     );
+//   }
 
-};
+//   _onChange = () => {
+//     this.setState(getAppState());
+//   }
+
+// };

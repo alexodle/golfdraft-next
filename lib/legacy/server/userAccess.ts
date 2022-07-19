@@ -1,43 +1,45 @@
-import {countBy, keys} from 'lodash';
-import {getUser} from './access';
-import { User } from './models';
-import io from './socketIO';
-import redis from './redis';
-import { supabase  } from './supabase';
+export {};
 
-const redisClient = redis.client;
+// import {countBy, keys} from 'lodash';
+// import {getUser} from './access';
+// import { User } from './models';
+// import io from './socketIO';
+// import redis from './redis';
+// import { supabase  } from './supabase';
 
-const LOOKBACK_MILLIS = 1000 * 60 * 5;
+// const redisClient = redis.client;
 
-async function getActiveUsers(): Promise<User[]> {
-  const users = await supabase.from<User>('users').select('id, name').gt(
-    'lastActivity', new Date(Date.now() - LOOKBACK_MILLIS)
-  );
+// const LOOKBACK_MILLIS = 1000 * 60 * 5;
 
-  supabase.from<User>('user').on('UPDATE', (payload) => {
-    payload.
-  })
+// async function getActiveUsers(): Promise<User[]> {
+//   const users = await supabase.from<User>('users').select('id, name').gt(
+//     'lastActivity', new Date(Date.now() - LOOKBACK_MILLIS)
+//   );
 
-  return users.data;
-}
+//   supabase.from<User>('user').on('UPDATE', (payload) => {
+//     payload.
+//   })
 
-async function onUserChange() {
-  const userCounts = await getUserCounts();
-  const data = { data: { users: keys(userCounts) } };
-  io.sockets.emit('change:activeusers', data);
-}
+//   return users.data;
+// }
 
-export function refresh() {
-  redisClient.del('users');
-}
+// async function onUserChange() {
+//   const userCounts = await getUserCounts();
+//   const data = { data: { users: keys(userCounts) } };
+//   io.sockets.emit('change:activeusers', data);
+// }
 
-export async function onUserActivity(sessionId: string, userId: string, activity: string) {
-  redisClient.hset('users', sessionId, userId, onUserChange);
-  const user = await getUser(userId);
-  const currentTime = new Date();
-  console.log(`${currentTime.toISOString()} - onUserActivity: ${sessionId}, user: ${user.username}, activity: ${activity}`);
-}
+// export function refresh() {
+//   redisClient.del('users');
+// }
 
-export function onUserLogout(sessionId: string) {
-  redisClient.hdel('users', sessionId, onUserChange);
-}
+// export async function onUserActivity(sessionId: string, userId: string, activity: string) {
+//   redisClient.hset('users', sessionId, userId, onUserChange);
+//   const user = await getUser(userId);
+//   const currentTime = new Date();
+//   console.log(`${currentTime.toISOString()} - onUserActivity: ${sessionId}, user: ${user.username}, activity: ${activity}`);
+// }
+
+// export function onUserLogout(sessionId: string) {
+//   redisClient.hdel('users', sessionId, onUserChange);
+// }

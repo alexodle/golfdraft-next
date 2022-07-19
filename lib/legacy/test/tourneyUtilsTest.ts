@@ -1,28 +1,22 @@
-import './initTestConfig';
-
-import * as tourneyUtils from '../server/tourneyUtils';
-import {
-  User,
-} from '../server/ServerTypes';
+import { snakeDraftOrder } from '../server/tourneyUtils';
 
 describe('tourneyUtils', function () {
 
   describe('snakeDraftOrder', function () {
 
     it('behaves in a snake-like fashion', function () {
-      tourneyUtils.snakeDraftOrder([{ id: 'User1' }, { id: 'User2'}] as User[])
-        .should.eql([
-          { pickNumber: 0, user: 'User1' },
-          { pickNumber: 1, user: 'User2' },
+      expect(snakeDraftOrder(1, [101, 102])).toEqual([
+          { tourneyId: 1, pickNumber: 0, user: 101 },
+          { tourneyId: 1, pickNumber: 1, user: 102 },
 
-          { pickNumber: 2, user: 'User2' },
-          { pickNumber: 3, user: 'User1' },
+          { tourneyId: 1, pickNumber: 2, user: 102 },
+          { tourneyId: 1, pickNumber: 3, user: 101 },
 
-          { pickNumber: 4, user: 'User1' },
-          { pickNumber: 5, user: 'User2' },
+          { tourneyId: 1, pickNumber: 4, user: 101 },
+          { tourneyId: 1, pickNumber: 5, user: 102 },
 
-          { pickNumber: 6, user: 'User2' },
-          { pickNumber: 7, user: 'User1' }
+          { tourneyId: 1, pickNumber: 6, user: 102 },
+          { tourneyId: 1, pickNumber: 7, user: 101 }
         ]);
       });
 

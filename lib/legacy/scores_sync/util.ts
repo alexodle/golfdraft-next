@@ -1,6 +1,5 @@
-import * as fs from 'fs';
-import * as request from 'request';
-import moment = require('moment');
+import moment from 'moment';
+import request from 'request';
 
 export function fetchData(url: string): Promise<any> {
   const ts = moment().format('YMMDD_HHmmss');

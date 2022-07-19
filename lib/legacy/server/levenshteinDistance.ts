@@ -16,7 +16,8 @@ export function levenshteinAll<T>(sourceStr: string, targetList: T[], getValue: 
   return results;
 }
 
-function calcLevenshtein(s1: string, s2: string): { dist: number, coeff: number } {
+/** VisibleForTesting */
+export function calcLevenshtein(s1: string, s2: string): { dist: number, coeff: number } {
   const norms1 = normalize(s1);
   const norms2 = normalize(s2);
 

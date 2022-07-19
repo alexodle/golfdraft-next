@@ -1,126 +1,128 @@
-import {isEmpty, last} from 'lodash';
-import Assets from '../constants/Assets';
-import * as moment from 'moment';
-import * as React from 'react';
-import GolfDraftPanel from './GolfDraftPanel';
-import {DraftPick} from '../types/ClientTypes';
+export {};
 
-const TIME_INTERVAL = 1000;
-const WARNING_TIME = 1000 * 60 * 2;
-const OVERTIME = 1000 * 60 * 3;
-const FINAL_COUNTDOWN_THRESHOLD = 1000 * 15;
-const WARNING_SOUND_INTERVAL_SECONDS = 10;
+// import {isEmpty, last} from 'lodash';
+// import Assets from '../constants/Assets';
+// import * as moment from 'moment';
+// import React from 'react';
+// import GolfDraftPanel from './GolfDraftPanel';
+// import {DraftPick} from '../types/ClientTypes';
 
-let pickWarningSound: HTMLAudioElement | undefined = undefined;
-try {
-  pickWarningSound = new Audio(Assets.PICK_WARNING_SOUND);
-} catch (e) {
-  // nodejs
-}
+// const TIME_INTERVAL = 1000;
+// const WARNING_TIME = 1000 * 60 * 2;
+// const OVERTIME = 1000 * 60 * 3;
+// const FINAL_COUNTDOWN_THRESHOLD = 1000 * 15;
+// const WARNING_SOUND_INTERVAL_SECONDS = 10;
 
-export interface DraftClockProps {
-  isMyPick: boolean;
-  allowClock: boolean;
-  draftPicks: DraftPick[];
-}
+// let pickWarningSound: HTMLAudioElement | undefined = undefined;
+// try {
+//   pickWarningSound = new Audio(Assets.PICK_WARNING_SOUND);
+// } catch (e) {
+//   // nodejs
+// }
 
-interface DraftClockState {
-  totalMillis: number;
-  intervalId?: number;
-}
+// export interface DraftClockProps {
+//   isMyPick: boolean;
+//   allowClock: boolean;
+//   draftPicks: DraftPick[];
+// }
 
-export default class DraftClock extends React.Component<DraftClockProps, DraftClockState> {
+// interface DraftClockState {
+//   totalMillis: number;
+//   intervalId?: number;
+// }
 
-  constructor(props: DraftClockProps) {
-    super(props);
-    this.state = this._getInitialState();
-  }
+// export default class DraftClock extends React.Component<DraftClockProps, DraftClockState> {
 
-  _getInitialState() {
-    return { intervalId: null, ...this._getTotalMillis() };
-  }
+//   constructor(props: DraftClockProps) {
+//     super(props);
+//     this.state = this._getInitialState();
+//   }
 
-  componentDidMount() {
-    const intervalId = window.setInterval(() => {
-      this.setState(this._getTotalMillis());
-    }, TIME_INTERVAL);
-    this.setState({ intervalId });
-  }
+//   _getInitialState() {
+//     return { intervalId: null, ...this._getTotalMillis() };
+//   }
 
-  componentWillUnmount() {
-    if (this.state.intervalId) {
-      window.clearInterval(this.state.intervalId);
-      this.setState({ intervalId: null });
-    }
-  }
+//   componentDidMount() {
+//     const intervalId = window.setInterval(() => {
+//       this.setState(this._getTotalMillis());
+//     }, TIME_INTERVAL);
+//     this.setState({ intervalId });
+//   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState(this._getTotalMillis(nextProps));
-  }
+//   componentWillUnmount() {
+//     if (this.state.intervalId) {
+//       window.clearInterval(this.state.intervalId);
+//       this.setState({ intervalId: null });
+//     }
+//   }
 
-  componentDidUpdate(prevProps, prevState) {
-    const displayTimeChanged = this._getDisplayTime(prevState) !== this._getDisplayTime();
-    const isMyPick = this.props.isMyPick;
-    const totalMillis = this.state.totalMillis;
+//   UNSAFE_componentWillReceiveProps(nextProps) {
+//     this.setState(this._getTotalMillis(nextProps));
+//   }
 
-    if (!displayTimeChanged || !isMyPick || !totalMillis || totalMillis < WARNING_TIME) {
-      return;
-    }
+//   componentDidUpdate(prevProps, prevState) {
+//     const displayTimeChanged = this._getDisplayTime(prevState) !== this._getDisplayTime();
+//     const isMyPick = this.props.isMyPick;
+//     const totalMillis = this.state.totalMillis;
 
-    if (totalMillis + FINAL_COUNTDOWN_THRESHOLD >= OVERTIME) {
-      pickWarningSound?.play();
-    } else if (moment.utc(totalMillis).seconds() % WARNING_SOUND_INTERVAL_SECONDS === 0) {
-      pickWarningSound?.play();
-    }
-  }
+//     if (!displayTimeChanged || !isMyPick || !totalMillis || totalMillis < WARNING_TIME) {
+//       return;
+//     }
 
-  render() {
-    let body = null;
+//     if (totalMillis + FINAL_COUNTDOWN_THRESHOLD >= OVERTIME) {
+//       pickWarningSound?.play();
+//     } else if (moment.utc(totalMillis).seconds() % WARNING_SOUND_INTERVAL_SECONDS === 0) {
+//       pickWarningSound?.play();
+//     }
+//   }
 
-    const totalMillis = this.state.totalMillis || 0;
-    let className = "";
-    if (totalMillis > OVERTIME) {
-      className = "text-danger";
-    } else if (totalMillis > WARNING_TIME) {
-      className = "text-warning";
-    }
+//   render() {
+//     let body = null;
 
-    const format = this._getDisplayTime();
-    body = (
-      <p className='draft-clock'><b className={className}>{format}</b></p>
-    );
+//     const totalMillis = this.state.totalMillis || 0;
+//     let className = "";
+//     if (totalMillis > OVERTIME) {
+//       className = "text-danger";
+//     } else if (totalMillis > WARNING_TIME) {
+//       className = "text-warning";
+//     }
 
-    return (
-      <GolfDraftPanel heading='Draft Clock'>
-        {body}
-      </GolfDraftPanel>
-    );
-  }
+//     const format = this._getDisplayTime();
+//     body = (
+//       <p className='draft-clock'><b className={className}>{format}</b></p>
+//     );
 
-  _getDisplayTime(state?) {
-    state = state || this.state;
+//     return (
+//       <GolfDraftPanel heading='Draft Clock'>
+//         {body}
+//       </GolfDraftPanel>
+//     );
+//   }
 
-    if (state.totalMillis === null) {
-      return 'NS';
-    }
+//   _getDisplayTime(state?) {
+//     state = state || this.state;
 
-    const totalMillis = state.totalMillis || 0;
-    return moment.utc(totalMillis).format("mm:ss");
-  }
+//     if (state.totalMillis === null) {
+//       return 'NS';
+//     }
 
-  _getTotalMillis(props? : DraftClockProps) {
-    props = props || this.props;
+//     const totalMillis = state.totalMillis || 0;
+//     return moment.utc(totalMillis).format("mm:ss");
+//   }
 
-    if (isEmpty(props.draftPicks) || !this.props.allowClock) {
-      return { totalMillis: null };
-    }
+//   _getTotalMillis(props? : DraftClockProps) {
+//     props = props || this.props;
 
-    const lastPick = last(props.draftPicks);
-    const currentTime = new Date();
-    const totalMillis = Math.max(0, currentTime.getTime() - lastPick.clientTimestamp.getTime());
-    return {
-      totalMillis: totalMillis
-    };
-  }
+//     if (isEmpty(props.draftPicks) || !this.props.allowClock) {
+//       return { totalMillis: null };
+//     }
 
-};
+//     const lastPick = last(props.draftPicks);
+//     const currentTime = new Date();
+//     const totalMillis = Math.max(0, currentTime.getTime() - lastPick.clientTimestamp.getTime());
+//     return {
+//       totalMillis: totalMillis
+//     };
+//   }
+
+// };

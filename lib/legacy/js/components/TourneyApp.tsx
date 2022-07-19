@@ -1,111 +1,113 @@
-import * as moment from 'moment';
-import * as React from 'react';
-import ChatRoom from './ChatRoom';
-import GolfDraftPanel from './GolfDraftPanel';
-import GolferLogic from '../logic/GolferLogic';
-import GolferStore from '../stores/GolferStore';
-import UserDetails from './UserDetails';
-import UserStandings from './UserStandings';
-import * as utils from '../../common/utils';
-import { DraftProps } from '../types/SharedProps';
-import { User, TourneyStandings, ChatMessage, Indexed } from '../types/ClientTypes';
+export {};
 
-export interface TourneyAppProps {
-  draft: DraftProps;
-  currentUser: User;
-  tourneyStandings: TourneyStandings;
-  lastScoresUpdate: Date;
-  chatMessages?: ChatMessage[];
-  activeUsers: Indexed<string>;
-  isViewingActiveTourney: boolean;
-}
+// import * as moment from 'moment';
+// import React from 'react';
+// import ChatRoom from './ChatRoom';
+// import GolfDraftPanel from './GolfDraftPanel';
+// import GolferLogic from '../logic/GolferLogic';
+// import GolferStore from '../stores/GolferStore';
+// import UserDetails from './UserDetails';
+// import UserStandings from './UserStandings';
+// import * as utils from '../../common/utils';
+// import { DraftProps } from '../types/SharedProps';
+// import { User, TourneyStandings, ChatMessage, Indexed } from '../types/ClientTypes';
 
-interface TourneyAppState {
-  userDetailsUser: string;
-}
+// export interface TourneyAppProps {
+//   draft: DraftProps;
+//   currentUser: User;
+//   tourneyStandings: TourneyStandings;
+//   lastScoresUpdate: Date;
+//   chatMessages?: ChatMessage[];
+//   activeUsers: Indexed<string>;
+//   isViewingActiveTourney: boolean;
+// }
 
-function getState(state: TourneyAppState, props: TourneyAppProps) {
-  return {
-    userDetailsUser: state.userDetailsUser || props.currentUser.id
-  };
-}
+// interface TourneyAppState {
+//   userDetailsUser: string;
+// }
 
-class TourneyApp extends React.Component<TourneyAppProps, TourneyAppState> {
+// function getState(state: TourneyAppState, props: TourneyAppProps) {
+//   return {
+//     userDetailsUser: state.userDetailsUser || props.currentUser.id
+//   };
+// }
 
-  constructor(props) {
-    super(props);
-    this.state = this._getInitialState();
-  }
+// class TourneyApp extends React.Component<TourneyAppProps, TourneyAppState> {
 
-  private _getInitialState() {
-    return getState({} as TourneyAppState, this.props);
-  }
+//   constructor(props) {
+//     super(props);
+//     this.state = this._getInitialState();
+//   }
 
-  private renderCalculatingStandings() {
-    return (<p>Initializing tourney...</p>);
-  }
+//   private _getInitialState() {
+//     return getState({} as TourneyAppState, this.props);
+//   }
 
-  render() {
-    if (!this.props.tourneyStandings) {
-      return this.renderCalculatingStandings();
-    }
+//   private renderCalculatingStandings() {
+//     return (<p>Initializing tourney...</p>);
+//   }
 
-    return (
-      <section>
-        <p>
-          <small>
-            Scores sync every 10 minutes. Last sync: <b>{moment(this.props.lastScoresUpdate).calendar()}</b>
-          </small>
-        </p>
+//   render() {
+//     if (!this.props.tourneyStandings) {
+//       return this.renderCalculatingStandings();
+//     }
 
-        <GolfDraftPanel heading='Overall Standings'>
-          <UserStandings
-            currentUser={this.props.currentUser}
-            pickOrder={this.props.draft.pickOrder}
-            tourneyStandings={this.props.tourneyStandings}
-            selectedUser={this.state.userDetailsUser}
-            onUserSelect={this._onUserSelect}
-          />
-        </GolfDraftPanel>
+//     return (
+//       <section>
+//         <p>
+//           <small>
+//             Scores sync every 10 minutes. Last sync: <b>{moment(this.props.lastScoresUpdate).calendar()}</b>
+//           </small>
+//         </p>
 
-        <a id='UserDetails' />
-        <GolfDraftPanel heading='Score Details'>
-          <UserDetails
-            userId={this.state.userDetailsUser}
-            tourneyStandings={this.props.tourneyStandings}
-            draftPicks={this.props.draft.draftPicks}
-          />
-        </GolfDraftPanel>
+//         <GolfDraftPanel heading='Overall Standings'>
+//           <UserStandings
+//             currentUser={this.props.currentUser}
+//             pickOrder={this.props.draft.pickOrder}
+//             tourneyStandings={this.props.tourneyStandings}
+//             selectedUser={this.state.userDetailsUser}
+//             onUserSelect={this._onUserSelect}
+//           />
+//         </GolfDraftPanel>
 
-        {!this.props.tourneyStandings.worstScoresForDay.length ? null : (
-          <GolfDraftPanel heading='Worst Scores of the Day'>
-            <ul className='list-unstyled'>
-              {this.props.tourneyStandings.worstScoresForDay.map(s => (
-                <li key={s.day}>
-                  <b>Day {s.day + 1}</b>: {utils.toGolferScoreStr(s.score)}
-                  <span> </span>
-                  {GolferLogic.renderGolfer(GolferStore.getGolfer(s.golfer))}
-                </li>
-              ))}
-            </ul>
-          </GolfDraftPanel>
-        )}
+//         <a id='UserDetails' />
+//         <GolfDraftPanel heading='Score Details'>
+//           <UserDetails
+//             userId={this.state.userDetailsUser}
+//             tourneyStandings={this.props.tourneyStandings}
+//             draftPicks={this.props.draft.draftPicks}
+//           />
+//         </GolfDraftPanel>
 
-        <ChatRoom
-          currentUser={this.props.currentUser}
-          messages={this.props.chatMessages}
-          activeUsers={this.props.activeUsers}
-          enabled={this.props.isViewingActiveTourney}
-        />
-      </section>
-    );
-  }
+//         {!this.props.tourneyStandings.worstScoresForDay.length ? null : (
+//           <GolfDraftPanel heading='Worst Scores of the Day'>
+//             <ul className='list-unstyled'>
+//               {this.props.tourneyStandings.worstScoresForDay.map(s => (
+//                 <li key={s.day}>
+//                   <b>Day {s.day + 1}</b>: {utils.toGolferScoreStr(s.score)}
+//                   <span> </span>
+//                   {GolferLogic.renderGolfer(GolferStore.getGolfer(s.golfer))}
+//                 </li>
+//               ))}
+//             </ul>
+//           </GolfDraftPanel>
+//         )}
 
-  _onUserSelect = (userId: string) => {
-    window.location.href = '#UserDetails';
-    this.setState({ userDetailsUser: userId });
-  }
+//         <ChatRoom
+//           currentUser={this.props.currentUser}
+//           messages={this.props.chatMessages}
+//           activeUsers={this.props.activeUsers}
+//           enabled={this.props.isViewingActiveTourney}
+//         />
+//       </section>
+//     );
+//   }
 
-};
+//   _onUserSelect = (userId: string) => {
+//     window.location.href = '#UserDetails';
+//     this.setState({ userDetailsUser: userId });
+//   }
 
-export default TourneyApp;
+// };
+
+// export default TourneyApp;

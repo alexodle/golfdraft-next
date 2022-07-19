@@ -1,306 +1,306 @@
-import {every, map, each} from 'lodash';
-import * as React from 'react';
-import DraftActions from '../actions/DraftActions';
-import DraftHistory from './DraftHistory';
-import DraftStatus from './DraftStatus';
-import DraftStore from '../stores/DraftStore';
-import UserActions from '../actions/UserActions';
-import {IndexedUsers, Indexed, DraftPick, DraftPickOrder} from '../types/ClientTypes';
-import {putJson, postJson, fetch, del, put} from '../fetch';
+export {};
 
-function togglePause(isPaused: boolean) {
-  return putJson('/admin/pause', { isPaused });
-}
+// import { each, every, map } from 'lodash';
+// import React from 'react';
+// import { DraftPick, GDUser, PendingDraftPick } from '../../../models';
+// import UserActions from '../actions/UserActions';
+// import { del, postJson, put, putJson } from '../fetch';
+// import DraftHistory from './DraftHistory';
+// import DraftStatus from './DraftStatus';
 
-function toggleAllowClock(allowClock: boolean) {
-  return putJson('/admin/allowClock', { allowClock });
-}
+// function togglePause(isPaused: boolean) {
+//   return putJson('/admin/pause', { isPaused });
+// }
 
-function toggleDraftHasStarted(draftHasStarted: boolean) {
-  return putJson('/admin/draftHasStarted', { draftHasStarted });
-}
+// function toggleAllowClock(allowClock: boolean) {
+//   return putJson('/admin/allowClock', { allowClock });
+// }
 
-function toggleAutoPick(userId: string, autoPick: boolean) {
-  return putJson('/admin/autoPickUsers', { userId, autoPick });
-}
+// function toggleDraftHasStarted(draftHasStarted: boolean) {
+//   return putJson('/admin/draftHasStarted', { draftHasStarted });
+// }
 
-interface PasswordInputProps {
-}
+// function toggleAutoPick(userId: string, autoPick: boolean) {
+//   return putJson('/admin/autoPickUsers', { userId, autoPick });
+// }
 
-interface PasswordInputState {
-  password: string;
-  busy: boolean;
-}
+// interface PasswordInputProps {
+// }
 
-class PasswordInput extends React.Component<PasswordInputProps, PasswordInputState> {
+// interface PasswordInputState {
+//   password: string;
+//   busy: boolean;
+// }
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      password: '',
-      busy: false
-    };
-  }
+// class PasswordInput extends React.Component<PasswordInputProps, PasswordInputState> {
 
-  render() {
-    return (
-      <section>
-        <form onSubmit={this._onSubmit}>
-          <div className='form-group'>
-            <label htmlFor='adminPassword'>Password</label>
-            <input
-              type='password'
-              className='form-control'
-              id='adminPassword'
-              name='password'
-              onChange={this._onChange}
-              value={this.state.password}
-              disabled={this.state.busy}
-            />
-          </div>
-          <button
-            type='submit'
-            className='btn btn-default'
-            disabled={this.state.busy}
-          >Submit</button>
-        </form>
-      </section>
-    );
-  }
+//   constructor(props) {
+//     super(props);
+//     this.state = {
+//       password: '',
+//       busy: false
+//     };
+//   }
 
-  _onChange = (ev) => {
-    this.setState({ password: ev.target.value });
-  }
+//   render() {
+//     return (
+//       <section>
+//         <form onSubmit={this._onSubmit}>
+//           <div className='form-group'>
+//             <label htmlFor='adminPassword'>Password</label>
+//             <input
+//               type='password'
+//               className='form-control'
+//               id='adminPassword'
+//               name='password'
+//               onChange={this._onChange}
+//               value={this.state.password}
+//               disabled={this.state.busy}
+//             />
+//           </div>
+//           <button
+//             type='submit'
+//             className='btn btn-default'
+//             disabled={this.state.busy}
+//           >Submit</button>
+//         </form>
+//       </section>
+//     );
+//   }
 
-  _onSubmit = (ev) => {
-    ev.preventDefault();
+//   _onChange = (ev) => {
+//     this.setState({ password: ev.target.value });
+//   }
 
-    this.setState({ busy: true });
-    postJson('/admin/login', { password: this.state.password })
-      .then(() => UserActions.setIsAdmin(true))
-      .catch(() => this.setState({ busy: false }));
-  }
+//   _onSubmit = (ev) => {
+//     ev.preventDefault();
 
-};
+//     this.setState({ busy: true });
+//     postJson('/admin/login', { password: this.state.password })
+//       .then(() => UserActions.setIsAdmin(true))
+//       .catch(() => this.setState({ busy: false }));
+//   }
 
-export interface AdminAppProps {
-  isAdmin: boolean;
-  draftHasStarted: boolean;
-  isPaused: boolean;
-  users: IndexedUsers;
-  autoPickUsers: Indexed<string>;
-  allowClock: boolean;
-  currentPick: DraftPickOrder;
-  draftPicks: DraftPick[];
-}
+// };
 
-export interface AdminAppState{
-  confirmingUndo: boolean;
-}
+// export interface AdminAppProps {
+//   isAdmin: boolean;
+//   draftHasStarted: boolean;
+//   isPaused: boolean;
+//   users: Record<number, GDUser>;
+//   autoPickUsers: Set<number>;
+//   allowClock: boolean;
+//   currentPick: PendingDraftPick | undefined;
+//   draftPicks: DraftPick[];
+// }
 
-class AdminApp extends React.Component<AdminAppProps, AdminAppState> {
+// export interface AdminAppState{
+//   confirmingUndo: boolean;
+// }
 
-  constructor(props) {
-    super(props);
-    this.state = { confirmingUndo: false };
-  }
+// class AdminApp extends React.Component<AdminAppProps, AdminAppState> {
 
-  render() {
-    const props = this.props;
-    const confirmingUndo = this.state.confirmingUndo;
+//   constructor(props) {
+//     super(props);
+//     this.state = { confirmingUndo: false };
+//   }
 
-    if (!props.isAdmin) {
-      return (<PasswordInput />);
-    }
+//   render() {
+//     const props = this.props;
+//     const confirmingUndo = this.state.confirmingUndo;
 
-    const allChecked = every(props.users, u => !!props.autoPickUsers[u.id]);
+//     if (!props.isAdmin) {
+//       return (<PasswordInput />);
+//     }
 
-    return (
-      <section>
-        <h1>Hello admin!</h1>
+//     const allChecked = every(props.users, u => !!props.autoPickUsers[u.id]);
 
-        {props.draftHasStarted ? (
-          <h2>Draft has started!</h2>
-        ) : (
-          <h2>Draft has not started yet</h2>
-        )}
-        <div className='panel'>
-          <div className='panel-body'>
-            <button
-              type='button'
-              className='btn btn-default'
-              onClick={this._onStartDraft}
-            >Start Draft</button>
-            <span> </span>
-            <button
-              type='button'
-              className='btn btn-default'
-              onClick={this._onUnstartDraft}
-            >Unstart Draft</button>
-          </div>
-        </div>
+//     return (
+//       <section>
+//         <h1>Hello admin!</h1>
 
-        {props.isPaused ? (
-          <h2>Paused!</h2>
-        ) : (
-          <h2>Not Paused</h2>
-        )}
-        <div className='panel'>
-          <div className='panel-body'>
-            <button
-              type='button'
-              className='btn btn-default'
-              onClick={this._onPause}
-            >Pause</button>
-            <span> </span>
-            <button
-              type='button'
-              className='btn btn-default'
-              onClick={this._onUnpause}
-            >Unpause</button>
-          </div>
-        </div>
+//         {props.draftHasStarted ? (
+//           <h2>Draft has started!</h2>
+//         ) : (
+//           <h2>Draft has not started yet</h2>
+//         )}
+//         <div className='panel'>
+//           <div className='panel-body'>
+//             <button
+//               type='button'
+//               className='btn btn-default'
+//               onClick={this._onStartDraft}
+//             >Start Draft</button>
+//             <span> </span>
+//             <button
+//               type='button'
+//               className='btn btn-default'
+//               onClick={this._onUnstartDraft}
+//             >Unstart Draft</button>
+//           </div>
+//         </div>
 
-        <h2>Auto picks</h2>
-        <div className='panel'>
-          <div className='panel-body'>
-            <label><input
-              type='checkbox'
-              checked={allChecked}
-              onChange={this._toggleAllAutoPicks.bind(null, !allChecked)}
-            /> Toggle All</label>
-            <br />
-            <ul className='list-unstyled'>
-              {map(props.users, user => {
-                const checked = !!props.autoPickUsers[user.id];
-                return (
-                  <li key={user.id}>
-                    <div className='checkbox'>
-                      <label>
-                        <input
-                          type='checkbox'
-                          checked={checked}
-                          onChange={toggleAutoPick.bind(null, user.id, !checked)}
-                        /> {user.name}
-                      </label>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
+//         {props.isPaused ? (
+//           <h2>Paused!</h2>
+//         ) : (
+//           <h2>Not Paused</h2>
+//         )}
+//         <div className='panel'>
+//           <div className='panel-body'>
+//             <button
+//               type='button'
+//               className='btn btn-default'
+//               onClick={this._onPause}
+//             >Pause</button>
+//             <span> </span>
+//             <button
+//               type='button'
+//               className='btn btn-default'
+//               onClick={this._onUnpause}
+//             >Unpause</button>
+//           </div>
+//         </div>
 
-        {props.allowClock ? (
-          <h2>Allowing clock</h2>
-        ) : (
-          <h2>Not allowing clock!</h2>
-        )}
-        <div className='panel'>
-          <div className='panel-body'>
-            <button
-              type='button'
-              className='btn btn-default'
-              onClick={this._onAllowClock}
-            >Allow clock</button>
-            <span> </span>
-            <button
-              type='button'
-              className='btn btn-default'
-              onClick={this._onStopClock}
-            >Pause clock</button>
-          </div>
-        </div>
+//         <h2>Auto picks</h2>
+//         <div className='panel'>
+//           <div className='panel-body'>
+//             <label><input
+//               type='checkbox'
+//               checked={allChecked}
+//               onChange={this._toggleAllAutoPicks.bind(null, !allChecked)}
+//             /> Toggle All</label>
+//             <br />
+//             <ul className='list-unstyled'>
+//               {map(props.users, user => {
+//                 const checked = !!props.autoPickUsers[user.id];
+//                 return (
+//                   <li key={user.id}>
+//                     <div className='checkbox'>
+//                       <label>
+//                         <input
+//                           type='checkbox'
+//                           checked={checked}
+//                           onChange={toggleAutoPick.bind(null, user.id, !checked)}
+//                         /> {user.name}
+//                       </label>
+//                     </div>
+//                   </li>
+//                 );
+//               })}
+//             </ul>
+//           </div>
+//         </div>
 
-        <div className='panel'>
-          <div className='panel-body'>
-            {confirmingUndo ? null : (
-              <button
-                className='btn btn-default'
-                  type='button'
-                onClick={this._onUndoLastPick}
-              >Undo Pick</button>
-            )}
-            {!confirmingUndo ? null : (
-              <span>
-                <label>Are you sure you want to undo the last pick?</label>
-                <button
-                  className='btn btn-default'
-                  type='button'
-                  onClick={this._onConfirmUndoLastPick}
-                >I'm sure</button>
-                <span> </span>
-                <button
-                  className='btn btn-default'
-                  type='button'
-                  onClick={this._onCancelUndoLastPick}
-                >Cancel</button>
-              </span>
-            )}
-          </div>
-        </div>
+//         {props.allowClock ? (
+//           <h2>Allowing clock</h2>
+//         ) : (
+//           <h2>Not allowing clock!</h2>
+//         )}
+//         <div className='panel'>
+//           <div className='panel-body'>
+//             <button
+//               type='button'
+//               className='btn btn-default'
+//               onClick={this._onAllowClock}
+//             >Allow clock</button>
+//             <span> </span>
+//             <button
+//               type='button'
+//               className='btn btn-default'
+//               onClick={this._onStopClock}
+//             >Pause clock</button>
+//           </div>
+//         </div>
 
-        <div className='panel'>
-          <div className='panel-body'>
-            <button className='btn btn-default' onClick={this._forceRefresh}>Force Refresh</button>
-          </div>
-        </div>
+//         <div className='panel'>
+//           <div className='panel-body'>
+//             {confirmingUndo ? null : (
+//               <button
+//                 className='btn btn-default'
+//                   type='button'
+//                 onClick={this._onUndoLastPick}
+//               >Undo Pick</button>
+//             )}
+//             {!confirmingUndo ? null : (
+//               <span>
+//                 <label>Are you sure you want to undo the last pick?</label>
+//                 <button
+//                   className='btn btn-default'
+//                   type='button'
+//                   onClick={this._onConfirmUndoLastPick}
+//                 >{`I'm sure`}</button>
+//                 <span> </span>
+//                 <button
+//                   className='btn btn-default'
+//                   type='button'
+//                   onClick={this._onCancelUndoLastPick}
+//                 >Cancel</button>
+//               </span>
+//             )}
+//           </div>
+//         </div>
 
-        {!props.currentPick ? null : (
-          <DraftStatus currentPick={props.currentPick} />
-        )}
-        <DraftHistory draftPicks={props.draftPicks} />
-      </section>
-    );
-  }
+//         <div className='panel'>
+//           <div className='panel-body'>
+//             <button className='btn btn-default' onClick={this._forceRefresh}>Force Refresh</button>
+//           </div>
+//         </div>
 
-  _toggleAllAutoPicks = (autoPick: boolean) => {
-    each(this.props.users, user => {
-      toggleAutoPick(user.id, autoPick);
-    });
-  }
+//         {!props.currentPick ? null : (
+//           <DraftStatus currentPick={props.currentPick} />
+//         )}
+//         <DraftHistory draftPicks={props.draftPicks} />
+//       </section>
+//     );
+//   }
 
-  _onStartDraft = () => {
-    toggleDraftHasStarted(true);
-  }
+//   _toggleAllAutoPicks = (autoPick: boolean) => {
+//     each(this.props.users, user => {
+//       toggleAutoPick(user.id, autoPick);
+//     });
+//   }
 
-  _onUnstartDraft = () => {
-    toggleDraftHasStarted(false);
-  }
+//   _onStartDraft = () => {
+//     toggleDraftHasStarted(true);
+//   }
 
-  _onPause = () => {
-    togglePause(true);
-  }
+//   _onUnstartDraft = () => {
+//     toggleDraftHasStarted(false);
+//   }
 
-  _onUnpause = () => {
-    togglePause(false);
-  }
+//   _onPause = () => {
+//     togglePause(true);
+//   }
 
-  _onAllowClock = () => {
-    toggleAllowClock(true);
-  }
+//   _onUnpause = () => {
+//     togglePause(false);
+//   }
 
-  _onStopClock = () => {
-    toggleAllowClock(false);
-  }
+//   _onAllowClock = () => {
+//     toggleAllowClock(true);
+//   }
 
-  _onUndoLastPick = () => {
-    this.setState({ confirmingUndo: true });
-  }
+//   _onStopClock = () => {
+//     toggleAllowClock(false);
+//   }
 
-  _onConfirmUndoLastPick = () => {
-    del('/admin/lastPick');
-    this._onCancelUndoLastPick();
-  }
+//   _onUndoLastPick = () => {
+//     this.setState({ confirmingUndo: true });
+//   }
 
-  _onCancelUndoLastPick = () => {
-    this.setState({ confirmingUndo: false });
-  }
+//   _onConfirmUndoLastPick = () => {
+//     del('/admin/lastPick');
+//     this._onCancelUndoLastPick();
+//   }
 
-  _forceRefresh() {
-    put('/admin/forceRefresh');
-  }
+//   _onCancelUndoLastPick = () => {
+//     this.setState({ confirmingUndo: false });
+//   }
 
-};
+//   _forceRefresh() {
+//     put('/admin/forceRefresh');
+//   }
 
-export default AdminApp;
+// };
+
+// export default AdminApp;

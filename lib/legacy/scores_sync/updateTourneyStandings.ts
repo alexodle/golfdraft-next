@@ -1,10 +1,10 @@
-import { chain, groupBy, isNumber, keyBy, mapValues, maxBy, sumBy, times, sortBy } from 'lodash';
-import constants from '../common/constants';
+import { chain, groupBy, isNumber, keyBy, mapValues, maxBy, sortBy, sumBy, times } from 'lodash';
+import { getCompletedDraftPicks } from '../../data/draft';
 import { getGolferScores } from '../../data/scores';
-import { getDraftPicks, getCompletedDraftPicks } from '../../data/draft';
-import { CompletedDraftPick, GolferScore, TourneyStandings, WorstDayScore, TourneyStandingGolferScore, TourneyStandingPlayerDayScore, TourneyStandingPlayerScore } from '../../models';
-import { updateTourneyStandings } from '../../data/tourneyStandings';
+import { TourneyStandings, updateTourneyStandings } from '../../data/tourneyStandings';
+import { GolferScore, TourneyStandingGolferScore, TourneyStandingPlayerDayScore, TourneyStandingPlayerScore, WorstDayScore } from '../../models';
 import { adminSupabase } from '../../supabase';
+import constants from '../common/constants';
 
 function buildPlayerScore(
   tourneyId: number,
@@ -73,14 +73,13 @@ function isTied(sortedScores: TourneyStandingPlayerScore[], i: number) {
     (i < sortedScores.length - 1 && sortedScores[sortedScores.length - 1].totalScore === totalScore));
 }
 
-function fillInStandings(sortedScores: TourneyStandingPlayerScore[]) {
+function withStandings(sortedScores: TourneyStandingPlayerScore[]): TourneyStandingPlayerScore[] {
   let currentStanding = -1;
-  sortedScores.forEach((ps, i) => {
+  return sortedScores.map((ps, i) => {
     if (i === 0 || ps.totalScore !== sortedScores[i - 1].totalScore) {
       currentStanding++;
     }
-    ps.isTied = isTied(sortedScores, i);
-    ps.standing = currentStanding;
+    return { ...ps, isTied: isTied(sortedScores, i), standing: currentStanding };
   });
 }
 
@@ -132,17 +131,17 @@ export async function run(tourneyId: number): Promise<TourneyStandings> {
     return scores;
   });
 
-  const playerScores = sortBy(
+  let playerScores = sortBy(
     Object.entries(playerRawScores)
       .map(([pid, rawScores]) => buildPlayerScore(tourneyId, +pid, rawScores, worstScoresForDay)), 
     ps => ps.totalScore);
-
-  fillInStandings(playerScores);
+  playerScores = withStandings(playerScores);
 
   const currentDay = estimateCurrentDay(scores);
-  const tourneyStandings: TourneyStandings = { tourneyId, currentDay, worstScoresForDay };
 
-  updateTourneyStandings(tourneyStandings, playerScores);
+  const tourneyStandings: TourneyStandings = { tourneyId, currentDay, worstScoresForDay, standings: playerScores };
+  updateTourneyStandings(tourneyStandings);
+  
   console.log("DONE Running player score update");
 
   return tourneyStandings;

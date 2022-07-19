@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { isCompletedDraftPick, useDraftPicks } from '../../../data/draft';
 import { useGolfers } from '../../../data/golfers';
 import { useAllUsers } from '../../../data/users';

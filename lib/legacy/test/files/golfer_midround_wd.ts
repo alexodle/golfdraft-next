@@ -1,4 +1,4 @@
-module.exports = {
+const v = {
   "debug": {
     "found_in_setup_file": true
   },
@@ -67,3 +67,5 @@ module.exports = {
   },
   "group_id": ""
 };
+
+export default v;

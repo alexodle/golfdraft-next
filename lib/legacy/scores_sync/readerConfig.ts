@@ -1,14 +1,14 @@
-import pgatourReader from './pgatourReader';
 import pgatourFieldReader from './pgatourFieldReader';
 import pgaTourHistoricHtmlReader from './pgaTourHistoricHtmlReader';
 import pgaTourLbDataReader from './pgaTourLbDataReader';
 import pgaTourLbDataScraperReader from './pgaTourLbDataScraperReader';
+import { Reader } from './Types';
 
-const readerConfig = {
+export interface ReaderConfig {
+  [key: string]: { reader: Reader };
+}
 
-  pgatour: {
-    reader: pgatourReader
-  },
+const readerConfig: ReaderConfig = {
 
   pgatour_field: {
     reader: pgatourFieldReader
@@ -28,8 +28,6 @@ const readerConfig = {
     reader: pgaTourLbDataScraperReader
   },
 
-} as const;
+};
 
-export type ReaderType = keyof (typeof readerConfig);
-
-export default readerConfig;
+export default readerConfig as ReaderConfig;

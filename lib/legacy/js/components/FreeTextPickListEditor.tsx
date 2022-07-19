@@ -201,6 +201,19 @@ const SuggestionSelectors: React.FC<{
 }) => {
   const [selections, setSelections] = useState<Record<number, Golfer>>([]);
 
+  const pickList = useMemo(() => {
+    const pl: number[] = [];
+    for (let i = 0; i < matches.length; i++) {
+      const match = matches[i];
+      const pick = isExactMatch(match) ? match.match.id : selections[i]?.id;
+      if (!pick) {
+        return undefined;
+      }
+      pl.push(pick);
+    }
+    return pl;
+  }, [matches, selections]);
+
   return (
     <div>
       <div className='text-right' style={{ marginBottom: '1em' }}>
@@ -238,8 +251,13 @@ const SuggestionSelectors: React.FC<{
         <button
           className='btn btn-primary'
           type='button'
-          onClick={this._onSave}
-          disabled={isDisabled}
+          disabled={isDisabled || !pickList?.length}
+          onClick={(ev) => {
+            ev.preventDefault();
+            if (pickList) {
+              onSave(pickList);
+            }
+          }}
         >Save</button>
       </div>
     </div>

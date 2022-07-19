@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import * as React from 'react';
+import React from 'react';
 import { useAutoPickUsers, useCurrentPick, useDraftPicks } from '../../../data/draft';
 import { usePickListUsers } from '../../../data/pickList';
 import { useAllUsers, useCurrentUser } from '../../../data/users';

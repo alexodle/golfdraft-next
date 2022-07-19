@@ -1,74 +1,63 @@
-import './initTestConfig';
-
-import * as _ from 'lodash';
-import * as updater from '../scores_sync/updateScore';
+import { keyBy } from 'lodash';
 import constants from '../common/constants';
-import {mongoose} from '../server/mongooseUtil';
 import {
-  Reader,
-  ReaderResult,
-  UpdateGolfer,
+  ReaderResult
 } from '../scores_sync/Types';
-import {
-  Golfer,
-  GolferScore,
-  ScoreOverride,
-} from '../server/ServerTypes';
+import * as updater from '../scores_sync/updateScore';
 
-const {ObjectId} = mongoose.Types;
-const {MISSED_CUT} = constants;
+const { MISSED_CUT } = constants;
 
-const tid = new ObjectId(1000);
+const tid = 1000;
 
 describe('updateScore', function () {
 
   describe('validate', function () {
 
     it('catches invalid par data', function () {
-      updater.validate({ par: 68 } as ReaderResult).should.not.be.ok();
+      expect(updater.validate({ par: 68 } as ReaderResult)).toBe(false);
     });
 
     it('catches bad golfer names', function () {
-      updater.validate({
+      expect(updater.validate({
         par: 70,
         golfers: [{golfer: '-'}]
-      } as ReaderResult).should.not.be.ok();
+      } as ReaderResult)).toBe(false);
     });
 
     it('catches non-numeric golfer score', function () {
-      updater.validate({
+      expect(updater.validate({
         par: 70,
         golfers: [{ golfer: 'Jack Bauer', scores: [1, 'a', 2, 3] }]
-      } as ReaderResult).should.not.be.ok();
+      } as ReaderResult)).toBe(false);
     });
 
     it('catches NaN golfer scores', function () {
-      updater.validate({
+      expect(updater.validate({
         par: 70,
         golfers: [{ golfer: 'Jack Bauer', scores: [1, NaN, 2, 3] }]
-      } as ReaderResult).should.not.be.ok();
+      } as ReaderResult)).toBe(false);
     });
 
     it('allows "MC" as a golfer score', function () {
-      updater.validate({
+      expect(updater.validate({
         par: 70,
         golfers: [{
           golfer: 'Jack Bauer',
           scores: [1, -1, MISSED_CUT, MISSED_CUT],
           day: 4
         }]
-      } as ReaderResult).should.be.ok();
+      } as ReaderResult)).toBe(true);
     });
 
     it('catches bad day values', function () {
-      updater.validate({
+      expect(updater.validate({
         par: 70,
         golfers: [{ golfer: 'Jack Bauer', scores: [1, -1, 0, 0], day: 5 }]
-      } as ReaderResult).should.not.be.ok();
-      updater.validate({
+      } as ReaderResult)).toBe(false);
+      expect(updater.validate({
         par: 70,
         golfers: [{ golfer: 'Jack Bauer', scores: [1, -1, 0, 0], day: -1 }]
-      } as ReaderResult).should.not.be.ok();
+      } as ReaderResult)).toBe(false);
     });
 
   });
@@ -76,36 +65,36 @@ describe('updateScore', function () {
   describe('mergeOverrides', function () {
 
     it('merges override scores', function () {
-      const gid1 = new ObjectId(1);
-      const gid2 = new ObjectId(2);
-      const gid3 = new ObjectId(3);
-      const merged = _.keyBy(updater.mergeOverrides(
+      const gid1 = 1;
+      const gid2 = 2;
+      const gid3 = 3;
+      const merged = keyBy(updater.mergeOverrides(
         [
-          { tourneyId: tid, golfer: gid1.toString(), day: 4, scores: [-1, -20, -30, 0], thru: 1 },
-          { tourneyId: tid, golfer: gid2.toString(), day: 4, scores: [-1, 2, -2, 0], thru: 1 },
-          { tourneyId: tid, golfer: gid3.toString(), day: 3, scores: [-1, -30, MISSED_CUT, MISSED_CUT], thru: 1 }
-        ] as GolferScore[],
+          { tourneyId: tid, golferId: gid1, day: 4, scores: [-1, -20, -30, 0], thru: 1 },
+          { tourneyId: tid, golferId: gid2, day: 4, scores: [-1, 2, -2, 0], thru: 1 },
+          { tourneyId: tid, golferId: gid3, day: 3, scores: [-1, -30, MISSED_CUT, MISSED_CUT], thru: 1 }
+        ],
         [
-          { tourneyId: tid, id: 'should be removed', golfer: gid1, day: null, scores: [-1, MISSED_CUT, MISSED_CUT, MISSED_CUT] },
-          { tourneyId: tid, golfer: gid3, day: 4, scores: [-1, MISSED_CUT, MISSED_CUT, MISSED_CUT] }
-        ] as ScoreOverride[]
+          { tourneyId: tid, golferId: gid1, day: undefined, scores: [-1, MISSED_CUT, MISSED_CUT, MISSED_CUT] },
+          { tourneyId: tid, golferId: gid3, day: 4, scores: [-1, MISSED_CUT, MISSED_CUT, MISSED_CUT] }
+        ]
       ), 'golfer');
 
-      merged[gid1.toString()].should.eql({
+      expect(merged[gid1.toString()]).toEqual({
         tourneyId: tid,
         golfer: gid1.toString(),
         day: 4,
         scores: [-1, MISSED_CUT, MISSED_CUT, MISSED_CUT],
         thru: 1
       });
-      merged[gid2.toString()].should.eql({
+      expect(merged[gid2.toString()]).toEqual({
         tourneyId: tid,
         golfer: gid2.toString(),
         day: 4,
         scores: [-1, 2, -2, 0],
         thru: 1
       });
-      merged[gid3.toString()].should.eql({
+      expect(merged[gid3.toString()]).toEqual({
         tourneyId: tid,
         golfer: gid3.toString(),
         day: 4,

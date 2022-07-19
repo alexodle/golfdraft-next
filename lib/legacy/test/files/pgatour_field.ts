@@ -1,4 +1,4 @@
-module.exports = JSON.stringify({
+const v = JSON.stringify({
   "header": {
     "version": "1.0"
   },
@@ -43,3 +43,5 @@ module.exports = JSON.stringify({
     ]
   }
 });
+
+export default v;

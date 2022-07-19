@@ -1,14 +1,13 @@
-import './initTestConfig';
-
 import reader from '../scores_sync/pgatourFieldReader';
-import { UpdateGolfer, TourneyConfigSpec } from '../scores_sync/Types';
+import { UpdateGolfer } from '../scores_sync/Types';
+import { TourneyConfig } from '../../models';
 
-const config: TourneyConfigSpec = {
+const config: TourneyConfig = {
   name: "test tourney",
-  startDate: new Date(),
+  startDate: new Date().toISOString(),
   par: 72,
-  scoresSync: {
-    syncType: "pgatour_field",
+  scores: {
+    type: "pgatour_field",
     url: "http://test",
     nameMap: {},
   },
@@ -31,7 +30,7 @@ describe('PgaTourFieldReader', () => {
       };
 
       const result = await reader.run(config, json);
-      result.should.eql({
+      expect(result).toEqual({
         par: config.par,
         golfers: [
           { golfer: 'Gary Woodland', ...baseGolfer },

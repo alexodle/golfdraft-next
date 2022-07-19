@@ -1,7 +1,8 @@
 import { load } from 'cheerio';
 import * as puppeteer from 'puppeteer';
+import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
-import { Reader, ReaderResult, Score, Thru, TourneyConfigSpec, UpdateGolfer } from './Types';
+import { Reader, ReaderResult, Score, Thru, UpdateGolfer } from './Types';
 
 function requireParseInt(intStr: string, errMsg: string): number {
   const n = parseInt(intStr, 10);
@@ -12,7 +13,7 @@ function requireParseInt(intStr: string, errMsg: string): number {
 }
 
 class PgaTourScraperReader implements Reader {
-  async run(config: TourneyConfigSpec, url: string): Promise<ReaderResult> {
+  async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
     const html = await getLeaderboardHTML(url)
     return parse(html, config.par)
   }
