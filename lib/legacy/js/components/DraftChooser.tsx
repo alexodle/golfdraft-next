@@ -1,8 +1,9 @@
 import cx from 'classnames';
 import { sortBy } from 'lodash';
 import React, { useMemo, useState } from 'react';
-import { useDraftPicker, usePickList, usePickListUsers, useRemainingGolfers } from '../../../data/draft';
+import { useDraftPicker, useRemainingGolfers } from '../../../data/draft';
 import { useGolfers } from '../../../data/golfers';
+import { usePickList, usePickListUsers } from '../../../data/pickList';
 import { useAllUsers, useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
 import { PendingDraftPick } from '../../../models';
@@ -19,7 +20,6 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>('pickList');
   const [selectedGolferIdState, setSelectedGolferId] = useState<number | undefined>();
-
   const { pickMutation, pickListPickMutation } = useDraftPicker();
 
   const golfersRemaining = useRemainingGolfers();
@@ -114,6 +114,7 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
         <div style={{marginTop: '1em'}}>
           <button
             className='btn btn-default btn-primary'
+            disabled={pickListPickMutation.isLoading}
             onClick={(ev) => {
               ev.preventDefault();
               pickListPickMutation.mutate(currentPick)
@@ -142,13 +143,11 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
           </div>
           <button
             className='btn btn-default btn-primary'
-            onClick={(ev) => {
+            disabled={pickMutation.isLoading}
+            onClick={async (ev) => {
               ev.preventDefault();
-              if (!selectedGolferId) {
-                return;
-              }
               pickMutation.mutate({
-                draftPick: currentPick,
+                pendingDraftPick: currentPick,
                 golferId: selectedGolferId,
             })}}
           >

@@ -11,6 +11,7 @@ import DraftHistory from './DraftHistory';
 import DraftPickOrderView from './DraftPickOrderView';
 import DraftStatus from './DraftStatus';
 import GolfDraftPanel from './GolfDraftPanel';
+import { PickListEditor } from './PickListEditor';
 
 let myTurnSound: HTMLAudioElement | undefined = undefined;
 let pickMadeSound: HTMLAudioElement | undefined = undefined;
@@ -88,13 +89,7 @@ export const DraftApp: React.FC = () => {
 
       <section className='pick-list-section'>
         <GolfDraftPanel heading='Pick List'>
-          {/* <PickListEditor
-            golfersRemaining={golfersRemaining}
-            syncedPickList={syncedPickListForEditor}
-            pendingPickList={pendingPickListForEditor}
-            height='29em'
-          /> */}
-          {<p>hihi TODO: PickListEditor</p>}
+          <PickListEditor height='29em' />
         </GolfDraftPanel>
       </section>
 

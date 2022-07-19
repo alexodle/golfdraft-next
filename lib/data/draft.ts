@@ -16,39 +16,11 @@ const DRAFT_PICKS_TABLE = 'draft_pick';
 const DRAFT_PICK_LIST_TABLE = 'draft_pick_list';
 const DRAFT_AUTO_PICK_TABLE = 'draft_auto_pick';
 
-export function useRemainingGolfers(): Golfer[] | undefined {
-  const { data: allGolfers } = useGolfers();
-  const { data: draftPicks } = useDraftPicks();
-
-  const remaining = useMemo(() => {
-    if (!allGolfers || !draftPicks) {
-      return undefined;
-    }
-
-    const pickedGolfers = new Set(draftPicks.filter(isCompletedDraftPick).map(dp => dp.golferId));
-    return Object.values(allGolfers).filter(g => !pickedGolfers.has(g.id));
-  }, [draftPicks, allGolfers]);
-
-  return remaining;
-}
-
-export function useCurrentPick(): PendingDraftPick | 'none' | undefined {
-  const pickResult = useDraftPicks();
-  if (!pickResult.data) {
-    return undefined;
-  }
-
-  const currentPick = pickResult.data.find(p => isPendingDraftPick(p)) as PendingDraftPick | undefined;
-  return currentPick  ?? 'none';
-}
-
 export function useDraftPicks(): UseQueryResult<DraftPick[]> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
 
-  const queryClientKey = useMemo(() => {
-    return [DRAFT_PICKS_TABLE, tourneyId]
-  }, [tourneyId]);
+  const queryClientKey = useMemo(() => getDraftPicksQueryClientKey(tourneyId), [tourneyId]);
 
   const result = useQuery<DraftPick[]>(queryClientKey, async () => {
     return await getDraftPicks(tourneyId);
@@ -73,57 +45,30 @@ export function useDraftPicks(): UseQueryResult<DraftPick[]> {
   return result;
 }
 
-export function usePickListUsers(): UseQueryResult<Set<number>> {
-  const tourneyId = useTourneyId();
-  const queryClient = useQueryClient();
-  const queryClientKey = useMemo(() => [`${DRAFT_PICK_LIST_TABLE}_users`, tourneyId], [tourneyId]);
-
-  const result = useQuery<Set<number>>(queryClientKey, async () => {
-    return new Set(await getDraftPickListUsers(tourneyId));
-  });
-
-  useEffect(() => {
-    if (!result.isSuccess) {
-      return;
-    }
-
-    const sub = openSharedSubscription<DraftPickList>(`${DRAFT_PICK_LIST_TABLE}:tourneyId=eq.${tourneyId}`, (ev) => {
-      switch (ev.eventType) {
-        case 'INSERT':
-          return queryClient.setQueryData<Set<number>>(queryClientKey, (curr) => union(curr, ev.new.userId));
-        case 'DELETE':
-          return queryClient.setQueryData<Set<number>>(queryClientKey, (curr) => difference(curr ?? new Set(), ev.old.userId));
-      }
-    });
-
-    return () => {
-      sub.unsubscribe();
-    }
-  }, [queryClient, queryClientKey, tourneyId, result.isSuccess]);
-
-  return result;
-}
-
-export function usePickList(): UseQueryResult<number[] | null> {
-  const tourneyId = useTourneyId();
-  const myUser = useCurrentUser();
-  const queryClientKey = useMemo(() => [DRAFT_PICK_LIST_TABLE, tourneyId, myUser?.id], [tourneyId, myUser?.id]);
-
-  const result = useQuery<number[] | null>(queryClientKey, async () => {
-    return await getDraftPickList(tourneyId, myUser?.id as number);
-  }, { enabled: !!myUser?.id });
-
-  return result;
-}
-
 export function useDraftPicker(): { 
-  pickMutation: UseMutationResult<CompletedDraftPick, unknown, { draftPick: PendingDraftPick, golferId: number}, unknown>; 
+  pickMutation: UseMutationResult<CompletedDraftPick, unknown, { pendingDraftPick: PendingDraftPick, golferId: number}, unknown>; 
   pickListPickMutation: UseMutationResult<unknown, unknown, PendingDraftPick, unknown>; 
 } {
-  const pickMutation = useMutation(async ({ draftPick, golferId }: { draftPick: PendingDraftPick, golferId: number}) => {
+  const queryClient = useQueryClient();
+  const myUser = useCurrentUser();
+
+  const pickMutation = useMutation(async ({ pendingDraftPick: draftPick, golferId }: { pendingDraftPick: PendingDraftPick, golferId: number}) => {
     const req: MakePickApiRequest = { ...draftPick, golferId, clientTimestampEpochMillis: Date.now() };
     const result = await postJson<CompletedDraftPick>('/api/draftPick', req);
     return result;
+  }, {
+    onMutate: ({ pendingDraftPick, golferId }) => {
+      const queryClientKey = getDraftPicksQueryClientKey(pendingDraftPick.tourneyId);
+      queryClient.setQueryData<DraftPick[]>(queryClientKey, (curr) => {
+        const completedPick: CompletedDraftPick = { ...pendingDraftPick, golferId, clientTimestampEpochMillis: Date.now(), timestampEpochMillis: Date.now(), pickedByUserId: myUser?.id ?? -1 };
+        return (curr ?? []).map(dp => dp.tourneyId === pendingDraftPick.tourneyId && dp.pickNumber === pendingDraftPick.pickNumber ? completedPick : dp);
+      });
+    },
+    onError: (e, { pendingDraftPick }) => {
+      console.dir(e);
+      const queryClientKey = getDraftPicksQueryClientKey(pendingDraftPick.tourneyId);
+      queryClient.invalidateQueries(queryClientKey);
+    }
   });
 
   const pickListPickMutation = useMutation((draftPick: PendingDraftPick) => {
@@ -136,18 +81,30 @@ export function useDraftPicker(): {
   }
 }
 
-export function usePickListUpdater(): UseMutationResult<void, unknown, number[], unknown> | undefined {
-  const tourneyId = useTourneyId();
-  const myUser = useCurrentUser();
+export function useRemainingGolfers(): Golfer[] | undefined {
+  const { data: allGolfers } = useGolfers();
+  const { data: draftPicks } = useDraftPicks();
 
-  const result = useMutation((pickList: number[]) => {
-    if (!myUser) {
-      throw new Error('Not ready');
+  const remaining = useMemo(() => {
+    if (!allGolfers || !draftPicks) {
+      return undefined;
     }
-    return updatePickList({ tourneyId, userId: myUser.id, golferIds: pickList });
-  });
 
-  return myUser ? result : undefined;
+    const pickedGolfers = new Set(draftPicks.filter(isCompletedDraftPick).map(dp => dp.golferId));
+    return Object.values(allGolfers).filter(g => !pickedGolfers.has(g.id));
+  }, [draftPicks, allGolfers]);
+
+  return remaining;
+}
+
+export function useCurrentPick(): PendingDraftPick | 'none' | undefined {
+  const pickResult = useDraftPicks();
+  if (!pickResult.data) {
+    return undefined;
+  }
+
+  const currentPick = pickResult.data.find(p => isPendingDraftPick(p)) as PendingDraftPick | undefined;
+  return currentPick  ?? 'none';
 }
 
 export function useAutoPickUsers(): UseQueryResult<Set<number>> {
@@ -265,10 +222,6 @@ export function isCompletedDraftPick(dp: DraftPick): dp is CompletedDraftPick {
   return dp.golferId !== undefined && dp.golferId !== null;
 }
 
-async function updatePickList(pickList: DraftPickList) {
-  const result = await supabaseClient.from(DRAFT_PICK_LIST_TABLE).upsert({ ...pickList, golferIds: JSON.stringify(pickList.golferIds) }, { returning: 'minimal' });
-  if (result.error) {
-    console.dir(result.error);
-    throw new Error(`Failed to update pick list: ${result.statusText}`);
-  }
+function getDraftPicksQueryClientKey(tourneyId: number): Array<unknown> {
+  return [DRAFT_PICKS_TABLE, tourneyId];
 }

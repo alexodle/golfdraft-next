@@ -1,6 +1,7 @@
 import cx from 'classnames';
 import * as React from 'react';
-import { useAutoPickUsers, useCurrentPick, useDraftPicks, usePickListUsers } from '../../../data/draft';
+import { useAutoPickUsers, useCurrentPick, useDraftPicks } from '../../../data/draft';
+import { usePickListUsers } from '../../../data/pickList';
 import { useAllUsers, useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
 import constants from '../../common/constants';

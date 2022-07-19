@@ -1,14 +1,13 @@
 import {
-  getUser, supabaseServerClient
+  getUser, supabaseClient, supabaseServerClient
 } from '@supabase/auth-helpers-nextjs';
+import { useUser } from '@supabase/auth-helpers-react';
 import { keyBy } from 'lodash';
-import { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { useRouter } from 'next/router';
+import { useEffect, useMemo } from 'react';
 import { useQuery, UseQueryResult } from 'react-query';
 import { GDUser } from '../models';
-import { supabaseClient } from '@supabase/auth-helpers-nextjs';
-import { useUser } from '@supabase/auth-helpers-react';
-import { useEffect, useMemo } from 'react';
-import { useRouter } from 'next/router';
 
 const USER_TABLE = 'gd_user';
 
@@ -30,10 +29,10 @@ export function useCurrentUser(): GDUser | undefined {
   }, [userLookup, user?.id]);
 
   useEffect(() => {
-    if (userLookup.data && !me) {
-      push('/pending');
+    if (!userLookup.isLoading && userLookup.isSuccess && !me) {
+      push('/pending'); // hihi TODO build
     } 
-  }, [push, userLookup.data, me]);
+  }, [push, userLookup, me]);
 
   return me;
 }

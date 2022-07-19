@@ -21,11 +21,13 @@
     "react-dom": "^18.1.0",
     "react-query": "^3.39.0",
     "request": "^2.88.2",
+    "underscore.string": "^3.3.6",
     "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
     "@types/node": "^17.0.31",
     "@types/react": "^18.0.8",
+    "@types/underscore.string": "0.0.38",
     "eslint": "8.14.0",
     "eslint-config-next": "12.1.6",
     "less": "^4.1.2",

@@ -7,12 +7,17 @@ import { adminSupabase } from '../supabase';
 
 const GOLFERS_TABLE = 'golfer';
 
+export const PENDING_GOLFER: Omit<Golfer, 'tourneyId'> = {
+  id: -2,
+  name: 'Pending...',
+}
+
 export type IndexedGolfers = Record<number, Golfer>;
 
 export function useGolfers(): UseQueryResult<IndexedGolfers> {
   const tourneyId = useTourneyId();
   return useQuery<Record<number, Golfer>>(GOLFERS_TABLE, async () => {
-    const golfers = await getGolfers(tourneyId);
+    const golfers = [...await getGolfers(tourneyId), { ...PENDING_GOLFER, tourneyId }];
     return keyBy(golfers, g => g.id);
   });
 }

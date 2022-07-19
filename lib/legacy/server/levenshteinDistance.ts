@@ -1,47 +1,49 @@
-import * as _ from 'lodash';
-import * as _string from 'underscore.string';
+import { levenshtein } from 'underscore.string';
 
-function _normalize(s) {
-  return s.trim().toLowerCase();
-}
-
-function _forEachWordPermutation(words, callback, output) {
-  if (_.isEmpty(words)) {
-    return callback(output.join(" "));
-  }
-
-  _.each(words, (w, i) => {
-    const newWords = words.slice(0, i).concat(words.slice(i + 1, words.length));
-    return _forEachWordPermutation(newWords, callback, output.concat([w]));
+/** Runs the given sourceStr against all strings in the target list, and returns the matches in order of levenshtein distance from source */
+export function levenshteinAll<T>(sourceStr: string, targetList: T[], getValue: (v: T) => string): { target: T; dist: number, coeff: number }[] {
+  const results = targetList.map(targetStr => {
+    return { target: targetStr, ...calcLevenshtein(sourceStr, getValue(targetStr)) };
   });
-}
 
-export function runAll(sourceStr: string, targetList: string[]) {
-  const results = _.map(targetList, targetStr => {
-    return _.extend({ target: targetStr }, run(sourceStr, targetStr));
-  });
   results.sort((r1, r2) => {
     if (r1.coeff !== r2.coeff) {
       return r2.coeff - r1.coeff; // reverse;
     }
-    return r1.target.localeCompare(r2.target);
+    return getValue(r1.target).localeCompare(getValue(r2.target));
   });
-  return { source: sourceStr, results: results };
+
+  return results;
 }
 
-export function run(s1: string, s2: string) {
-  const norms1 = _normalize(s1);
-  const norms2 = _normalize(s2);
+function calcLevenshtein(s1: string, s2: string): { dist: number, coeff: number } {
+  const norms1 = normalize(s1);
+  const norms2 = normalize(s2);
 
   let bestDist = Number.MAX_VALUE;
-  _forEachWordPermutation(norms1.split(" "), s1perm => {
-    bestDist = Math.min(bestDist, _string.levenshtein(s1perm, norms2));
+  forEachWordPermutation(norms1.split(" "), (s1perm: string) => {
+    bestDist = Math.min(bestDist, levenshtein(s1perm, norms2));
     return bestDist > 0;
-  }, []);
+  });
 
   const longestLength = Math.max(norms1.length, norms2.length);
   return {
     dist: bestDist,
     coeff: (longestLength - bestDist) / longestLength
   };
+}
+
+function normalize(s: string): string {
+  return s.trim().toLowerCase();
+}
+
+function forEachWordPermutation(words: string[], callback: (perm: string) => void, output: string[] = []): void {
+  if (words.length === 0) {
+    return callback(output.join(" "));
+  }
+
+  words.forEach((w, i) => {
+    const newWords = words.slice(0, i).concat(words.slice(i + 1, words.length));
+    forEachWordPermutation(newWords, callback, output.concat([w]));
+  });
 }
