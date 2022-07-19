@@ -12,13 +12,28 @@ export const PENDING_GOLFER: Omit<Golfer, 'tourneyId'> = {
   name: 'Pending...',
 }
 
-export type IndexedGolfers = Record<number, Golfer>;
+export type UseGolfersResult = Readonly<{
+  /** Lookup golfers by ID, including PENDING_GOLFER. Throws if not found. */
+  getGolfer: (gid: number) => Golfer;
+  /** Unordered list of all golfers */
+  golfers: Golfer[];
+}>
 
-export function useGolfers(): UseQueryResult<IndexedGolfers> {
+export function useGolfers(): UseQueryResult<UseGolfersResult> {
   const tourneyId = useTourneyId();
-  return useQuery<Record<number, Golfer>>(GOLFERS_TABLE, async () => {
-    const golfers = [...await getGolfers(tourneyId), { ...PENDING_GOLFER, tourneyId }];
-    return keyBy(golfers, g => g.id);
+  return useQuery<UseGolfersResult>(GOLFERS_TABLE, async () => {
+    const golfers = [...await getGolfers(tourneyId)];
+    const lookup = keyBy([...golfers, { ...PENDING_GOLFER, tourneyId }], g => g.id);
+    return {
+      golfers,
+      getGolfer: (gid: number) => {
+        const g = lookup[gid];
+        if (!g) {
+          throw new Error(`Golfer not found: ${gid}`);
+        }
+        return g;
+      },
+    };
   });
 }
 

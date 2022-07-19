@@ -1,128 +1,84 @@
-export {};
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { isCompletedDraftPick, isPendingDraftPick, useDraftPicks } from '../../../data/draft';
+import Assets from '../constants/Assets';
 
-// import {isEmpty, last} from 'lodash';
-// import Assets from '../constants/Assets';
-// import * as moment from 'moment';
-// import React from 'react';
-// import GolfDraftPanel from './GolfDraftPanel';
-// import {DraftPick} from '../types/ClientTypes';
+const WARNING_TIME = 1000 * 60 * 2;
+const OVERTIME = 1000 * 60 * 3;
+const FINAL_COUNTDOWN_THRESHOLD = 1000 * 15;
+const WARNING_SOUND_INTERVAL_SECONDS = 10;
 
-// const TIME_INTERVAL = 1000;
-// const WARNING_TIME = 1000 * 60 * 2;
-// const OVERTIME = 1000 * 60 * 3;
-// const FINAL_COUNTDOWN_THRESHOLD = 1000 * 15;
-// const WARNING_SOUND_INTERVAL_SECONDS = 10;
+let pickWarningSound: HTMLAudioElement | undefined = undefined;
+try {
+  pickWarningSound = new Audio(Assets.PICK_WARNING_SOUND);
+} catch (e) {
+  console.warn(`Could not load PICK_WARNING_SOUND: ${Assets.PICK_WARNING_SOUND}`);
+}
 
-// let pickWarningSound: HTMLAudioElement | undefined = undefined;
-// try {
-//   pickWarningSound = new Audio(Assets.PICK_WARNING_SOUND);
-// } catch (e) {
-//   // nodejs
-// }
+export const DraftClock: React.FC<{
+  isMyPick: boolean;
+  disableClock?: boolean;
+}> = ({ 
+  isMyPick,
+  disableClock = false
+}) => {
+  const [totalMillis, setTotalMillis] = useState<number | undefined>(undefined);
+  const totalSeconds = (totalMillis ?? 0) / 1000 ;
 
-// export interface DraftClockProps {
-//   isMyPick: boolean;
-//   allowClock: boolean;
-//   draftPicks: DraftPick[];
-// }
+  const { data: draftPicks } = useDraftPicks();
+  const prevPickIndex = (draftPicks?.findIndex(isPendingDraftPick) ?? -1) - 1;
+  const prevPickEpochMillis = draftPicks?.[prevPickIndex]?.timestampEpochMillis;
 
-// interface DraftClockState {
-//   totalMillis: number;
-//   intervalId?: number;
-// }
+  useEffect(() => {
+    if (!prevPickEpochMillis) {
+      return;
+    }
 
-// export default class DraftClock extends React.Component<DraftClockProps, DraftClockState> {
+    const id = setInterval(() => {
+      const timeElapsed = Date.now() - prevPickEpochMillis;
+      setTotalMillis(timeElapsed);
+    }, 1_000);
 
-//   constructor(props: DraftClockProps) {
-//     super(props);
-//     this.state = this._getInitialState();
-//   }
+    return () => {
+      clearInterval(id);
+    }
+  }, [prevPickEpochMillis]);
 
-//   _getInitialState() {
-//     return { intervalId: null, ...this._getTotalMillis() };
-//   }
+  const isInFinalCountdownThreshold = totalSeconds > FINAL_COUNTDOWN_THRESHOLD;
+  useEffect(() => {
+    if (!isMyPick || !isInFinalCountdownThreshold) {
+      return;
+    }
+    
+    const id = setInterval(() => {
+      try {
+        pickWarningSound?.play();
+      } catch (e) {
+      }
+    }, WARNING_SOUND_INTERVAL_SECONDS * 1000);
 
-//   componentDidMount() {
-//     const intervalId = window.setInterval(() => {
-//       this.setState(this._getTotalMillis());
-//     }, TIME_INTERVAL);
-//     this.setState({ intervalId });
-//   }
+    return () => {
+      clearInterval(id);
+    }
+  }, [isMyPick, isInFinalCountdownThreshold]);
 
-//   componentWillUnmount() {
-//     if (this.state.intervalId) {
-//       window.clearInterval(this.state.intervalId);
-//       this.setState({ intervalId: null });
-//     }
-//   }
+  if (disableClock) {
+    return (
+      <p className='draft-clock'><b>{'NA'}</b></p>
+    );
+  }
 
-//   UNSAFE_componentWillReceiveProps(nextProps) {
-//     this.setState(this._getTotalMillis(nextProps));
-//   }
+  let className = "";
+  if (totalMillis && totalMillis > OVERTIME) {
+    className = "text-danger";
+  } else if (totalMillis && totalMillis > WARNING_TIME) {
+    className = "text-warning";
+  }
 
-//   componentDidUpdate(prevProps, prevState) {
-//     const displayTimeChanged = this._getDisplayTime(prevState) !== this._getDisplayTime();
-//     const isMyPick = this.props.isMyPick;
-//     const totalMillis = this.state.totalMillis;
+  const format = totalMillis === undefined ? '...' : moment.utc(totalMillis).format("mm:ss");
+  return (
+    <p className='draft-clock'><b className={className}>{format}</b></p>
+  );
+}
 
-//     if (!displayTimeChanged || !isMyPick || !totalMillis || totalMillis < WARNING_TIME) {
-//       return;
-//     }
-
-//     if (totalMillis + FINAL_COUNTDOWN_THRESHOLD >= OVERTIME) {
-//       pickWarningSound?.play();
-//     } else if (moment.utc(totalMillis).seconds() % WARNING_SOUND_INTERVAL_SECONDS === 0) {
-//       pickWarningSound?.play();
-//     }
-//   }
-
-//   render() {
-//     let body = null;
-
-//     const totalMillis = this.state.totalMillis || 0;
-//     let className = "";
-//     if (totalMillis > OVERTIME) {
-//       className = "text-danger";
-//     } else if (totalMillis > WARNING_TIME) {
-//       className = "text-warning";
-//     }
-
-//     const format = this._getDisplayTime();
-//     body = (
-//       <p className='draft-clock'><b className={className}>{format}</b></p>
-//     );
-
-//     return (
-//       <GolfDraftPanel heading='Draft Clock'>
-//         {body}
-//       </GolfDraftPanel>
-//     );
-//   }
-
-//   _getDisplayTime(state?) {
-//     state = state || this.state;
-
-//     if (state.totalMillis === null) {
-//       return 'NS';
-//     }
-
-//     const totalMillis = state.totalMillis || 0;
-//     return moment.utc(totalMillis).format("mm:ss");
-//   }
-
-//   _getTotalMillis(props? : DraftClockProps) {
-//     props = props || this.props;
-
-//     if (isEmpty(props.draftPicks) || !this.props.allowClock) {
-//       return { totalMillis: null };
-//     }
-
-//     const lastPick = last(props.draftPicks);
-//     const currentTime = new Date();
-//     const totalMillis = Math.max(0, currentTime.getTime() - lastPick.clientTimestamp.getTime());
-//     return {
-//       totalMillis: totalMillis
-//     };
-//   }
-
-// };
+export default DraftClock;

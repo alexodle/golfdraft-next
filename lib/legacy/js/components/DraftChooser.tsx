@@ -25,7 +25,7 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
   const golfersRemaining = useRemainingGolfers();
   const currentUser = useCurrentUser();
   const { data: allUsers } = useAllUsers();
-  const { data: golfers } = useGolfers();
+  const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
 
   const { data: pickListUsers } = usePickListUsers();
   const { data: pickList } = usePickList();
@@ -33,23 +33,23 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
   const isProxyPick = currentUser?.id !== currentPick.userId;
 
   const sortedGolfers = useMemo(() => {
-    if (!golfersRemaining || !golfers) {
+    if (!golfersRemaining || !getGolfer) {
       return undefined;
     }
 
     if (sortKey === 'pickList' && pickList?.length) {
       if (isProxyPick) {
         // special case, we cannot show the full list if this a proxy pick
-        return null;
+        return [];
       } else {
-        return pickList.map(gid => golfers[gid]);
+        return pickList.map(gid => getGolfer(gid));
       }
     }
 
     return sortBy(golfersRemaining, [sortKey, 'name']);
-  }, [sortKey, isProxyPick, pickList, golfersRemaining, golfers]);
+  }, [sortKey, isProxyPick, pickList, golfersRemaining, getGolfer]);
 
-  if (!allUsers || !pickListUsers || !golfersRemaining || !currentUser || pickList === undefined || !golfers || !sortedGolfers) {
+  if (!allUsers || !pickListUsers || !golfersRemaining || !currentUser || pickList === undefined || !allGolfers || !sortedGolfers) {
     return <Loading />;
   }
 

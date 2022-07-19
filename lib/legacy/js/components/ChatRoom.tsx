@@ -1,3 +1,5 @@
+export {};
+
 // const BOT_NAME = 'DraftBot';
 
 // const NAME_TAG_RE = /@[a-z]* *[a-z]*$/i;
@@ -269,12 +271,64 @@
 //   pageIndex: number;
 // }
 
-export const ChatRoom: React.FC = () => {
-  // TODO: hihi
-  return null;
-}
 
-export default ChatRoom;
+
+
+
+
+
+// export const ChatRoom: React.FC<{ disabled?: boolean }> = ({ disabled = false }) => {
+
+
+//   if (disabled) {
+//     return (
+//       <div className='row'>
+//         <div className='col-md-12'>
+//           <div className='panel panel-default chat-panel' ref='chatPanel'>
+//             <div className='panel-body' ref='chatPanelBody'>
+//               {this.renderBody()}
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     )
+//   }
+  
+//   return (
+//     <GolfDraftPanel heading='Chat Room'>
+//       <div className='chat-room-container'>
+//         <div className='col-md-9'>
+//           <div className='panel panel-default chat-panel' ref='chatPanel'>
+//             <div className='panel-body' ref='chatPanelBody'>
+//               {this.renderBody()}
+//             </div>
+//           </div>
+//           {!messages ? null : (<ChatRoomInput />)}
+//         </div>
+//         <div className='col-md-3'>
+//           <div className='panel panel-default'>
+//             <div className='panel-body'>
+//               <b>Online:</b>
+//               <ul className='list-unstyled'>
+//                 {map(this.props.activeUsers, uid => UserStore.getUser(uid).name)
+//                   .sort()
+//                   .map(name => (<li key={name}>{name}</li>))}
+//               </ul>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </GolfDraftPanel>
+//   );
+// }
+
+// export default ChatRoom;
+
+
+
+
+
+
 
 // export default class ChatRoomOld extends React.PureComponent<ChatRoomProps, ChatRoomState> {
 

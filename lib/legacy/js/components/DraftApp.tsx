@@ -1,12 +1,14 @@
 import Link from 'next/link';
-import React, { useState } from 'react';
-import { useCurrentPick, useDraftPicks } from '../../../data/draft';
+import React, { useEffect, useRef, useState } from 'react';
+import { isCompletedDraftPick, isPendingDraftPick, useCurrentPick, useDraftPicks } from '../../../data/draft';
 import { useCurrentTourney } from '../../../data/tourney';
 import { useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
+import { DraftPick, GDUser, PendingDraftPick } from '../../../models';
 import Assets from '../constants/Assets';
 import AppPausedStatus from './AppPausedStatus';
 import DraftChooser from './DraftChooser';
+import DraftClock from './DraftClock';
 import DraftHistory from './DraftHistory';
 import DraftPickOrderView from './DraftPickOrderView';
 import DraftStatus from './DraftStatus';
@@ -19,7 +21,7 @@ try {
   myTurnSound = new Audio(Assets.MY_TURN_SOUND);
   pickMadeSound = new Audio(Assets.PICK_MADE_SOUND);
 } catch (e) {
-  // nodejs
+  console.warn('Could not load my turn sounds');
 }
 
 export const DraftApp: React.FC = () => {
@@ -32,6 +34,11 @@ export const DraftApp: React.FC = () => {
   const [pickingForUsers, setPickingForUsers] = useState(new Set<number>());
   const [selectedUserId, setSelectedUserId] = useState<number | undefined>();
 
+  const isMyDraftPick = (currentUser && currentPick && currentPick !== 'none') ? (currentPick.userId === currentUser.id || pickingForUsers.has(currentPick.userId)) : undefined;
+
+  useMyTurnSoundFx(isMyDraftPick);
+  usePickMadeSoundFx(draftPicks);
+
   if (!tourney || !draftPicks || !currentPick || !currentUser) {
     return <Loading />;
   }
@@ -43,8 +50,6 @@ export const DraftApp: React.FC = () => {
   if (currentPick === 'none') {
     return <PostDraft />;
   }
-
-  const isMyDraftPick = currentPick.userId === currentUser.id || pickingForUsers.has(currentPick.userId);
 
   return (
     <section className={'draft ' + (tourney.isDraftPaused ? 'draft-paused' : 'draft-active')}>
@@ -69,12 +74,7 @@ export const DraftApp: React.FC = () => {
 
           <section className='draft-clock-section'>
             <GolfDraftPanel heading={'Draft Clock'}>
-              {/* <DraftClock
-                draftPicks={draftPicks}
-                isMyPick={isMyDraftPick}
-                allowClock={allowClock}
-              /> */}
-              {<p>hihi TODO: Clock</p>}
+              <DraftClock isMyPick={!!isMyDraftPick} disableClock={!tourney.allowClock} />
             </GolfDraftPanel>
           </section>
 
@@ -107,11 +107,44 @@ export const DraftApp: React.FC = () => {
       </section>
 
       <section className='draft-history-section'>
-        <DraftHistory selectedUserId={selectedUserId} />
+        <DraftHistory onSelectionChange={(uid) => setSelectedUserId(uid)} selectedUserId={selectedUserId} />
       </section>
 
     </section>
   );
+}
+
+const useMyTurnSoundFx = (isMyDraftPick: boolean | undefined) => {
+  const lastIsMyDraftPick = usePreviousValue(isMyDraftPick);
+  useEffect(() => {
+    if (isMyDraftPick !== undefined && lastIsMyDraftPick !== undefined && isMyDraftPick && !lastIsMyDraftPick) {
+      try {
+        myTurnSound?.play();
+      } catch (e) {
+      }
+    }
+  }, [isMyDraftPick, lastIsMyDraftPick]);
+}
+
+const usePickMadeSoundFx = (draftPicks: DraftPick[] | undefined) => {
+  const draftPickCount = draftPicks?.filter(isCompletedDraftPick).length;
+  const lastDraftPickCount = usePreviousValue(draftPickCount);
+  useEffect(() => {
+    if (draftPickCount !== undefined && lastDraftPickCount !== undefined && draftPickCount > lastDraftPickCount) {
+      try {
+        pickMadeSound?.play();
+      } catch (e) {
+      }
+    }
+  }, [draftPickCount, lastDraftPickCount]);
+}
+
+const usePreviousValue = <T,>(v: T): T | undefined => {
+  const ref = useRef<T | undefined>();
+  useEffect(() => {
+    ref.current = v;
+  });
+  return ref.current;
 }
 
 const PostDraft: React.FC = () => {
@@ -159,13 +192,7 @@ const PreDraft: React.FC = () => {
       <section>
         <a id='InlinePickListEditor' />
         <GolfDraftPanel heading='Pick List Editor'>
-          {/* <PickListEditor
-            golfersRemaining={golfersRemaining}
-            syncedPickList={syncedPickListForEditor}
-            pendingPickList={pendingPickListForEditor}
-            height='29em'
-          /> */}
-          {<p>hihi TODO: PickListEditor</p>}
+          <PickListEditor height='29em' />
         </GolfDraftPanel>
       </section>
 

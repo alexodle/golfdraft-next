@@ -4,7 +4,6 @@ import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResul
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftPickList } from '../models';
 import { difference, union } from '../util/sets';
-import { getDraftPickList, getDraftPickListUsers } from './draft';
 import { openSharedSubscription } from './subscription';
 import { useCurrentUser } from './users';
 
@@ -88,6 +87,24 @@ export function usePickListUpdater(): UseMutationResult<UpdatePickListRequest, u
   return myUser ? result : undefined;
 }
 
+export async function getDraftPickListUsers(tourneyId: number, supabase = supabaseClient): Promise<number[]> {
+  const result = await supabase.from<Pick<DraftPickList, 'userId' | 'tourneyId'>>(DRAFT_PICK_LIST_TABLE).select('userId').filter('tourneyId', 'eq', tourneyId);
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error(`Failed to fetch pick lists`);
+  }
+  return result.data.map(pl => pl.userId);
+}
+
+export async function getDraftPickList(tourneyId: number, userId: number, supabase = supabaseClient): Promise<number[] | null> {
+  const result = await supabase.from<DraftPickList>(DRAFT_PICK_LIST_TABLE).select('golferIds').filter('tourneyId', 'eq', tourneyId).eq('userId', userId).maybeSingle();
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error(`Failed to fetch pick lists`);
+  }
+  return result.data?.golferIds ?? null;
+}
+
 async function updatePickList(pickList: DraftPickList) {
   const result = await supabaseClient.from(DRAFT_PICK_LIST_TABLE).upsert(pickList, { returning: 'minimal' });
   if (result.error) {
@@ -99,3 +116,4 @@ async function updatePickList(pickList: DraftPickList) {
 function getPickListQueryClientKey(tourneyId: number, userId: number | undefined): Array<unknown> {
   return  [DRAFT_PICK_LIST_TABLE, tourneyId, userId];
 }
+

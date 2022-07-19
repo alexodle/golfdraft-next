@@ -17,7 +17,7 @@ export const FreeTextPickListEditor: React.FC<{
   const [matches, setMatches] = useState<Match[] | undefined>();
   const [text, setText] = useState<string>('');
   const pickListUpdater = usePickListUpdater();
-  const { data: golfers } = useGolfers();
+  const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
 
   useEffect(() => {
     if (pickListUpdater?.isSuccess) {
@@ -25,13 +25,13 @@ export const FreeTextPickListEditor: React.FC<{
     }
   }, [onCancel, pickListUpdater?.isSuccess]);
 
-  if (!pickListUpdater || !golfers) {
+  if (!pickListUpdater || !allGolfers) {
     return <Loading />;
   }
 
   const saveFreeText = () => {
     const names = cleanedGolfers(text);
-    const matches = matchNames(names, Object.values(golfers));
+    const matches = matchNames(names, allGolfers);
 
     if (matches.every(isExactMatch)) {
       setMatches(undefined);
@@ -104,11 +104,11 @@ const SuggestionSelector: React.FC<{
   onSelectionChange
 }) => {
   const [forceViewAll, setForceViewAll] = useState(false);
-  const { data: golfersById } = useGolfers();
+  const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
 
   const alphabeticalGolfers = useMemo(() => {
-    return Object.values(golfersById ?? {}).sort();
-  }, [golfersById]);
+    return allGolfers?.sort() ?? [];
+  }, [allGolfers]);
 
   const isViewingAll = forceViewAll || match.type === 'no_match';
   const options = isViewingAll ? alphabeticalGolfers : (match.type === 'suggestion' ? match.suggestions : undefined);
@@ -126,7 +126,7 @@ const SuggestionSelector: React.FC<{
     // Hack to wait for caller to set our selection
     return null;
   }
-  if (!golfersById) {
+  if (!allGolfers || !getGolfer) {
     return <Loading />;
   }
 
@@ -174,7 +174,7 @@ const SuggestionSelector: React.FC<{
               className='form-control'
               value={selection.id}
               onChange={(ev) => {
-                onSelectionChange(golfersById[+ev.target.value]);
+                onSelectionChange(getGolfer(+ev.target.value));
               }}
             >
               {alphabeticalGolfers.map(g => (

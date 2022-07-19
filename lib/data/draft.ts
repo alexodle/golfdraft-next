@@ -82,7 +82,7 @@ export function useDraftPicker(): {
 }
 
 export function useRemainingGolfers(): Golfer[] | undefined {
-  const { data: allGolfers } = useGolfers();
+  const { data: { golfers: allGolfers } = {} } = useGolfers();
   const { data: draftPicks } = useDraftPicks();
 
   const remaining = useMemo(() => {
@@ -91,7 +91,7 @@ export function useRemainingGolfers(): Golfer[] | undefined {
     }
 
     const pickedGolfers = new Set(draftPicks.filter(isCompletedDraftPick).map(dp => dp.golferId));
-    return Object.values(allGolfers).filter(g => !pickedGolfers.has(g.id));
+    return allGolfers.filter(g => !pickedGolfers.has(g.id));
   }, [draftPicks, allGolfers]);
 
   return remaining;
@@ -154,7 +154,7 @@ export async function getCompletedDraftPicks(tourneyId: number, supabase = supab
     .order('pickNumber');
   if (result.error) {
     console.dir(result.error);
-    throw new Error(`Failed to fetch picks`);
+    throw new Error(`Failed to fetch completed picks`);
   }
   return result.data;
 }
@@ -173,24 +173,6 @@ export async function setDraftPicks(tourneyId: number, draftPicks: PendingDraftP
   }
   
   return result.data;
-}
-
-export async function getDraftPickListUsers(tourneyId: number, supabase = supabaseClient): Promise<number[]> {
-  const result = await supabase.from<Pick<DraftPickList, 'userId' | 'tourneyId'>>(DRAFT_PICK_LIST_TABLE).select('userId').filter('tourneyId', 'eq', tourneyId);
-  if (result.error) {
-    console.dir(result.error);
-    throw new Error(`Failed to fetch pick lists`);
-  }
-  return result.data.map(pl => pl.userId);
-}
-
-export async function getDraftPickList(tourneyId: number, userId: number, supabase = supabaseClient): Promise<number[] | null> {
-  const result = await supabase.from<DraftPickList>(DRAFT_PICK_LIST_TABLE).select('golferIds').filter('tourneyId', 'eq', tourneyId).eq('userId', userId).maybeSingle();
-  if (result.error) {
-    console.dir(result.error);
-    throw new Error(`Failed to fetch pick lists`);
-  }
-  return result.data?.golferIds ?? null;
 }
 
 export async function getAutoPickUsers(tourneyId: number, supabase = supabaseClient): Promise<number[]> {

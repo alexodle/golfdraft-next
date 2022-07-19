@@ -12,9 +12,9 @@ export const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange
 }) => {
   const { data: allDraftPicks } = useDraftPicks();
   const { data: allUsers } = useAllUsers();
-  const { data: golfers } = useGolfers();
+  const { data: { getGolfer } = {} } = useGolfers();
   
-  if (!allDraftPicks || !allUsers || !golfers) {
+  if (!allDraftPicks || !allUsers || !getGolfer) {
     return <Loading />;
   }
 
@@ -55,7 +55,7 @@ export const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange
                       </a>
                     )}
                   </td>
-                  <td>{GolferLogic.renderGolfer(golfers[p.golferId])}</td>
+                  <td>{GolferLogic.renderGolfer(getGolfer(p.golferId))}</td>
                 </tr>
               );
             })}

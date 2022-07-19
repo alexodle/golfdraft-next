@@ -11,7 +11,7 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
   const { data: syncedPickList, isLoading } = usePickList();
   const pickListUpdater = usePickListUpdater();
 
-  const { data: golferLookup } = useGolfers();
+  const { data: { getGolfer } = {} } = useGolfers();
 
   const remainingGolfers = useRemainingGolfers();
   const remainingGolfersByWgr = useMemo(() => {
@@ -23,7 +23,7 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
   const [draggingHoverIndex, setDraggingHoverIndex] = useState<number | null>(null);
   const [isFreeTextMode, setIsFreeTextMode] = useState<boolean>(false);
 
-  if (isLoading || !pickListUpdater || !golferLookup) {
+  if (isLoading || !pickListUpdater || !getGolfer) {
     return <Loading />;
   }
 
@@ -129,7 +129,7 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
               }}
             >
               {displayPickList.map((gid, i) => {
-                const g = golferLookup[gid];
+                const g = getGolfer(gid);
                 return (
                   <tr
                     key={gid}
@@ -164,7 +164,6 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
           </table>
         </div>
       </div>
-
     </section>
   );
 }
