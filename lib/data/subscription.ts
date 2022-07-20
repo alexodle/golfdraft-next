@@ -1,5 +1,5 @@
 import { supabaseClient } from '@supabase/auth-helpers-nextjs';
-import { RealtimeSubscription, SupabaseRealtimePayload } from '@supabase/supabase-js';
+import { RealtimeSubscription, SupabaseClient, SupabaseRealtimePayload } from '@supabase/supabase-js';
 import { memoize } from 'lodash';
 
 export type SubscriptionCallback<T> = (ev: SupabaseRealtimePayload<T>) => void;
@@ -11,14 +11,18 @@ export type Subscription<T> = {
 
 const getOrCreateSub = memoize(<T>(topic: string) => {
   const cbs: SubscriptionCallback<T>[] = [];
-  
-  let sub: RealtimeSubscription | undefined = undefined;
-  const ensureSub = () => {
-    sub = sub ?? supabaseClient.from<T>(topic)
+
+  const createSub = (topic: string): RealtimeSubscription => {
+    return supabaseClient.from<T>(topic)
       .on('*', (ev) => {
         cbs.forEach((cb) => cb(ev));
       })
       .subscribe();
+  }
+  
+  let sub: RealtimeSubscription | undefined = undefined;
+  const ensureSub = () => {
+    sub = sub ?? createSub(topic);
     return sub;
   }
 

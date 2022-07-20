@@ -192,7 +192,7 @@ const PreDraft: React.FC = () => {
       <section>
         <a id='InlinePickListEditor' />
         <GolfDraftPanel heading='Pick List Editor'>
-          <PickListEditor height='29em' />
+          <PickListEditor height='29em' preDraftMode={true} />
         </GolfDraftPanel>
       </section>
 

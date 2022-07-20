@@ -4,6 +4,7 @@ import { useTourneyId } from '../ctx/AppStateCtx';
 import { Tourney } from '../models';
 import { adminSupabase} from '../supabase';
 import { supabaseClient } from '@supabase/auth-helpers-nextjs';
+import { openSharedSubscription } from './subscription';
 
 const TOURNEY_TABLE = 'tourney';
 
@@ -21,14 +22,14 @@ export function useCurrentTourney(): UseQueryResult<Tourney> {
       return;
     }
 
-    const sub = supabaseClient.from<Tourney>(`${TOURNEY_TABLE}:tourney_id=eq.${tourneyId}`)
-      .on('UPDATE', (update) => {
-        queryClient.setQueryData(queryClientKey, update.new);
-      })
-      .subscribe();
+    const sub = openSharedSubscription<Tourney>(`${TOURNEY_TABLE}:id=eq.${tourneyId}`, (ev) => {
+      if (ev.eventType === 'UPDATE') {
+        queryClient.setQueryData(queryClientKey, ev.new);
+      }
+    });
 
     return () => {
-      supabaseClient.removeSubscription(sub);
+      sub.unsubscribe();
     }
   }, [queryClient, queryClientKey, tourneyId, result.isSuccess]);
 

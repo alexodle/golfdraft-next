@@ -102,7 +102,7 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
                 if (!pendingPickList || !pickListUpdater) {
                   return;
                 }
-                await pickListUpdater.mutate({ pickList: pendingPickList });
+                pickListUpdater.mutate({ pickList: pendingPickList });
                 setPendingPickList(null);
               }}
             >Save</button>

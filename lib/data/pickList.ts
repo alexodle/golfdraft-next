@@ -76,12 +76,16 @@ export function usePickListUpdater(): UseMutationResult<UpdatePickListRequest, u
     await updatePickList({ tourneyId, userId: myUser.id, golferIds: pickList });
     return { pickList };
   }, {
-    onSuccess: ({ pickList }) => {
+    onMutate: ({ pickList }) => {
       if (!myUser) {
         throw new Error('Not ready');
       }
       queryClient.setQueryData<number[]>(queryClientKey, pickList);
-    }
+    },
+    onError: (e) => {
+      console.dir(e);
+      queryClient.invalidateQueries(queryClientKey);
+    },
   });
 
   return myUser ? result : undefined;
