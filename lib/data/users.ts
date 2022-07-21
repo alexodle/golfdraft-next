@@ -3,7 +3,7 @@ import {
 } from '@supabase/auth-helpers-nextjs';
 import { useUser } from '@supabase/auth-helpers-react';
 import { keyBy } from 'lodash';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo } from 'react';
 import { useQuery, UseQueryResult } from 'react-query';
@@ -53,7 +53,7 @@ export async function getAllUsers(supabase = supabaseClient): Promise<GDUser[]> 
   return result.data;
 }
 
-export async function getCurrentUserServer(ctx: { req: NextApiRequest, res: NextApiResponse}): Promise<GDUser | 'pending'> {
+export async function getCurrentUserServer(ctx: GetServerSidePropsContext | { req: NextApiRequest, res: NextApiResponse  }): Promise<GDUser | 'pending'> {
   const supbase = supabaseServerClient(ctx);
 
   const { user: sessionUser, error } = await getUser(ctx);

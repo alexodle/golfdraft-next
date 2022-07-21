@@ -12,7 +12,7 @@ const DRAFT_PICK_LIST_TABLE = 'draft_pick_list';
 export function usePickListUsers(): UseQueryResult<Set<number>> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
-  const queryClientKey = useMemo(() => [`${DRAFT_PICK_LIST_TABLE}_users`, tourneyId], [tourneyId]);
+  const queryClientKey = useMemo(() => getPickListUsersQueryClientKey(tourneyId), [tourneyId]);
 
   const result = useQuery<Set<number>>(queryClientKey, async () => {
     return new Set(await getDraftPickListUsers(tourneyId));
@@ -121,3 +121,6 @@ function getPickListQueryClientKey(tourneyId: number, userId: number | undefined
   return  [DRAFT_PICK_LIST_TABLE, tourneyId, userId];
 }
 
+function getPickListUsersQueryClientKey(tourneyId: number): unknown[] {
+  return [`${DRAFT_PICK_LIST_TABLE}_users`, tourneyId];
+}

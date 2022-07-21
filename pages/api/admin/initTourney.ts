@@ -7,6 +7,10 @@ async function initTourneyApi(req: NextApiRequest, res: NextApiResponse) {
     return res.status(404).end();
   }
 
+  if (req.headers['gd-admin-script-api-key'] !== process.env.ADMIN_SCRIPT_API_KEY) {
+    return res.status(401).end();
+  }
+
   const cfg = req.body as TourneyConfig;
   const [isValid, issues] = validateTourneyConfig(cfg);
   if (!isValid) {

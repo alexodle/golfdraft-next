@@ -11,6 +11,7 @@ export type Tourney = Readonly<{
   allowClock: boolean;
   startDateEpochMillis: number;
   lastUpdatedEpochMillis: number;
+  commissioners?: { userId: number }[];
   /** TourneyConfig */
   config: string;
 }>

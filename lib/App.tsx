@@ -1,5 +1,5 @@
 import React from 'react';
-import { QueryClientProvider, QueryClient } from 'react-query';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { AppStateCtxProvider } from './ctx/AppStateCtx';
 
 const queryClient = new QueryClient({
@@ -15,7 +15,9 @@ const App: React.FC<{ tourneyId: number; children?: React.ReactNode; }> = ({ tou
   return (
     <AppStateCtxProvider appState={{ tourneyId }}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <div className='container'>
+          {children}
+        </div>
       </QueryClientProvider>
     </AppStateCtxProvider>
   )

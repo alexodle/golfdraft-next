@@ -1,5 +1,5 @@
 import { supabaseClient } from '@supabase/auth-helpers-nextjs';
-import { RealtimeSubscription, SupabaseClient, SupabaseRealtimePayload } from '@supabase/supabase-js';
+import { RealtimeSubscription, SupabaseRealtimePayload } from '@supabase/supabase-js';
 import { memoize } from 'lodash';
 
 export type SubscriptionCallback<T> = (ev: SupabaseRealtimePayload<T>) => void;

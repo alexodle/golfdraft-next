@@ -2,6 +2,7 @@ import { supabaseClient } from '@supabase/auth-helpers-nextjs';
 import { pick } from 'lodash';
 import { useEffect, useMemo } from 'react';
 import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { UndoLastPickRequest } from '../../pages/api/commish/undoLastPick';
 import { MakePickApiRequest } from '../../pages/api/draftPick';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { postJson } from '../legacy/js/fetch';
@@ -13,7 +14,6 @@ import { openSharedSubscription } from './subscription';
 import { useCurrentUser } from './users';
 
 const DRAFT_PICKS_TABLE = 'draft_pick';
-const DRAFT_PICK_LIST_TABLE = 'draft_pick_list';
 const DRAFT_AUTO_PICK_TABLE = 'draft_auto_pick';
 
 export function useDraftPicks(): UseQueryResult<DraftPick[]> {
@@ -81,6 +81,19 @@ export function useDraftPicker(): {
   }
 }
 
+export function useUndoLastPickMutation(): UseMutationResult<void, unknown, number, unknown> {
+  const mutation = useMutation(async (tourneyId: number) => {
+    try {
+      const req: UndoLastPickRequest = { tourneyId };
+      await postJson('/api/commish/undoLastPick', req);
+    } catch (e) {
+      console.dir(e);
+      throw new Error('Failed to undo last pick');
+    } 
+  });
+  return mutation;
+}
+
 export function useRemainingGolfers(): Golfer[] | undefined {
   const { data: { golfers: allGolfers } = {} } = useGolfers();
   const { data: draftPicks } = useDraftPicks();
@@ -110,7 +123,7 @@ export function useCurrentPick(): PendingDraftPick | 'none' | undefined {
 export function useAutoPickUsers(): UseQueryResult<Set<number>> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
-  const queryClientKey = useMemo(() => [DRAFT_AUTO_PICK_TABLE, tourneyId], [tourneyId]);
+  const queryClientKey = useMemo(() => getAutoPickUsersQueryClientKey(tourneyId), [tourneyId]);
 
   const result = useQuery<Set<number>>(queryClientKey, async () => {
     return new Set(await getAutoPickUsers(tourneyId));
@@ -136,6 +149,32 @@ export function useAutoPickUsers(): UseQueryResult<Set<number>> {
   }, [queryClient, queryClientKey, tourneyId, result.isSuccess]);
 
   return result;
+}
+
+export function useAutoPickUsersMutation(): UseMutationResult<void, unknown, { userId: number; autoPick: boolean; }> {
+  const tourneyId = useTourneyId();
+  const queryClient = useQueryClient();
+  const queryClientKey = useMemo(() => getAutoPickUsersQueryClientKey(tourneyId), [tourneyId]);
+  
+  const mutation = useMutation(async ({ userId, autoPick }: { userId: number; autoPick: boolean; }) => {
+    const result = autoPick ? 
+      await supabaseClient.from<DraftAutoPick>(DRAFT_AUTO_PICK_TABLE).upsert({ userId, tourneyId }, { returning: 'minimal' }) :
+      await supabaseClient.from<DraftAutoPick>(DRAFT_AUTO_PICK_TABLE).delete().match({ userId, tourneyId });
+    if (result.error) {
+      console.dir(result.error);
+      throw new Error(`Failed to update auto pick for user: ${userId}, tourney: ${tourneyId}`);
+    }
+  }, {
+    onMutate: ({ userId, autoPick }) => {
+      queryClient.setQueryData<Set<number>>(queryClientKey, (curr) => autoPick ? union(curr, userId) : difference(curr ?? new Set(), userId));
+    },
+    onError: (e) => {
+      console.dir(e);
+      queryClient.invalidateQueries(queryClientKey);
+    }
+  });
+
+  return mutation;
 }
 
 export async function getDraftPicks(tourneyId: number, supabase = supabaseClient): Promise<DraftPick[]> {
@@ -196,6 +235,14 @@ export async function makePick(dp: CompletedDraftPick, supabase = supabaseClient
   }
 }
 
+export async function undoLastPick(tourneyId: number, supbase = supabaseClient) {
+  const result = await supbase.rpc('undo_last_pick', { tourney_id: tourneyId });
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error('Failed to undo last pick');
+  }
+}
+
 export function isPendingDraftPick(dp: DraftPick): dp is PendingDraftPick {
   return !isCompletedDraftPick(dp);
 }
@@ -204,6 +251,10 @@ export function isCompletedDraftPick(dp: DraftPick): dp is CompletedDraftPick {
   return dp.golferId !== undefined && dp.golferId !== null;
 }
 
-function getDraftPicksQueryClientKey(tourneyId: number): Array<unknown> {
+function getDraftPicksQueryClientKey(tourneyId: number): unknown[] {
   return [DRAFT_PICKS_TABLE, tourneyId];
+}
+
+function getAutoPickUsersQueryClientKey(tourneyId: number): unknown[] {
+  return [DRAFT_AUTO_PICK_TABLE, tourneyId];
 }
