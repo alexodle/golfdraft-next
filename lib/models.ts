@@ -6,14 +6,18 @@ export type AppState = Readonly<{
 export type Tourney = Readonly<{
   id: number;
   name: string;
-  draftHasStarted: boolean;
-  isDraftPaused: boolean;
-  allowClock: boolean;
   startDateEpochMillis: number;
   lastUpdatedEpochMillis: number;
   commissioners?: { userId: number }[];
   /** TourneyConfig */
   config: string;
+}>
+
+export type DraftSettings = Readonly<{
+  tourneyId: number;
+  draftHasStarted: boolean;
+  isDraftPaused: boolean;
+  allowClock: boolean;
 }>
 
 export type TourneyConfig = Readonly<{
@@ -25,6 +29,7 @@ export type TourneyConfig = Readonly<{
     url: string;
     nameMap: Record<string, string>;
   },
+  commissioners: string[];
   draftOrder: string[];
   wgr: {
     url: string;

@@ -4,9 +4,9 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import App from '../../lib/App';
 import AppHeader from '../../lib/legacy/js/components/AppHeader';
-import DraftApp from '../../lib/legacy/js/components/DraftApp';
+import { TourneyApp } from '../../lib/legacy/js/components/TourneyApp';
 
-const Draft: NextPage = () => {
+const Tourney: NextPage = () => {
   const { query: { tourneyId: tourneyIdStr }, push } = useRouter();
 
   const tourneyId = tourneyIdStr ? +tourneyIdStr : NaN;
@@ -22,7 +22,7 @@ const Draft: NextPage = () => {
   return (
     <App tourneyId={tourneyId}>
       <AppHeader />
-      <DraftApp  />
+      <TourneyApp  />
     </App>
   );
 }
@@ -31,4 +31,4 @@ export const getServerSideProps = withPageAuth({
   redirectTo: '/login',
 });
 
-export default Draft;
+export default Tourney;

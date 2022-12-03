@@ -36,25 +36,6 @@ export function useCurrentTourney(): UseQueryResult<Tourney> {
   return result;
 }
 
-export function useTourneyMutation(): UseMutationResult<unknown, unknown, Partial<Tourney> & { id: number }, unknown> {
-  const queryClient = useQueryClient();
-
-  const tourneyMutation = useMutation(async (tourney: Partial<Tourney> & { id: number }) => {
-    await updateTourney(tourney);
-  }, {
-    onMutate: (tourney) => {
-      const key = getTourneyQueryClientKey(tourney.id);
-      queryClient.setQueryData<Tourney>(key, (curr) => ({ ...curr, ...(tourney as Tourney) }));
-    },
-    onError: (e, tourney) => {
-      console.dir(e);
-      queryClient.invalidateQueries(getTourneyQueryClientKey(tourney.id));
-    }
-  });
-
-  return tourneyMutation;
-}
-
 export type TourneyInfo = Pick<Tourney, 'id' | 'name' | 'startDateEpochMillis' | 'lastUpdatedEpochMillis'>;
 
 export async function getAllTourneys(supabase = supabaseClient): Promise<TourneyInfo[]> {
@@ -86,19 +67,33 @@ export async function getTourney(tourneyId: number, supabase = supabaseClient): 
 }
 
 export async function upsertTourney(tourney: Omit<Tourney, 'id'>): Promise<Tourney> {
-  const result = await adminSupabase().from<Tourney>(TOURNEY_TABLE).upsert(tourney, { onConflict: 'name' }).single();
+  const { commissioners, ...tourneyData } = tourney;
+
+  const result = await adminSupabase()
+    .from<Tourney>(TOURNEY_TABLE)
+    .upsert(tourneyData, { onConflict: 'name' })
+    .single();
+
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to upsert tourney`);
   }
+
+  await updateCommissioners(result.data.id, commissioners);
+
   return { ...tourney, ...result.data };
 }
 
 export async function updateTourney(tourney: Partial<Tourney> & { id: number }): Promise<void> {
+  const { commissioners, ...tourneyData } = tourney;
+
   const result = await adminSupabase()
     .from<Tourney>(TOURNEY_TABLE)
-    .update(tourney, { returning: 'minimal' })
+    .update(tourneyData, { returning: 'minimal' })
     .eq('id', tourney.id);
+
+  await updateCommissioners(tourney.id, commissioners);
+
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to update tourney`);
@@ -107,7 +102,7 @@ export async function updateTourney(tourney: Partial<Tourney> & { id: number }):
 
 export async function touchTourney(tourneyId: number): Promise<Tourney> {
   const result = await adminSupabase().from<Tourney>(TOURNEY_TABLE)
-    .update({ id: tourneyId, lastUpdatedEpochMillis: Date.now( )})
+    .update({ lastUpdatedEpochMillis: Date.now( )})
     .eq('id', tourneyId)
     .single();
   if (result.error) {
@@ -115,6 +110,29 @@ export async function touchTourney(tourneyId: number): Promise<Tourney> {
     throw new Error(`Failed to create tourney`);
   }
   return result.data;
+}
+
+async function updateCommissioners(tourneyId: number, commissioners: Tourney['commissioners']): Promise<void> {
+  if (!commissioners) {
+    return;
+  }
+
+  const results = [];
+
+  results.push(await adminSupabase()
+    .from('commissioners')
+    .delete({ returning: 'minimal' })
+    .eq('tourneyId', tourneyId));
+
+  results.push(await adminSupabase()
+    .from('commissioners')
+    .insert(commissioners.map((c) => ({ userId: c.userId, tourneyId })), { returning: 'minimal' }));
+
+  const errs = results.flatMap((r) => r.error ?? []);
+  if (errs.length) {
+    console.dir(errs);
+    throw new Error(`Failed to update tourney`);
+  }
 }
 
 function getTourneyQueryClientKey(tourneyId: number): unknown[] {

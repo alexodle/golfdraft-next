@@ -5,8 +5,9 @@ import { GetServerSideProps, NextPage } from 'next';
 import App from '../lib/App';
 import { getActiveTourneyId } from '../lib/data/appState';
 import { isPendingDraftPick, useAutoPickUsers, useAutoPickUsersMutation, useDraftPicks, useUndoLastPickMutation } from '../lib/data/draft';
+import { useDraftSettings, useDraftSettingsMutation } from '../lib/data/draftSettings';
 import { usePickListUsers } from '../lib/data/pickList';
-import { useCurrentTourney, useTourneyMutation } from '../lib/data/tourney';
+import { useCurrentTourney } from '../lib/data/tourney';
 import { useAllUsers, useCurrentUser } from '../lib/data/users';
 import DraftHistory from '../lib/legacy/js/components/DraftHistory';
 import GolfDraftPanel from '../lib/legacy/js/components/GolfDraftPanel';
@@ -22,7 +23,9 @@ const CommishPage: NextPage<CommishPageProps> = ({ activeTourneyId }) => {
 
 const InnerCommish: React.FC = () => {
   const { data: tourney } = useCurrentTourney();
-  const tourneyMutation = useTourneyMutation();
+
+  const { data: draftSettings } = useDraftSettings();
+  const draftSettingsMutation = useDraftSettingsMutation();
 
   const { data: draftPicks } = useDraftPicks();
   const undoLastPickMutation = useUndoLastPickMutation();
@@ -35,7 +38,7 @@ const InnerCommish: React.FC = () => {
   const user = useCurrentUser(); 
   const { data: pickListUsers } = usePickListUsers();
 
-  if (!user || !tourney || !pickListUsers || !autoPickUsers || !allUsers || !draftPicks) {
+  if (!user || !tourney || !draftSettings || !pickListUsers || !autoPickUsers || !allUsers || !draftPicks) {
     return <Loading />;
   }
 
@@ -46,18 +49,18 @@ const InnerCommish: React.FC = () => {
   const lastPickIndex = draftPicks.findIndex(isPendingDraftPick);
   return (
     <>
-      <GolfDraftPanel heading={tourney.draftHasStarted ? 'Draft STARTED' : 'Draft NOT STARTED'}>
-        <button className='btn btn-default' disabled={tourneyMutation.isLoading} onClick={() => {
-          tourneyMutation.mutate({ id: tourney.id, draftHasStarted: !tourney.draftHasStarted });
+      <GolfDraftPanel heading={draftSettings.draftHasStarted ? 'Draft STARTED' : 'Draft NOT STARTED'}>
+        <button className='btn btn-default' disabled={draftSettingsMutation.isLoading} onClick={() => {
+          draftSettingsMutation.mutate({ ...draftSettings, draftHasStarted: !draftSettings.draftHasStarted });
         }}>
-          {tourney.draftHasStarted ? 'Unstart Draft' : 'Start Draft'}
+          {draftSettings.draftHasStarted ? 'Unstart Draft' : 'Start Draft'}
         </button>
       </GolfDraftPanel>
-      <GolfDraftPanel heading={tourney.isDraftPaused ? 'Draft PAUSED' : 'Draft NOT PAUSED'}>
-        <button className='btn btn-default' disabled={tourneyMutation.isLoading} onClick={() => {
-          tourneyMutation.mutate({ id: tourney.id, isDraftPaused: !tourney.isDraftPaused });
+      <GolfDraftPanel heading={draftSettings.isDraftPaused ? 'Draft PAUSED' : 'Draft NOT PAUSED'}>
+        <button className='btn btn-default' disabled={draftSettingsMutation.isLoading} onClick={() => {
+          draftSettingsMutation.mutate({ ...draftSettings, isDraftPaused: !draftSettings.isDraftPaused });
         }}>
-          {tourney.isDraftPaused ? 'Unpause Draft' : 'Pause Draft'}
+          {draftSettings.isDraftPaused ? 'Unpause Draft' : 'Pause Draft'}
         </button>
       </GolfDraftPanel>
       <GolfDraftPanel heading={'Auto-picks'}>

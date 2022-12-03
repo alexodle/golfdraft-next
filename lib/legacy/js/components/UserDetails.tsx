@@ -1,93 +1,98 @@
-export {};
+import cx from 'classnames';
+import _ from 'lodash';
+import { useCompleteDraftPicks } from '../../../data/draft';
+import { useGolfers } from '../../../data/golfers';
+import { useCurrentTourney } from '../../../data/tourney';
+import { useTourneyStandings } from '../../../data/tourneyStandings';
+import { useAllUsers } from '../../../data/users';
+import * as utils from '../../common/utils';
 
-// import * as _ from 'lodash';
-// import cx from 'classnames';
-// import React from 'react';
-// import * as utils from '../../common/utils';
-// import GolferStore from '../stores/GolferStore';
-// import UserStore from '../stores/UserStore';
-// import {DraftPick, TourneyStandings} from '../types/ClientTypes';
+export type UserDetailsProps = Readonly<{
+  userId: number;
+}>;
 
-// export interface UserDetailsProps {
-//   userId: string;
-//   draftPicks: DraftPick[];
-//   tourneyStandings: TourneyStandings;
-// }
+export const UserDetails = ({ userId }: UserDetailsProps) => {
+  const allUsers = useAllUsers();
+  const tourney = useCurrentTourney();
+  const standings = useTourneyStandings();
+  const draftPicks = useCompleteDraftPicks();
+  const golferLookup = useGolfers();
 
-// export default class UserDetails extends React.Component<UserDetailsProps, {}> {
+  if (!allUsers.data || !tourney.data || !standings.data || !draftPicks.data || !golferLookup.data) {
+    return null;
+  }
 
-//   render() {
-//     const currentDayIndex = this.props.tourneyStandings.currentDay - 1;
-//     const userScores = this.props.tourneyStandings.playerScores;
+  const user = allUsers.data[userId];
 
-//     const userId = this.props.userId;
-//     const userScoreIndex = _.findIndex(userScores, us => us.player === userId);
-//     const userScore = userScores[userScoreIndex];
+  const currentDayIndex = standings.data.currentDay ?? 0 - 1;
+  const userScores = standings.data.standings;
 
-//     const golferPickNumbers = _.chain(this.props.draftPicks)
-//       .map(dp => dp.golfer)
-//       .invert()
-//       .mapValues(Number)
-//       .value();
+  const userScoreIndex = userScores.findIndex(us => us.userId === user?.id);
+  const userScore = userScores[userScoreIndex];
 
-//     const golferScores = _.chain(userScore.dayScores)
-//       .flatMap(ds => ds.golferScores)
-//       .groupBy(gs => gs.golfer)
-//       .toPairs()
-//       .sortBy(([golfer, golferScores]) => golferPickNumbers[golfer])
-//       .value();
+  const golferPickNumbers: Record<string, number> = {}; 
+  draftPicks.data.forEach((dp, i) => {
+    golferPickNumbers[dp.golferId] = i;
+  });
 
-//     const trs = _.map(golferScores, ([golfer, golferScores], i) => {
-//       const golferTotal = _.sumBy(golferScores, gs => gs.score);
-//       return (
-//         <tr key={golfer}>
-//           <td>
-//             {GolferStore.getGolfer(golfer).name}
-//             <small> ({utils.getOrdinal(golferPickNumbers[golfer] + 1)} pick)</small>
-//           </td>
-//           <td>{utils.toGolferScoreStr(golferTotal)}</td>
-//           {_.map(golferScores, (gs, i) => {
-//             return (
-//               <td
-//                 key={i}
-//                 className={cx({
-//                   'missed-cut': gs.missedCut,
-//                   'score-used': gs.scoreUsed
-//                 })}
-//               >
-//                 {utils.toGolferScoreStr(gs.score)}
-//                 <sup className="missed-cut-text"> MC</sup>
-//                 {i !== currentDayIndex ? null : (
-//                   <sup className="thru-text"> {utils.toThruStr(gs.thru)}</sup>
-//                 )}
-//               </td>
-//             );
-//           })}
-//         </tr>
-//       );
-//     })
-//     return (
-//       <section>
-//         <h2>
-//           {UserStore.getUser(userId).name}
-//           <span> </span>({utils.toGolferScoreStr(userScore.totalScore)})
-//           <small> {utils.getOrdinal(userScore.standing + 1)} place {userScore.isTied ? "(Tie)" : null}</small>
-//         </h2>
-//         <table className='table user-details-table'>
-//           <thead>
-//             <tr>
-//               <th>Golfer</th>
-//               <th>Score</th>
-//               <th>Day 1</th>
-//               <th>Day 2</th>
-//               <th>Day 3</th>
-//               <th>Day 4</th>
-//             </tr>
-//           </thead>
-//           <tbody>{trs}</tbody>
-//         </table>
-//       </section>
-//     );
-//   }
+  const golferScores = _.chain(userScore.dayScores)
+    .flatMap(ds => ds.golferScores)
+    .groupBy(gs => gs.golferId)
+    .toPairs()
+    .sortBy(([golfer]) => golferPickNumbers[golfer])
+    .value();
 
-// };
+  const trs = _.map(golferScores, ([golferId, golferScores], i) => {
+    const golferTotal = _.sumBy(golferScores, gs => gs.score);
+    const golfer = golferLookup.data.getGolfer(Number(golferId));
+    return (
+      <tr key={golferId}>
+        <td>
+          {golfer.name}
+          <small> ({utils.getOrdinal(golferPickNumbers[golferId] + 1)} pick)</small>
+        </td>
+        <td>{utils.toGolferScoreStr(golferTotal)}</td>
+        {golferScores.map((gs, i) => {
+          return (
+            <td
+              key={i}
+              className={cx({
+                'missed-cut': gs.missedCut,
+                'score-used': gs.scoreUsed
+              })}
+            >
+              {utils.toGolferScoreStr(gs.score)}
+              <sup className="missed-cut-text"> MC</sup>
+              {i !== currentDayIndex ? null : (
+                <sup className="thru-text"> {utils.toThruStr(gs.thru ?? 0)}</sup>
+              )}
+            </td>
+          );
+        })}
+      </tr>
+    );
+  });
+
+  return (
+    <section>
+      <h2>
+        {user.name}
+        <span> </span>({utils.toGolferScoreStr(userScore.totalScore)})
+        <small> {utils.getOrdinal(userScore.standing + 1)} place {userScore.isTied ? "(Tie)" : null}</small>
+      </h2>
+      <table className='table user-details-table'>
+        <thead>
+          <tr>
+            <th>Golfer</th>
+            <th>Score</th>
+            <th>Day 1</th>
+            <th>Day 2</th>
+            <th>Day 3</th>
+            <th>Day 4</th>
+          </tr>
+        </thead>
+        <tbody>{trs}</tbody>
+      </table>
+    </section>
+  );
+}

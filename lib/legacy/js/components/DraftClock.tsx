@@ -1,6 +1,6 @@
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { isCompletedDraftPick, isPendingDraftPick, useDraftPicks } from '../../../data/draft';
+import { isPendingDraftPick, useDraftPicks } from '../../../data/draft';
 import Assets from '../constants/Assets';
 
 const WARNING_TIME = 1000 * 60 * 2;

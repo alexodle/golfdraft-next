@@ -1,113 +1,82 @@
-export {};
+import moment from 'moment';
+import React, { useState } from 'react';
+//import ChatRoom from './ChatRoom';
+import GolfDraftPanel from './GolfDraftPanel';
+import GolferLogic from '../logic/GolferLogic';
+import { UserDetails } from './UserDetails';
+import { UserStandings } from './UserStandings';
+import * as utils from '../../common/utils';
+import { useCurrentTourney } from '../../../data/tourney';
+import { useCurrentUser } from '../../../data/users';
+import { useTourneyStandings } from '../../../data/tourneyStandings';
+import { useGolfers } from '../../../data/golfers';
+import Loading from '../../../Loading';
 
-// import * as moment from 'moment';
-// import React from 'react';
-// import ChatRoom from './ChatRoom';
-// import GolfDraftPanel from './GolfDraftPanel';
-// import GolferLogic from '../logic/GolferLogic';
-// import GolferStore from '../stores/GolferStore';
-// import UserDetails from './UserDetails';
-// import UserStandings from './UserStandings';
-// import * as utils from '../../common/utils';
-// import { DraftProps } from '../types/SharedProps';
-// import { User, TourneyStandings, ChatMessage, Indexed } from '../types/ClientTypes';
+export const TourneyApp = () => {
+    const user = useCurrentUser();
+    const tourney = useCurrentTourney();
+    const standings = useTourneyStandings();
+    const golferLookup = useGolfers();
 
-// export interface TourneyAppProps {
-//   draft: DraftProps;
-//   currentUser: User;
-//   tourneyStandings: TourneyStandings;
-//   lastScoresUpdate: Date;
-//   chatMessages?: ChatMessage[];
-//   activeUsers: Indexed<string>;
-//   isViewingActiveTourney: boolean;
-// }
+    const [userDetailsUserId, setUserDetailsUserId] = useState<number>();
 
-// interface TourneyAppState {
-//   userDetailsUser: string;
-// }
+    if (!user || !tourney.data || !standings.data || !golferLookup.data) {
+        return <Loading />;
+    }
 
-// function getState(state: TourneyAppState, props: TourneyAppProps) {
-//   return {
-//     userDetailsUser: state.userDetailsUser || props.currentUser.id
-//   };
-// }
+    if (!standings.data.standings.length) {
+        return (
+            <div>
+                <p>No standings yet. Check back in a bit.</p>
+            </div>
+        );
+    }
+    
+    return (
+        <section>
+        <p>
+          <small>
+            Scores sync every 10 minutes. Last sync: <b>{moment(tourney.data.lastUpdatedEpochMillis).calendar()}</b>
+          </small>
+        </p>
 
-// class TourneyApp extends React.Component<TourneyAppProps, TourneyAppState> {
+        <GolfDraftPanel heading='Overall Standings'>
+          <UserStandings
+            selectedUserId={userDetailsUserId}
+            onUserSelected={setUserDetailsUserId}
+          />
+        </GolfDraftPanel>
 
-//   constructor(props) {
-//     super(props);
-//     this.state = this._getInitialState();
-//   }
+        <a id='UserDetails' />
+        <GolfDraftPanel heading='Score Details'>
+          <UserDetails
+            userId={userDetailsUserId ?? user.id}
+          />
+        </GolfDraftPanel>
 
-//   private _getInitialState() {
-//     return getState({} as TourneyAppState, this.props);
-//   }
-
-//   private renderCalculatingStandings() {
-//     return (<p>Initializing tourney...</p>);
-//   }
-
-//   render() {
-//     if (!this.props.tourneyStandings) {
-//       return this.renderCalculatingStandings();
-//     }
-
-//     return (
-//       <section>
-//         <p>
-//           <small>
-//             Scores sync every 10 minutes. Last sync: <b>{moment(this.props.lastScoresUpdate).calendar()}</b>
-//           </small>
-//         </p>
-
-//         <GolfDraftPanel heading='Overall Standings'>
-//           <UserStandings
-//             currentUser={this.props.currentUser}
-//             pickOrder={this.props.draft.pickOrder}
-//             tourneyStandings={this.props.tourneyStandings}
-//             selectedUser={this.state.userDetailsUser}
-//             onUserSelect={this._onUserSelect}
-//           />
-//         </GolfDraftPanel>
-
-//         <a id='UserDetails' />
-//         <GolfDraftPanel heading='Score Details'>
-//           <UserDetails
-//             userId={this.state.userDetailsUser}
-//             tourneyStandings={this.props.tourneyStandings}
-//             draftPicks={this.props.draft.draftPicks}
-//           />
-//         </GolfDraftPanel>
-
-//         {!this.props.tourneyStandings.worstScoresForDay.length ? null : (
-//           <GolfDraftPanel heading='Worst Scores of the Day'>
-//             <ul className='list-unstyled'>
-//               {this.props.tourneyStandings.worstScoresForDay.map(s => (
-//                 <li key={s.day}>
-//                   <b>Day {s.day + 1}</b>: {utils.toGolferScoreStr(s.score)}
-//                   <span> </span>
-//                   {GolferLogic.renderGolfer(GolferStore.getGolfer(s.golfer))}
-//                 </li>
-//               ))}
-//             </ul>
-//           </GolfDraftPanel>
-//         )}
-
-//         <ChatRoom
-//           currentUser={this.props.currentUser}
-//           messages={this.props.chatMessages}
-//           activeUsers={this.props.activeUsers}
-//           enabled={this.props.isViewingActiveTourney}
-//         />
-//       </section>
-//     );
-//   }
-
-//   _onUserSelect = (userId: string) => {
-//     window.location.href = '#UserDetails';
-//     this.setState({ userDetailsUser: userId });
-//   }
-
-// };
-
-// export default TourneyApp;
+        {!standings.data.worstScoresForDay.length ? null : (
+          <GolfDraftPanel heading='Worst Scores of the Day'>
+            <ul className='list-unstyled'>
+              {standings.data.worstScoresForDay.map(s => {
+                const golfer = golferLookup.data.getGolfer(s.golferId);
+                return (
+                    <li key={s.day}>
+                    <b>Day {s.day + 1}</b>: {utils.toGolferScoreStr(s.score)}
+                    <span> </span>
+                    {GolferLogic.renderGolfer(golfer)}
+                    </li>
+                )
+              })}
+            </ul>
+          </GolfDraftPanel>
+        )}
+                
+        {/* <ChatRoom
+          currentUser={this.props.currentUser}
+          messages={this.props.chatMessages}
+          activeUsers={this.props.activeUsers}
+          enabled={this.props.isViewingActiveTourney}
+        /> */}
+      </section>
+    );
+}

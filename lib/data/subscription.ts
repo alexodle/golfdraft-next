@@ -48,10 +48,7 @@ const getOrCreateSub = memoize(<T>(topic: string) => {
  */
 export const openSharedSubscription = <T>(topic: string, cb: SubscriptionCallback<T>): { unsubscribe: () => void; }  => {
   const { addCb, removeCb } = getOrCreateSub<T>(topic);
-  
-  const myCbs: SubscriptionCallback<T>[] = [];
   addCb(cb);
-
   return {
     unsubscribe: () => {
       removeCb(cb);

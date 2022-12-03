@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 import { isCompletedDraftPick, isPendingDraftPick, useCurrentPick, useDraftPicks } from '../../../data/draft';
+import { useDraftSettings } from '../../../data/draftSettings';
 import { useCurrentTourney } from '../../../data/tourney';
 import { useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
@@ -25,7 +26,7 @@ try {
 }
 
 export const DraftApp: React.FC = () => {
-  const { data: tourney } = useCurrentTourney();
+  const { data: draftSettings } = useDraftSettings();
   const currentUser = useCurrentUser();
 
   const { data: draftPicks } = useDraftPicks();
@@ -39,11 +40,11 @@ export const DraftApp: React.FC = () => {
   useMyTurnSoundFx(isMyDraftPick);
   usePickMadeSoundFx(draftPicks);
 
-  if (!tourney || !draftPicks || !currentPick || !currentUser) {
+  if (!draftSettings || !draftPicks || !currentPick || !currentUser) {
     return <Loading />;
   }
   
-  if (!tourney.draftHasStarted) {
+  if (!draftSettings.draftHasStarted) {
     return <PreDraft />;
   }
 
@@ -52,8 +53,8 @@ export const DraftApp: React.FC = () => {
   }
 
   return (
-    <section className={'draft ' + (tourney.isDraftPaused ? 'draft-paused' : 'draft-active')}>
-      {tourney.isDraftPaused ? <section className='app-paused-section'><AppPausedStatus /></section> : (
+    <section className={'draft ' + (draftSettings.isDraftPaused ? 'draft-paused' : 'draft-active')}>
+      {draftSettings.isDraftPaused ? <section className='app-paused-section'><AppPausedStatus /></section> : (
         <React.Fragment>
           <section className='chooser-section'>
             {!isMyDraftPick ? (
@@ -74,7 +75,7 @@ export const DraftApp: React.FC = () => {
 
           <section className='draft-clock-section'>
             <GolfDraftPanel heading={'Draft Clock'}>
-              <DraftClock isMyPick={!!isMyDraftPick} disableClock={!tourney.allowClock} />
+              <DraftClock isMyPick={!!isMyDraftPick} disableClock={!draftSettings.allowClock} />
             </GolfDraftPanel>
           </section>
 
@@ -158,7 +159,7 @@ const PostDraft: React.FC = () => {
     <section>
       <div className='jumbotron'>
         <h1>The draft is over!</h1>
-        <p><Link href={`/${tourney.id}`}>Check out the live leaderboard</Link></p>
+        <p><Link href={`/tourney/${tourney.id}`}>Check out the live leaderboard</Link></p>
       </div>
 
       <section>

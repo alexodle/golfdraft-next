@@ -2,6 +2,10 @@ import { DbTourneyStandingPlayerScore, DbTourneyStandings, TourneyStandingGolfer
 import { adminSupabase } from '../supabase';
 import { supabaseClient } from '@supabase/auth-helpers-nextjs';
 import { omit } from 'lodash';
+import { useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { useEffect, useMemo } from 'react';
+import { openSharedSubscription } from './subscription';
+import { useTourneyId } from '../ctx/AppStateCtx';
 
 const TOURNEY_STANDINGS_TABLE = 'tourney_standings';
 const TOURNEY_STANDINGS_PLAYER_SCORES_TABLE = 'tourney_standings_player_scores';
@@ -9,6 +13,33 @@ const TOURNEY_STANDINGS_PLAYER_SCORES_TABLE = 'tourney_standings_player_scores';
 export type TourneyStandings = ModelTourneyStandings & Readonly<{
   standings: TourneyStandingPlayerScore[]
 }>;
+
+export function useTourneyStandings(): UseQueryResult<TourneyStandings> {
+  const tourneyId = useTourneyId();
+  const queryClient = useQueryClient();
+
+  const queryClientKey = useMemo(() => getTourneyStandingsQueryKey(tourneyId), [tourneyId]);
+
+  const result = useQuery<TourneyStandings>(queryClientKey, async () => {
+    return await getTourneyStandings(tourneyId);
+  });
+
+  useEffect(() => {
+    if (!result.isSuccess) {
+      return;
+    }
+    const sub = openSharedSubscription(`${TOURNEY_STANDINGS_TABLE}:tourneyId=eq.${tourneyId}`, (ev) => {
+      if (ev.eventType === 'UPDATE') {
+        queryClient.invalidateQueries(queryClientKey);
+      }
+    });
+    return () => {
+      sub.unsubscribe();
+    }
+  }, [queryClient, queryClientKey, tourneyId, result.isSuccess]);
+
+  return result;
+}
 
 export async function getTourneyStandings(tourneyId: number, supabase = supabaseClient): Promise<TourneyStandings> {
   const result = await supabase
@@ -64,4 +95,8 @@ export async function updateTourneyStandings(tourneyStanding: TourneyStandings):
       throw new Error(`Failed to upsert tourneyStanding player scores: ${tourneyStanding.tourneyId}`);
     }
   }
+}
+
+function getTourneyStandingsQueryKey(tourneyId: number): unknown[] {
+  return [TOURNEY_STANDINGS_TABLE, tourneyId];
 }

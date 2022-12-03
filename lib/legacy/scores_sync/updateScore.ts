@@ -60,7 +60,9 @@ export function mergeOverrides(scores: GolferScore[], scoreOverrides: GolferScor
 
 export async function run(tourneyId: number, reader: Reader, config: TourneyConfig, populateGolfers = false) {
   const url = config.scores.url;
+  
   const ts = moment().format('YMMDD_HHmmss');
+  console.log(`Updating scores at ${ts}`);
 
   const rawTourney = await reader.run(config, url);
 

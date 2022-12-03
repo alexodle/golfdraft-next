@@ -45,6 +45,17 @@ export function useDraftPicks(): UseQueryResult<DraftPick[]> {
   return result;
 }
 
+export function useCompleteDraftPicks(): UseQueryResult<CompletedDraftPick[]> {
+  const tourneyId = useTourneyId();
+
+  const queryClientKey = [ ...getDraftPicksQueryClientKey(tourneyId), 'completed' ];
+  const result = useQuery(queryClientKey, async () => {
+    return await getCompletedDraftPicks(tourneyId);
+  });
+
+  return result;
+}
+
 export function useDraftPicker(): { 
   pickMutation: UseMutationResult<CompletedDraftPick, unknown, { pendingDraftPick: PendingDraftPick, golferId: number}, unknown>; 
   pickListPickMutation: UseMutationResult<unknown, unknown, PendingDraftPick, unknown>; 
@@ -117,7 +128,7 @@ export function useCurrentPick(): PendingDraftPick | 'none' | undefined {
   }
 
   const currentPick = pickResult.data.find(p => isPendingDraftPick(p)) as PendingDraftPick | undefined;
-  return currentPick  ?? 'none';
+  return currentPick ?? 'none';
 }
 
 export function useAutoPickUsers(): UseQueryResult<Set<number>> {
@@ -177,6 +188,19 @@ export function useAutoPickUsersMutation(): UseMutationResult<void, unknown, { u
   return mutation;
 }
 
+export async function getIsDraftComplete(tourneyId: number, supabase = supabaseClient): Promise<boolean> {
+  const result = await supabase.from<DraftPick>(DRAFT_PICKS_TABLE)
+    .select('tourneyId')
+    .eq('tourneyId', tourneyId)
+    .is('golferId', null)
+    .limit(1);
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error(`Failed to fetch picks`);
+  }
+  return result.data.length === 0;
+}
+
 export async function getDraftPicks(tourneyId: number, supabase = supabaseClient): Promise<DraftPick[]> {
   const result = await supabase.from<DraftPick>(DRAFT_PICKS_TABLE).select('*').filter('tourneyId', 'eq', tourneyId).order('pickNumber');
   if (result.error) {
@@ -187,7 +211,8 @@ export async function getDraftPicks(tourneyId: number, supabase = supabaseClient
 }
 
 export async function getCompletedDraftPicks(tourneyId: number, supabase = supabaseClient): Promise<CompletedDraftPick[]> {
-  const result = await supabase.from<CompletedDraftPick>(DRAFT_PICKS_TABLE).select('*')
+  const result = await supabase.from<CompletedDraftPick>(DRAFT_PICKS_TABLE)
+    .select('*')
     .eq('tourneyId', tourneyId)
     .not('golferId',  'is', null)
     .order('pickNumber');
