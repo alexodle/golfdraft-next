@@ -20,7 +20,7 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>('pickList');
   const [selectedGolferIdState, setSelectedGolferId] = useState<number | undefined>();
-  const { pickMutation, pickListPickMutation } = useDraftPicker();
+  const { pickMutation, autoPickMutation } = useDraftPicker();
 
   const golfersRemaining = useRemainingGolfers();
   const currentUser = useCurrentUser();
@@ -114,10 +114,10 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
         <div style={{marginTop: '1em'}}>
           <button
             className='btn btn-default btn-primary'
-            disabled={pickListPickMutation.isLoading}
+            disabled={autoPickMutation.isLoading}
             onClick={(ev) => {
               ev.preventDefault();
-              pickListPickMutation.mutate(currentPick)
+              autoPickMutation.mutate(currentPick)
             }}
           >Pick</button>
         </div>

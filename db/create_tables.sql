@@ -77,8 +77,7 @@ ALTER TABLE app_state
 CREATE TABLE IF NOT EXISTS draft_auto_pick (
     "tourneyId" integer NOT NULL REFERENCES tourney(id),
     "userId" integer NOT NULL REFERENCES gd_user(id),
-    "autoPick" boolean NOT NULL,
-    PRIMARY KEY ("tourneyId", "userId", "autoPick")
+    PRIMARY KEY ("tourneyId", "userId")
 );
 
 ALTER TABLE draft_auto_pick

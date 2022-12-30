@@ -3,6 +3,7 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import App from '../../lib/App';
+import { AutoPicker } from '../../lib/components/AutoPicker';
 import AppHeader from '../../lib/legacy/js/components/AppHeader';
 import DraftApp from '../../lib/legacy/js/components/DraftApp';
 
@@ -23,6 +24,8 @@ const Draft: NextPage = () => {
     <App tourneyId={tourneyId}>
       <AppHeader />
       <DraftApp  />
+
+      <AutoPicker />
     </App>
   );
 }

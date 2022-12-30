@@ -20,7 +20,7 @@ export const DraftStatus: React.FC<{
   return (
     <div>
       <p className='draft-status'>
-        Now drafting (Pick #{currentPick.pickNumber + 1}): <b>{userName}</b>
+        Now drafting (Pick #{currentPick.pickNumber}): <b>{userName}</b>
       </p>
       <a href='#' onClick={(ev) => { ev.preventDefault(); onDraftForUser(currentPick.userId) }}>{`I'll pick for ${userName}`}</a>
     </div>

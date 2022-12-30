@@ -47,7 +47,7 @@ export const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange
               const userName = allUsers[p.userId].name;
               return (
                 <tr key={p.pickNumber}>
-                  <td>{p.pickNumber + 1}</td>
+                  <td>{p.pickNumber}</td>
                   <td>
                     {selectedUserId ? userName : (
                       <a href='#DraftHistory' onClick={() => onSelectionChange?.(p.userId)}>

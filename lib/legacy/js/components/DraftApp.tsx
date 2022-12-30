@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
-import { isCompletedDraftPick, isPendingDraftPick, useCurrentPick, useDraftPicks } from '../../../data/draft';
+import { isCompletedDraftPick, useCurrentPick, useDraftPicks } from '../../../data/draft';
 import { useDraftSettings } from '../../../data/draftSettings';
 import { useCurrentTourney } from '../../../data/tourney';
 import { useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
-import { DraftPick, GDUser, PendingDraftPick } from '../../../models';
+import { DraftPick } from '../../../models';
 import Assets from '../constants/Assets';
 import AppPausedStatus from './AppPausedStatus';
 import DraftChooser from './DraftChooser';

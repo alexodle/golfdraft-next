@@ -58,7 +58,7 @@ export function useCompleteDraftPicks(): UseQueryResult<CompletedDraftPick[]> {
 
 export function useDraftPicker(): { 
   pickMutation: UseMutationResult<CompletedDraftPick, unknown, { pendingDraftPick: PendingDraftPick, golferId: number}, unknown>; 
-  pickListPickMutation: UseMutationResult<unknown, unknown, PendingDraftPick, unknown>; 
+  autoPickMutation: UseMutationResult<unknown, unknown, PendingDraftPick, unknown>; 
 } {
   const queryClient = useQueryClient();
   const myUser = useCurrentUser();
@@ -82,13 +82,18 @@ export function useDraftPicker(): {
     }
   });
 
-  const pickListPickMutation = useMutation((draftPick: PendingDraftPick) => {
-    throw new Error(`hihi TODO: ${draftPick}`);
+  const autoPickMutation = useMutation(async (draftPick: PendingDraftPick) => {
+    const result = await supabaseClient.rpc('make_pick_list_or_wgr_pick', { 
+      tourney_id: draftPick.tourneyId, 
+      pick_number: draftPick.pickNumber, 
+      user_id: draftPick.userId
+    });
+    return result;
   });
 
   return {
     pickMutation,
-    pickListPickMutation,
+    autoPickMutation,
   }
 }
 
@@ -199,6 +204,20 @@ export async function getIsDraftComplete(tourneyId: number, supabase = supabaseC
     throw new Error(`Failed to fetch picks`);
   }
   return result.data.length === 0;
+}
+
+export async function getCurrentDraftPick(tourneyId: number, supabase = supabaseClient): Promise<PendingDraftPick | undefined> {
+  const result = await supabase.from<PendingDraftPick>(DRAFT_PICKS_TABLE)
+    .select('tourneyId')
+    .eq('tourneyId', tourneyId)
+    .is('golferId', null)
+    .order('pickNumber', { ascending: true })
+    .limit(1);
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error(`Failed to fetch picks`);
+  }
+  return result.data[0];
 }
 
 export async function getDraftPicks(tourneyId: number, supabase = supabaseClient): Promise<DraftPick[]> {

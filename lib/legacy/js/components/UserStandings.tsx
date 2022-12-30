@@ -53,7 +53,7 @@ export const UserStandings = ({ selectedUserId, onUserSelected }: UserDetailsPro
           <td>{ps.standing + 1}</td>
           <td>{userIsMe ? (<b>{p.name}</b>) : p.name}</td>
           <td>{utils.toGolferScoreStr(ps.totalScore)}</td>
-          <td>{pickNumber + 1}</td>
+          <td>{pickNumber}</td>
           <td className='hidden-xs'>{holesLeft > 0 ? holesLeft : 'F'}</td>
           {ps.dayScores.map(ds => {
             return (<td className='hidden-xs' key={ds.day}>{utils.toGolferScoreStr(ds.totalScore)}</td>);

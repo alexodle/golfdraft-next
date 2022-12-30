@@ -3,11 +3,23 @@ import { useEffect, useMemo } from 'react';
 import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftPickList } from '../models';
-import { difference, union } from '../util/sets';
 import { openSharedSubscription } from './subscription';
 import { useCurrentUser } from './users';
 
 const DRAFT_PICK_LIST_TABLE = 'draft_pick_list';
+const PICK_LIST_USER_TABLE = 'pick_list_user';
+
+type PickListTableModel = Readonly<{
+  tourneyId: number;
+  userId: number;
+  golferId: number;
+  pickOrder: number;
+}>;
+
+type PickListUserTableModel = Readonly<{
+  tourneyId: number;
+  userId: number;
+}>
 
 export function usePickListUsers(): UseQueryResult<Set<number>> {
   const tourneyId = useTourneyId();
@@ -23,13 +35,8 @@ export function usePickListUsers(): UseQueryResult<Set<number>> {
       return;
     }
 
-    const sub = openSharedSubscription<DraftPickList>(`${DRAFT_PICK_LIST_TABLE}:tourneyId=eq.${tourneyId}`, (ev) => {
-      switch (ev.eventType) {
-        case 'INSERT':
-          return queryClient.setQueryData<Set<number>>(queryClientKey, (curr) => union(curr, ev.new.userId));
-        case 'DELETE':
-          return queryClient.setQueryData<Set<number>>(queryClientKey, (curr) => difference(curr ?? new Set(), ev.old.userId));
-      }
+    const sub = openSharedSubscription(`${DRAFT_PICK_LIST_TABLE}:tourneyId=eq.${tourneyId}`, () => {
+      return queryClient.invalidateQueries(queryClientKey);
     });
 
     return () => {
@@ -57,10 +64,6 @@ export function usePickList(): UseQueryResult<number[] | null> {
 
 export type UpdatePickListRequest = {
   pickList: number[];
-}
-
-export type UpdatePickListByNames = {
-  namePickList: string[];
 }
 
 export function usePickListUpdater(): UseMutationResult<UpdatePickListRequest, unknown, UpdatePickListRequest, unknown> | undefined {
@@ -92,7 +95,9 @@ export function usePickListUpdater(): UseMutationResult<UpdatePickListRequest, u
 }
 
 export async function getDraftPickListUsers(tourneyId: number, supabase = supabaseClient): Promise<number[]> {
-  const result = await supabase.from<Pick<DraftPickList, 'userId' | 'tourneyId'>>(DRAFT_PICK_LIST_TABLE).select('userId').filter('tourneyId', 'eq', tourneyId);
+  const result = await supabase.from<PickListUserTableModel>(PICK_LIST_USER_TABLE)
+    .select('userId')
+    .eq('tourneyId', tourneyId);
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to fetch pick lists`);
@@ -101,16 +106,26 @@ export async function getDraftPickListUsers(tourneyId: number, supabase = supaba
 }
 
 export async function getDraftPickList(tourneyId: number, userId: number, supabase = supabaseClient): Promise<number[] | null> {
-  const result = await supabase.from<DraftPickList>(DRAFT_PICK_LIST_TABLE).select('golferIds').filter('tourneyId', 'eq', tourneyId).eq('userId', userId).maybeSingle();
+  const result = await supabase.from<PickListTableModel>(DRAFT_PICK_LIST_TABLE)
+    .select('golferId')
+    .eq('tourneyId', tourneyId)
+    .eq('userId', userId);
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to fetch pick lists`);
   }
-  return result.data?.golferIds ?? null;
+  if (result.data.length === 0) {
+    return null;
+  }
+  return result.data.map(pl => pl.golferId);
 }
 
 async function updatePickList(pickList: DraftPickList) {
-  const result = await supabaseClient.from(DRAFT_PICK_LIST_TABLE).upsert(pickList, { returning: 'minimal' });
+  const result = await supabaseClient.rpc('set_pick_list', {
+    golfer_ids: pickList.golferIds.join(','), 
+    tourney_id: pickList.tourneyId, 
+    user_id: pickList.userId,
+  });
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to update pick list: ${result.statusText}`);
@@ -122,5 +137,5 @@ function getPickListQueryClientKey(tourneyId: number, userId: number | undefined
 }
 
 function getPickListUsersQueryClientKey(tourneyId: number): unknown[] {
-  return [`${DRAFT_PICK_LIST_TABLE}_users`, tourneyId];
+  return [PICK_LIST_USER_TABLE, tourneyId];
 }

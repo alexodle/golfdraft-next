@@ -5,7 +5,6 @@ import { DraftSettings } from '../models';
 import { supabaseClient } from '@supabase/auth-helpers-nextjs';
 import { openSharedSubscription } from './subscription';
 
-
 const DRAFT_SETTINGS_TABLE = 'draft_settings';
 
 export function useDraftSettings(): UseQueryResult<DraftSettings> {
