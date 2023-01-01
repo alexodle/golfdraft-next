@@ -31,7 +31,7 @@ export function useCurrentUser(): GDUser | undefined {
   useEffect(() => {
     if (!userLookup.isLoading && userLookup.isSuccess && !me) {
       push('/pending'); // hihi TODO build
-    } 
+    }
   }, [push, userLookup, me]);
 
   return me;

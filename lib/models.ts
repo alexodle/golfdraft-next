@@ -88,7 +88,7 @@ type BaseGolferScore = Readonly<{
   golferId: number;
   tourneyId: number;
   day: number;
-  thru?: number;
+  thru?: number | null;
 }>
 
 export type GolferScore = BaseGolferScore & Readonly<{

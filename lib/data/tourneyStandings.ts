@@ -60,13 +60,16 @@ export async function getTourneyStandings(tourneyId: number, supabase = supabase
 
   const { worstScoresForDay, tourney_standings_player_scores: dbPlayerScores, ...tourneyStandings } = result.data;
 
+  const standings = dbPlayerScores.map<TourneyStandingPlayerScore>(s => ({
+    ...s,
+    dayScores: JSON.parse(s.dayScores) as TourneyStandingPlayerDayScore[],
+  }))
+  .sort((a, b) => a.standing - b.standing); 
+
   return {
     ...tourneyStandings,
     worstScoresForDay: worstScoresForDay ? JSON.parse(worstScoresForDay) as WorstDayScore[] : [],
-    standings: dbPlayerScores.map(s => ({
-      ...s,
-      dayScores: JSON.parse(s.dayScores) as TourneyStandingPlayerDayScore[],
-    })),
+    standings,
   };
 }
 

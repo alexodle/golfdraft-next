@@ -37,25 +37,26 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
 
   const tourney = await upsertTourney({
     name: tourneyCfg.name,
-    commissioners,
+    commissioners, // TODO: move to tourney settings
     startDateEpochMillis: new Date(tourneyCfg.startDate).getTime(),
     lastUpdatedEpochMillis: Date.now(),
     config: JSON.stringify(tourneyCfg),
   });
+
+  const existingPicks = await getDraftPicks(tourney.id);
+  if (existingPicks.some(p => p.golferId)) {
+    throw new Error(`Cannot init tourney after draft has already started`);
+  }
+  
+  const sortedUsers = tourneyCfg.draftOrder.map(name => ensureTruthy(usersByName[name], `User not found: ${name}`));
+  const pickOrder = tourneyUtils.snakeDraftOrder(tourney.id, sortedUsers.map(u => u.id));
+
   await upsertDraftSettings({
     tourneyId: tourney.id,
     draftHasStarted: false,
     isDraftPaused: false,
     allowClock: true,
   });
-  
-  const sortedUsers = tourneyCfg.draftOrder.map(name => ensureTruthy(usersByName[name], `User not found: ${name}`));
-  const pickOrder = tourneyUtils.snakeDraftOrder(tourney.id, sortedUsers.map(u => u.id));
-
-  const existingPicks = await getDraftPicks(tourney.id);
-  if (existingPicks.some(p => p.golferId)) {
-    throw new Error(`Cannot init tourney after draft has already started`);
-  }
 
   await setDraftPicks(tourney.id, pickOrder);
   

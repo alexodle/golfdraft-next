@@ -23,7 +23,7 @@ export const UserStandings = ({ selectedUserId, onUserSelected }: UserDetailsPro
         return null;
     }
 
-    const currentDayIndex = standings.data.currentDay ?? 0 - 1;
+    const currentDayIndex = (standings.data.currentDay ?? 0) - 1;
 
     const trs = standings.data.standings.map((ps) => {
       const p = allUsers.data[ps.userId];

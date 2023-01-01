@@ -22,7 +22,7 @@ export type UseGolfersResult = Readonly<{
 export function useGolfers(): UseQueryResult<UseGolfersResult> {
   const tourneyId = useTourneyId();
   return useQuery<UseGolfersResult>(GOLFERS_TABLE, async () => {
-    const golfers = [...await getGolfers(tourneyId)];
+    const golfers = await getGolfers(tourneyId);
     const lookup = keyBy([...golfers, { ...PENDING_GOLFER, tourneyId }], g => g.id);
     return {
       golfers,
@@ -38,16 +38,22 @@ export function useGolfers(): UseQueryResult<UseGolfersResult> {
 }
 
 export async function getGolfers(tourneyId: number, supabase = supabaseClient): Promise<Golfer[]> {
-  const result = await supabase.from<Golfer>(GOLFERS_TABLE).select('*').filter('tourneyId', 'eq', tourneyId);
-  if (!result.data) {
-    throw new Error(`No golfers found`);
+  const result = await supabase
+    .from<Golfer>(GOLFERS_TABLE)
+    .select('*')
+    .eq('tourneyId', tourneyId);
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error(`Failed to get golfers for tourneyId: ${tourneyId}`);
   }
   return result.data;
 }
 
 export async function upsertGolfers(golfers: Omit<Golfer, 'id'>[]): Promise<Golfer[]> {
   const withoutId = golfers.map(g => omit(g, 'id'));
-  const result = await adminSupabase().from<Golfer>(GOLFERS_TABLE).upsert(withoutId, { returning: 'representation', onConflict: 'tourneyId, name' });
+  const result = await adminSupabase()
+    .from<Golfer>(GOLFERS_TABLE)
+    .upsert(withoutId, { returning: 'representation', onConflict: 'tourneyId, name' });
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to upsert golfers`);

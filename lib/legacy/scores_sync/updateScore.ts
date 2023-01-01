@@ -76,9 +76,9 @@ export async function run(tourneyId: number, reader: Reader, config: TourneyConf
   const nameMap = config.scores.nameMap;
   rawTourney.golfers.forEach(g => g.golfer = nameMap[g.golfer] || g.golfer);
 
-  // Ensure golfers
   let golfers: Golfer[];
   if (populateGolfers) {
+    // Ensure golfers
     const golfersPre = rawTourney.golfers.map<Omit<Golfer, 'id'>>(g => ({ tourneyId, name: g.golfer }));
     golfers = await upsertGolfers(golfersPre);
   } else {

@@ -77,7 +77,7 @@ function withStandings(sortedScores: TourneyStandingPlayerScore[]): TourneyStand
   let currentStanding = -1;
   return sortedScores.map((ps, i) => {
     if (i === 0 || ps.totalScore !== sortedScores[i - 1].totalScore) {
-      currentStanding++;
+      currentStanding = i;
     }
     return { ...ps, isTied: isTied(sortedScores, i), standing: currentStanding };
   });
@@ -92,6 +92,8 @@ function estimateCurrentDay(scores: GolferScore[]) {
 }
 
 export async function run(tourneyId: number): Promise<TourneyStandings> {
+  console.log(`Running player score update for tourney: ${tourneyId}`);
+
   const [scores, draftPicks] = await Promise.all([
     getGolferScores(tourneyId, adminSupabase()),
     getCompletedDraftPicks(tourneyId, adminSupabase()),
@@ -100,8 +102,6 @@ export async function run(tourneyId: number): Promise<TourneyStandings> {
   if (!scores.length) {
     throw new Error(`No scores found for tourney: ${tourneyId}`);
   }
-
-  console.log("Running player score update");
 
   // Summary info
   const worstScoresForDay = times<WorstDayScore>(constants.NDAYS, day => {
