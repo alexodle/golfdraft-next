@@ -1,12 +1,13 @@
 BEGIN;
 
-select plan(8);
+select plan(13);
 
 select tests.create_test_tourney();
 select tests.authenticate_as('sbuser1');
 
-INSERT INTO commissioners ("tourneyId", "userId") VALUES
-    (tests.get_tourney_id(), tests.get_gd_user2());
+-- user2 is commissioner
+
+-- UNDO PICK TESTS
 
 SELECT throws_ok(
     $$ SELECT undo_last_pick(tests.get_tourney_id()) $$,
@@ -47,6 +48,48 @@ FROM get_next_pick(tests.get_tourney_id());
 
 SELECT IS("golferId", NULL, 'expected pick to be undone. golferId is not NULL')
 FROM get_next_pick(tests.get_tourney_id());
+
+-- AUTO PICK USERS TESTS
+
+select tests.authenticate_as('sbuser1');
+
+SELECT throws_ok(
+    $$ INSERT INTO draft_auto_pick ("tourneyId", "userId") VALUES (
+        tests.get_tourney_id(), tests.get_gd_user1()
+    ) $$,
+    'new row violates row-level security policy for table "draft_auto_pick"',
+    'only the commissioner can update draft_auto_pick table'
+);
+
+select tests.authenticate_as('sbuser2');
+
+SELECT lives_ok(
+    $$ INSERT INTO draft_auto_pick ("tourneyId", "userId") VALUES (
+        tests.get_tourney_id(), tests.get_gd_user1()
+    ) $$,
+    'commissioner should be able to update auto pick table'
+);
+
+select tests.authenticate_as('sbuser1');
+
+SELECT results_eq(
+    $$ SELECT "userId" FROM draft_auto_pick WHERE "tourneyId" = tests.get_tourney_id() $$,
+    ARRAY[tests.get_gd_user1()],
+    'any authenticated user should be able to select from auto pick table'
+);
+
+SELECT is_empty(
+    $$ DELETE FROM draft_auto_pick WHERE "tourneyId" = tests.get_tourney_id() AND "userId" = tests.get_gd_user1() returning 1 $$,
+    'only the commissioner can delete from draft_auto_pick table'
+);
+
+select tests.authenticate_as('sbuser2');
+
+SELECT results_eq(
+    $$ DELETE FROM draft_auto_pick WHERE "tourneyId" = tests.get_tourney_id() AND "userId" = tests.get_gd_user1() returning 1 $$,
+    ARRAY[1],
+    'commissioner should be able to delete from auto pick table'
+);
 
 select * from finish();
 

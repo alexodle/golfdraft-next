@@ -27,6 +27,10 @@ BEGIN
     SELECT id INTO user_id2 FROM gd_user WHERE "profileId" = uuid2;
     SELECT id INTO user_id3 FROM gd_user WHERE "profileId" = uuid3;
 
+    -- commissioners
+    INSERT INTO commissioners ("tourneyId", "userId") VALUES
+        (tests.get_tourney_id(), tests.get_gd_user2());
+
     -- draft_picks
     INSERT INTO draft_pick ("tourneyId", "pickNumber", "userId") VALUES
         (tourney_id, 1, user_id1),
