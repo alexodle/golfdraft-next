@@ -4,6 +4,7 @@ RETURNS void
 AS $$
 DECLARE
     tourney_id int;
+    dummy_tourney_id int;
     uuid1 uuid;
     uuid2 uuid;
     uuid3 uuid;
@@ -14,6 +15,10 @@ BEGIN
     -- tourney
     INSERT INTO tourney ("name", "startDateEpochMillis", "lastUpdatedEpochMillis", "config")
     VALUES ('Test Tourney', 1620000000000, 1620000000000, '{}') RETURNING id INTO tourney_id;
+
+    -- dummy tourney to test negative rls cases
+    INSERT INTO tourney ("name", "startDateEpochMillis", "lastUpdatedEpochMillis", "config")
+    VALUES ('Dummy Tourney', 1620000000000, 1620000000000, '{}') RETURNING id INTO dummy_tourney_id;
 
     -- users
     SELECT * INTO uuid1 FROM tests.create_supabase_user('sbuser1');
@@ -77,6 +82,21 @@ AS $$
         tourney_id int;
     BEGIN
         SELECT id into tourney_id FROM tourney WHERE "name" = 'Test Tourney' limit 1;
+        if tourney_id is null then
+            RAISE EXCEPTION 'Tourney not found';
+        end if;
+        RETURN tourney_id;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION tests.get_dummy_tourney_id()
+RETURNS int
+SECURITY DEFINER
+AS $$
+    DECLARE
+        tourney_id int;
+    BEGIN
+        SELECT id into tourney_id FROM tourney WHERE "name" = 'Dummy Tourney' limit 1;
         if tourney_id is null then
             RAISE EXCEPTION 'Tourney not found';
         end if;

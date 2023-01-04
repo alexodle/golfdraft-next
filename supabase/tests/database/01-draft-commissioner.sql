@@ -1,6 +1,6 @@
 BEGIN;
 
-select plan(13);
+select plan(14);
 
 select tests.create_test_tourney();
 select tests.authenticate_as('sbuser1');
@@ -68,6 +68,14 @@ SELECT lives_ok(
         tests.get_tourney_id(), tests.get_gd_user1()
     ) $$,
     'commissioner should be able to update auto pick table'
+);
+
+SELECT throws_ok(
+    $$ INSERT INTO draft_auto_pick ("tourneyId", "userId") VALUES (
+        tests.get_dummy_tourney_id(), tests.get_gd_user1()
+    ) $$,
+    'new row violates row-level security policy for table "draft_auto_pick"',
+    'commissioner is only valid for a specific tourney'
 );
 
 select tests.authenticate_as('sbuser1');
