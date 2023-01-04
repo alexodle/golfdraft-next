@@ -267,18 +267,6 @@ export async function getAutoPickUsers(tourneyId: number, supabase = supabaseCli
   return result.data.map(pl => pl.userId);
 }
 
-export async function makePick(dp: CompletedDraftPick, supabase = supabaseClient) {
-  const match = pick(dp, 'tourneyId', 'pickNumber', 'userId');
-  const result = await supabase.from<CompletedDraftPick>(DRAFT_PICKS_TABLE)
-    .update(dp, { returning: 'minimal' })
-    .is('golferId', null)
-    .match(match);
-  if (result.error) {
-    console.dir(result);
-    throw new Error(`Failed to make draft pick: ${result.statusText}`);
-  }
-}
-
 export async function undoLastPick(tourneyId: number, supbase = supabaseClient) {
   const result = await supbase.rpc('undo_last_pick', { tourney_id: tourneyId });
   if (result.error) {

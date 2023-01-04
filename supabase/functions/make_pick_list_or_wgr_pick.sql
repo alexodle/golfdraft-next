@@ -1,5 +1,6 @@
 CREATE OR REPLACE FUNCTION make_pick_list_or_wgr_pick(tourney_id INT, user_id INT, pick_number INT)
 RETURNS void
+SECURITY DEFINER
 AS
 $$
 DECLARE
@@ -21,7 +22,7 @@ BEGIN
   SELECT "userId", "pickNumber" INTO next_pick_user_id, next_pick_number
   FROM get_next_pick(tourney_id);
   IF next_pick_user_id <> user_id OR next_pick_number <> pick_number THEN
-    raise exception 'Invalid golfer or pick_number';
+    raise exception 'Invalid user or pick_number';
   END IF;
 
   SELECT "golferId" INTO pick_list_golfer_id
@@ -43,7 +44,7 @@ BEGIN
       WHERE "tourneyId" = tourney_id AND "golferId" IS NOT NULL
     )
     ORDER BY wgr ASC
-    LIMIT 6 -- TODO configurable
+    LIMIT 7 -- TODO configurable
   ) as next_golfers
   ORDER BY wgr DESC
   LIMIT 1;

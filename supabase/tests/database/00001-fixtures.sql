@@ -108,6 +108,15 @@ AS $$
     END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION tests.get_gd_user2()
+RETURNS int
+SECURITY DEFINER
+AS $$
+    BEGIN
+        RETURN tests.get_gd_user_id('user2');
+    END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION tests.get_golfer_id(gname text)
 RETURNS int
 SECURITY DEFINER

@@ -782,7 +782,7 @@ BEGIN
   SELECT "userId", "pickNumber" INTO next_pick_user_id, next_pick_number
   FROM get_next_pick(tourney_id);
   IF next_pick_user_id <> user_id OR next_pick_number <> pick_number THEN
-    raise exception 'Invalid golfer or pick_number';
+    raise exception 'Invalid user or pick_number';
   END IF;
 
   SELECT "golferId" INTO pick_list_golfer_id
