@@ -1,6 +1,6 @@
 BEGIN;
 
-select plan(7);
+select plan(12);
 
 select tests.create_test_tourney();
 
@@ -51,6 +51,22 @@ SELECT lives_ok(
     'Should be able to insert into our own pick list using set_pick_list'
 );
 
+SELECT lives_ok(
+    $$ SELECT set_pick_list(tests.get_tourney_id(), 
+        CONCAT_WS(',', 
+            tests.get_golfer_id('Tony Finau'),
+            tests.get_golfer_id('Justin Thomas')
+        )) 
+    $$,
+    'Should be able to replace our own pick list using set_pick_list'
+);
+
+SELECT results_eq(
+    $$ SELECT "golferId" FROM draft_pick_list WHERE "tourneyId" = tests.get_tourney_id() AND "userId" = tests.get_gd_user2() ORDER BY "pickOrder" ASC $$,
+    ARRAY[tests.get_golfer_id('Tony Finau'), tests.get_golfer_id('Justin Thomas')],
+    'Should be able to select from our own pick list'
+);
+
 SELECT is_empty(
     $$ SELECT "golferId" FROM draft_pick_list WHERE "tourneyId" = tests.get_tourney_id() AND "userId" = tests.get_gd_user1() $$,
     'Should not be able to select from other pick lists'
@@ -61,6 +77,24 @@ SELECT is_empty(
 SELECT results_eq(
     $$ SELECT "userId" FROM pick_list_user WHERE "tourneyId" = tests.get_tourney_id() $$,
     ARRAY[tests.get_gd_user1(), tests.get_gd_user2()],
+    'Anyone should be able to select from pick_list_user'
+);
+
+-- test clearing
+
+SELECT lives_ok(
+    $$ SELECT set_pick_list(tests.get_tourney_id(), '') $$,
+    'Should be able to clear our own pick list using set_pick_list'
+);
+
+SELECT is_empty(
+    $$ SELECT "golferId" FROM draft_pick_list WHERE "tourneyId" = tests.get_tourney_id() AND "userId" = tests.get_gd_user2() $$,
+    'Expected our pick list to be cleared'
+);
+
+SELECT results_eq(
+    $$ SELECT "userId" FROM pick_list_user WHERE "tourneyId" = tests.get_tourney_id() $$,
+    ARRAY[tests.get_gd_user1()],
     'Anyone should be able to select from pick_list_user'
 );
 
