@@ -21,15 +21,6 @@ BEGIN
   IF next_pick_user_id <> user_id OR next_pick_number <> pick_number THEN
     raise exception 'Invalid user or pick_number';
   END IF;
-
---   -- Validate golfer not already picked
---   SELECT "golferId" INTO already_picked_golfer_id
---   FROM draft_pick
---   WHERE "tourneyId" = tourney_id AND "golferId" = golfer_id
---   LIMIT 1;
---   IF already_picked_golfer_id IS NOT NULL THEN
---     raise exception 'Golfer already picked';
---   END IF;
   
   SELECT "id" INTO picked_by_user_id
   FROM gd_user

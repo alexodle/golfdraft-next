@@ -1,9 +1,7 @@
 import { supabaseClient } from '@supabase/auth-helpers-nextjs';
-import { pick } from 'lodash';
 import { useEffect, useMemo } from 'react';
 import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { UndoLastPickRequest } from '../../pages/api/commish/undoLastPick';
-import { MakePickApiRequest } from '../../pages/api/draftPick';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { postJson } from '../legacy/js/fetch';
 import { CompletedDraftPick, DraftAutoPick, DraftPick, DraftPickList, Golfer, PendingDraftPick } from '../models';
@@ -11,7 +9,6 @@ import { adminSupabase } from '../supabase';
 import { difference, union } from '../util/sets';
 import { useGolfers } from './golfers';
 import { openSharedSubscription } from './subscription';
-import { useCurrentUser } from './users';
 
 const DRAFT_PICKS_TABLE = 'draft_pick';
 const DRAFT_AUTO_PICK_TABLE = 'draft_auto_pick';
@@ -57,15 +54,19 @@ export function useCompleteDraftPicks(): UseQueryResult<CompletedDraftPick[]> {
 }
 
 export function useDraftPicker(): { 
-  pickMutation: UseMutationResult<CompletedDraftPick, unknown, { pendingDraftPick: PendingDraftPick, golferId: number}, unknown>; 
+  pickMutation: UseMutationResult<unknown, unknown, { pendingDraftPick: PendingDraftPick, golferId: number}, unknown>; 
   autoPickMutation: UseMutationResult<unknown, unknown, PendingDraftPick, unknown>; 
 } {
   const queryClient = useQueryClient();
-  const myUser = useCurrentUser();
+  const tourneyId = useTourneyId();
 
   const pickMutation = useMutation(async ({ pendingDraftPick: draftPick, golferId }: { pendingDraftPick: PendingDraftPick, golferId: number}) => {
-    const req: MakePickApiRequest = { ...draftPick, golferId, clientTimestampEpochMillis: Date.now() };
-    const result = await postJson<CompletedDraftPick>('/api/draftPick', req);
+    const result = await supabaseClient.rpc('make_pick', {
+      tourney_id: tourneyId, 
+      user_id: draftPick.userId,
+      pick_number: draftPick.pickNumber, 
+      golfer_id: golferId,
+    });
     return result;
   }, {
     onMutate: ({ pendingDraftPick, golferId }) => {
