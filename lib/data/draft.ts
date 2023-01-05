@@ -1,4 +1,4 @@
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { PostgrestResponse, SupabaseClient } from '@supabase/supabase-js';
 import { useCallback, useMemo } from 'react';
 import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
@@ -6,7 +6,7 @@ import { useTourneyId } from '../ctx/AppStateCtx';
 import { CompletedDraftPick, DraftPick, DraftPickList, Golfer, PendingDraftPick } from '../models';
 import { adminSupabase } from '../supabase';
 import { difference, union } from '../util/sets';
-import { useGolfers } from './golfers';
+import { PENDING_GOLFER, useGolfers } from './golfers';
 import { useSharedSubscription } from './subscription';
 import { useCurrentUser } from './users';
 
@@ -91,6 +91,25 @@ export function useDraftPicker(): {
       pick_number: draftPick.pickNumber,
     });
     return result;
+  }, {
+    onMutate: (draftPick) => {
+      const queryClientKey = getDraftPicksQueryClientKey(draftPick.tourneyId);
+      queryClient.setQueryData<DraftPick[]>(queryClientKey, (curr) => {
+        const completedPick: CompletedDraftPick = { 
+          ...draftPick, 
+          golferId: PENDING_GOLFER.id, 
+          clientTimestampEpochMillis: Date.now(), 
+          timestampEpochMillis: Date.now(), 
+          pickedByUserId: user?.id ?? -1 
+        };
+        return (curr ?? []).map(dp => dp.tourneyId === draftPick.tourneyId && dp.pickNumber === draftPick.pickNumber ? completedPick : dp);
+      });
+    },
+    onError: (e, draftPick) => {
+      console.dir(e);
+      const queryClientKey = getDraftPicksQueryClientKey(draftPick.tourneyId);
+      queryClient.invalidateQueries(queryClientKey);
+    }
   });
 
   return {
