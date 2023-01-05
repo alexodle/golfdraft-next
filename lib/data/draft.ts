@@ -86,9 +86,9 @@ export function useDraftPicker(): {
 
   const autoPickMutation = useMutation(async (draftPick: PendingDraftPick) => {
     const result = await supabase.rpc('make_pick_list_or_wgr_pick', { 
-      tourney_id: draftPick.tourneyId, 
-      pick_number: draftPick.pickNumber, 
-      user_id: draftPick.userId
+      tourney_id: draftPick.tourneyId,
+      user_id: draftPick.userId,
+      pick_number: draftPick.pickNumber,
     });
     return result;
   });
@@ -234,7 +234,7 @@ export async function setDraftPicks(tourneyId: number, draftPicks: PendingDraftP
     throw new Error(`Failed to remove existing picks`);
   }
 
-  const result = await adminSupabase().from(DRAFT_PICKS_TABLE).insert(draftPicks).select().single();
+  const result = await adminSupabase().from(DRAFT_PICKS_TABLE).insert(draftPicks).select();
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to add new picks`);

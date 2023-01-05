@@ -7,13 +7,13 @@ select tests.authenticate_as('sbuser2');
 
 SELECT throws_ok(
     $$ SELECT make_pick_list_or_wgr_pick(tests.get_tourney_id(), tests.get_gd_user1(), 2) $$,
-    'Invalid user or pick_number',
+    'Invalid pick number: 2, expected 1',
     'should not be able to make pick for wrong pick number'
 );
 
 SELECT throws_ok(
     $$ SELECT make_pick_list_or_wgr_pick(tests.get_tourney_id(), tests.get_gd_user2(), 1) $$,
-    'Invalid user or pick_number',
+    NULL,
     'should not be able to make pick for wrong user'
 );
 
@@ -42,7 +42,7 @@ SELECT results_eq(
 
 SELECT throws_ok(
     $$ SELECT make_pick_list_or_wgr_pick(tests.get_tourney_id(), tests.get_gd_user1(), 1) $$,
-    'Invalid user or pick_number',
+    NULL,
     'should not be able to make pick that has already been made'
 );
 

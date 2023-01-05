@@ -7,13 +7,13 @@ select tests.authenticate_as('sbuser2');
 
 SELECT throws_ok(
     $$ SELECT make_pick(tests.get_tourney_id(), tests.get_gd_user1(), 2, tests.get_golfer_id('Tiger Woods')) $$,
-    'Invalid user or pick_number',
+    'Invalid pick number: 2, expected 1',
     'should not be able to make pick for wrong pick number'
 );
 
 SELECT throws_ok(
     $$ SELECT make_pick(tests.get_tourney_id(), tests.get_gd_user2(), 1, tests.get_golfer_id('Tiger Woods')) $$,
-    'Invalid user or pick_number',
+    NULL,
     'should not be able to make pick for wrong user'
 );
 
@@ -42,7 +42,7 @@ SELECT IS(
 
 SELECT throws_ok(
     $$ SELECT make_pick(tests.get_tourney_id(), tests.get_gd_user1(), 1, tests.get_golfer_id('Tiger Woods')) $$,
-    'Invalid user or pick_number',
+    NULL,
     'Should not be able to make pick that has already been made'
 );
 

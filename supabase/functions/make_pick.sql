@@ -18,8 +18,11 @@ BEGIN
   -- Validate is current pick
   SELECT "userId", "pickNumber" INTO next_pick_user_id, next_pick_number
   FROM get_next_pick(tourney_id);
-  IF next_pick_user_id <> user_id OR next_pick_number <> pick_number THEN
-    raise exception 'Invalid user or pick_number';
+  IF next_pick_user_id <> user_id THEN
+    raise exception 'Invalid user: %, expected %', user_id, next_pick_user_id;
+  END IF;
+  IF next_pick_number <> pick_number THEN
+    raise exception 'Invalid pick number: %, expected %', pick_number, next_pick_number;
   END IF;
   
   SELECT "id" INTO picked_by_user_id
