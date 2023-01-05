@@ -13,4 +13,5 @@ const plugins = [
 
 module.exports = withPlugins(plugins, {
   reactStrictMode: true,
+  swcMinify: true,
 });

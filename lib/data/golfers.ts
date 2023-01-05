@@ -1,9 +1,9 @@
-import { supabaseClient } from '@supabase/auth-helpers-nextjs';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { keyBy, omit } from 'lodash';
 import { useQuery, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { Golfer } from '../models';
-import { adminSupabase } from '../supabase';
+import { adminSupabase, SupabaseClient } from '../supabase';
 
 const GOLFERS_TABLE = 'golfer';
 
@@ -21,8 +21,10 @@ export type UseGolfersResult = Readonly<{
 
 export function useGolfers(): UseQueryResult<UseGolfersResult> {
   const tourneyId = useTourneyId();
+  const supabase = useSupabaseClient();
+
   return useQuery<UseGolfersResult>(GOLFERS_TABLE, async () => {
-    const golfers = await getGolfers(tourneyId);
+    const golfers = await getGolfers(tourneyId, supabase);
     const lookup = keyBy([...golfers, { ...PENDING_GOLFER, tourneyId }], g => g.id);
     return {
       golfers,
@@ -37,9 +39,9 @@ export function useGolfers(): UseQueryResult<UseGolfersResult> {
   });
 }
 
-export async function getGolfers(tourneyId: number, supabase = supabaseClient): Promise<Golfer[]> {
+export async function getGolfers(tourneyId: number, supabase: SupabaseClient): Promise<Golfer[]> {
   const result = await supabase
-    .from<Golfer>(GOLFERS_TABLE)
+    .from(GOLFERS_TABLE)
     .select('*')
     .eq('tourneyId', tourneyId);
   if (result.error) {
@@ -52,8 +54,9 @@ export async function getGolfers(tourneyId: number, supabase = supabaseClient): 
 export async function upsertGolfers(golfers: Omit<Golfer, 'id'>[]): Promise<Golfer[]> {
   const withoutId = golfers.map(g => omit(g, 'id'));
   const result = await adminSupabase()
-    .from<Golfer>(GOLFERS_TABLE)
-    .upsert(withoutId, { returning: 'representation', onConflict: 'tourneyId, name' });
+    .from(GOLFERS_TABLE)
+    .upsert(withoutId, { onConflict: 'tourneyId, name' })
+    .select();
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to upsert golfers`);

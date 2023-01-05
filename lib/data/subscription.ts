@@ -1,28 +1,38 @@
-import { supabaseClient } from '@supabase/auth-helpers-nextjs';
-import { RealtimeSubscription, SupabaseRealtimePayload } from '@supabase/supabase-js';
+import { SupabaseClient, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { memoize } from 'lodash';
+import { useEffect } from 'react';
 
-export type SubscriptionCallback<T> = (ev: SupabaseRealtimePayload<T>) => void;
+export type SubscriptionCallback<T extends { [key: string]: any }> = (ev: RealtimePostgresChangesPayload<T>) => void;
 
-export type Subscription<T> = {
+export type Subscription<T extends { [key: string]: any }> = {
   onAll(cb: SubscriptionCallback<T>): object;
   unsubscribe(sub: object): void;
 }
 
-const getOrCreateSub = memoize(<T>(topic: string) => {
+const getOrCreateSub = memoize(<T extends { [key: string]: any }>(table: string, filter: string, supabase: SupabaseClient) => {
   const cbs: SubscriptionCallback<T>[] = [];
 
-  const createSub = (topic: string): RealtimeSubscription => {
-    return supabaseClient.from<T>(topic)
-      .on('*', (ev) => {
-        cbs.forEach((cb) => cb(ev));
+  const createSub = (): RealtimeChannel => {
+    return supabase
+      .channel('table-db-changes')
+      .on<T>('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table,
+        filter,
+      },
+      (payload) => {
+        cbs.forEach((cb) => {
+          cb(payload);
+        })
       })
       .subscribe();
   }
   
-  let sub: RealtimeSubscription | undefined = undefined;
+  let sub: RealtimeChannel | undefined = undefined;
   const ensureSub = () => {
-    sub = sub ?? createSub(topic);
+    sub = sub ?? createSub();
     return sub;
   }
 
@@ -43,15 +53,29 @@ const getOrCreateSub = memoize(<T>(topic: string) => {
   }
 });
 
-/**
- * Opens a supabase subscription and shares it among all consumers. Handles closing and opening as needed.
- */
-export const openSharedSubscription = <T>(topic: string, cb: SubscriptionCallback<T>): { unsubscribe: () => void; }  => {
-  const { addCb, removeCb } = getOrCreateSub<T>(topic);
+const openSharedSubscription = <T extends { [key: string]: any }>(table: string, filter: string, cb: SubscriptionCallback<T>, supabase: SupabaseClient): { unsubscribe: () => void; }  => {
+  const { addCb, removeCb } = getOrCreateSub<T>(table, filter, supabase);
   addCb(cb);
   return {
     unsubscribe: () => {
       removeCb(cb);
     }
   }
+}
+
+/**
+ * Opens a supabase subscription and shares it among all consumers. Handles closing and opening as needed.
+ */
+export const useSharedSubscription = <T extends { [key: string]: any }>(table: string, filter: string, cb: SubscriptionCallback<T>, { disabled = false }: { disabled?: boolean } = {}) => {
+  const supabase = useSupabaseClient();
+  useEffect(() => {
+    if (disabled) {
+      return;
+    }
+
+    const sub = openSharedSubscription(table, filter, cb, supabase);
+    return () => {
+      sub.unsubscribe();
+    }
+  }, [table, filter, cb, supabase, disabled]);
 }

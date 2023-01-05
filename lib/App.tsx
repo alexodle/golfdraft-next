@@ -1,4 +1,6 @@
-import React from 'react';
+import { useSession } from '@supabase/auth-helpers-react';
+import { useRouter } from 'next/router';
+import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { AppStateCtxProvider } from './ctx/AppStateCtx';
 
@@ -12,6 +14,19 @@ const queryClient = new QueryClient({
 });
 
 const App: React.FC<{ tourneyId: number; children?: React.ReactNode; }> = ({ tourneyId, children }) => {
+  const session = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!session) {
+      router.push('/login');
+    }
+  }, [router]);
+
+  if (!session) {
+    return null;
+  }
+
   return (
     <AppStateCtxProvider appState={{ tourneyId }}>
       <QueryClientProvider client={queryClient}>

@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import App from '../../lib/App';
 import AppHeader from '../../lib/legacy/js/components/AppHeader';
 import { TourneyApp } from '../../lib/legacy/js/components/TourneyApp';
+import { withAuth } from '../../lib/util/withAuth';
 
 const Tourney: NextPage = () => {
   const { query: { tourneyId: tourneyIdStr }, push } = useRouter();
@@ -27,8 +28,8 @@ const Tourney: NextPage = () => {
   );
 }
 
-export const getServerSideProps = withPageAuth({
-  redirectTo: '/login',
+export const getServerSideProps = withAuth(async (props) => {
+  return { props };
 });
 
 export default Tourney;

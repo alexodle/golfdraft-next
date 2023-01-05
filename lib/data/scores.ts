@@ -1,13 +1,12 @@
-import { supabaseClient } from '@supabase/auth-helpers-nextjs';
-import { DbGolferScore, DbGolferScoreOverride, GolferScore, GolferScoreOverride } from '../models';
-import { adminSupabase } from '../supabase';
+import { DbGolferScore, GolferScore, GolferScoreOverride } from '../models';
+import { adminSupabase, SupabaseClient } from '../supabase';
 
 const GOLFER_SCORE_TABLE = 'golfer_score';
 const GOLFER_SCORE_OVERRIDE_TABLE = 'golfer_score_override';
 
-export async function getGolferScores(tourneyId: number, supabase = supabaseClient): Promise<GolferScore[]> {
+export async function getGolferScores(tourneyId: number, supabase: SupabaseClient): Promise<GolferScore[]> {
   const result = await supabase
-    .from<DbGolferScore>(GOLFER_SCORE_TABLE)
+    .from(GOLFER_SCORE_TABLE)
     .select('*')
     .eq('tourneyId', tourneyId);
   if (result.error) {
@@ -20,9 +19,9 @@ export async function getGolferScores(tourneyId: number, supabase = supabaseClie
   }));
 }
 
-export async function getGolferScoreOverrides(tourneyId: number, supabase = supabaseClient): Promise<GolferScoreOverride[]> {
+export async function getGolferScoreOverrides(tourneyId: number, supabase: SupabaseClient): Promise<GolferScoreOverride[]> {
   const result = await supabase
-    .from<DbGolferScoreOverride>(GOLFER_SCORE_OVERRIDE_TABLE)
+    .from(GOLFER_SCORE_OVERRIDE_TABLE)
     .select('*')
     .eq('tourneyId', tourneyId);
   if (result.error) {
@@ -38,8 +37,8 @@ export async function getGolferScoreOverrides(tourneyId: number, supabase = supa
 export async function updateScores(scores: GolferScore[]): Promise<void> {
   const dbScores = scores.map<DbGolferScore>(g => ({ ...g, thru: g.thru ?? null, scores: JSON.stringify(g.scores) }));
   const result = await adminSupabase()
-    .from<DbGolferScore>(GOLFER_SCORE_TABLE)
-    .upsert(dbScores, { onConflict: 'tourneyId, golferId', returning: 'minimal' });
+    .from(GOLFER_SCORE_TABLE)
+    .upsert(dbScores, { onConflict: 'tourneyId, golferId' });
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to update golfer scores`);

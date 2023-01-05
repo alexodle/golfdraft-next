@@ -1,11 +1,11 @@
-import { DbTourneyStandingPlayerScore, DbTourneyStandings, TourneyStandingGolferScore, TourneyStandingPlayerDayScore, TourneyStandingPlayerScore, TourneyStandings as ModelTourneyStandings, WorstDayScore } from '../models';
-import { adminSupabase } from '../supabase';
-import { supabaseClient } from '@supabase/auth-helpers-nextjs';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { omit } from 'lodash';
+import { useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient, UseQueryResult } from 'react-query';
-import { useEffect, useMemo } from 'react';
-import { openSharedSubscription } from './subscription';
 import { useTourneyId } from '../ctx/AppStateCtx';
+import { DbTourneyStandingPlayerScore, DbTourneyStandings, TourneyStandingPlayerDayScore, TourneyStandingPlayerScore, TourneyStandings as ModelTourneyStandings, WorstDayScore } from '../models';
+import { adminSupabase, SupabaseClient } from '../supabase';
+import { useSharedSubscription } from './subscription';
 
 const TOURNEY_STANDINGS_TABLE = 'tourney_standings';
 const TOURNEY_STANDINGS_PLAYER_SCORES_TABLE = 'tourney_standings_player_scores';
@@ -17,33 +17,26 @@ export type TourneyStandings = ModelTourneyStandings & Readonly<{
 export function useTourneyStandings(): UseQueryResult<TourneyStandings> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
+  const supabase = useSupabaseClient();
 
   const queryClientKey = useMemo(() => getTourneyStandingsQueryKey(tourneyId), [tourneyId]);
 
   const result = useQuery<TourneyStandings>(queryClientKey, async () => {
-    return await getTourneyStandings(tourneyId);
+    return await getTourneyStandings(tourneyId, supabase);
   });
 
-  useEffect(() => {
-    if (!result.isSuccess) {
-      return;
+  useSharedSubscription<TourneyStandings>(TOURNEY_STANDINGS_TABLE, `tourneyId=eq.${tourneyId}`, useCallback((ev) => {
+    if (ev.eventType === 'UPDATE') {
+      queryClient.invalidateQueries(queryClientKey);
     }
-    const sub = openSharedSubscription(`${TOURNEY_STANDINGS_TABLE}:tourneyId=eq.${tourneyId}`, (ev) => {
-      if (ev.eventType === 'UPDATE') {
-        queryClient.invalidateQueries(queryClientKey);
-      }
-    });
-    return () => {
-      sub.unsubscribe();
-    }
-  }, [queryClient, queryClientKey, tourneyId, result.isSuccess]);
+  }, [queryClient, queryClientKey]), { disabled: !result.isSuccess });
 
   return result;
 }
 
-export async function getTourneyStandings(tourneyId: number, supabase = supabaseClient): Promise<TourneyStandings> {
+export async function getTourneyStandings(tourneyId: number, supabase: SupabaseClient): Promise<TourneyStandings> {
   const result = await supabase
-    .from<DbTourneyStandings & { tourney_standings_player_scores: DbTourneyStandingPlayerScore[] }>(TOURNEY_STANDINGS_TABLE)
+    .from(TOURNEY_STANDINGS_TABLE)
     .select(`
       *,
       tourney_standings_player_scores (
@@ -58,7 +51,7 @@ export async function getTourneyStandings(tourneyId: number, supabase = supabase
     throw new Error(`Failed to fetch tourney stadings: ${tourneyId}`);
   }
 
-  const { worstScoresForDay, tourney_standings_player_scores: dbPlayerScores, ...tourneyStandings } = result.data;
+  const { worstScoresForDay, tourney_standings_player_scores: dbPlayerScores, ...tourneyStandings } = result.data as (DbTourneyStandings & { tourney_standings_player_scores: DbTourneyStandingPlayerScore[] });
 
   const standings = dbPlayerScores.map<TourneyStandingPlayerScore>(s => ({
     ...s,
@@ -85,10 +78,10 @@ export async function updateTourneyStandings(tourneyStanding: TourneyStandings):
   
   const [result1, result2] = await Promise.all([
     adminSupabase()
-      .from<DbTourneyStandings>(TOURNEY_STANDINGS_TABLE)
-      .upsert(dbTourneyStandings, { returning: 'minimal' }),
+      .from(TOURNEY_STANDINGS_TABLE)
+      .upsert(dbTourneyStandings),
     adminSupabase()
-      .from<DbTourneyStandingPlayerScore>(TOURNEY_STANDINGS_PLAYER_SCORES_TABLE)
+      .from(TOURNEY_STANDINGS_PLAYER_SCORES_TABLE)
       .upsert(playerScores)
   ]);
 

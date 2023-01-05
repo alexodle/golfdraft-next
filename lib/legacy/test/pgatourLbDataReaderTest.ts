@@ -13,6 +13,7 @@ const config: TourneyConfig = {
     url: "http://test",
     nameMap: {},
   },
+  commissioners: [],
   draftOrder: [],
   wgr: {
     url: "http://testtest",

@@ -4,6 +4,7 @@ import { getGolfers, upsertGolfers } from '../../data/golfers';
 import { getGolferScoreOverrides, updateScores } from '../../data/scores';
 import { touchTourney } from '../../data/tourney';
 import { Golfer, GolferScore, GolferScoreOverride, TourneyConfig } from '../../models';
+import { adminSupabase } from '../../supabase';
 import constants from '../common/constants';
 import { Reader, ReaderResult } from './Types';
 import * as updateTourneyStandings from './updateTourneyStandings';
@@ -82,10 +83,10 @@ export async function run(tourneyId: number, reader: Reader, config: TourneyConf
     const golfersPre = rawTourney.golfers.map<Omit<Golfer, 'id'>>(g => ({ tourneyId, name: g.golfer }));
     golfers = await upsertGolfers(golfersPre);
   } else {
-    golfers = await getGolfers(tourneyId);
+    golfers = await getGolfers(tourneyId, adminSupabase());
   }
 
-  const scoreOverrides = await getGolferScoreOverrides(tourneyId);
+  const scoreOverrides = await getGolferScoreOverrides(tourneyId, adminSupabase());
 
   // Build scores with golfer id
   const golfersByName = keyBy(golfers, gs => gs.name);

@@ -1,6 +1,4 @@
-import {
-  supabaseServerClient, withPageAuth
-} from '@supabase/auth-helpers-nextjs';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { GetServerSideProps, NextPage } from 'next';
 import App from '../lib/App';
 import { getActiveTourneyId } from '../lib/data/appState';
@@ -12,6 +10,8 @@ import { useAllUsers, useCurrentUser } from '../lib/data/users';
 import DraftHistory from '../lib/legacy/js/components/DraftHistory';
 import GolfDraftPanel from '../lib/legacy/js/components/GolfDraftPanel';
 import Loading from '../lib/Loading';
+import { adminSupabase } from '../lib/supabase';
+import { withAuth } from '../lib/util/withAuth';
 
 type CommishPageProps = { 
   activeTourneyId: number; 
@@ -95,7 +95,7 @@ const InnerCommish: React.FC = () => {
           className='btn btn-default'
           disabled={lastPickIndex < 0 || undoLastPickMutation.isLoading} 
           onClick={() => {
-            undoLastPickMutation.mutate(tourney.id)
+            undoLastPickMutation.mutate()
           }}
         >{'Undo last pick'}</button>
         <DraftHistory />
@@ -104,12 +104,8 @@ const InnerCommish: React.FC = () => {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<CommishPageProps> = withPageAuth({
-  redirectTo: '/login',
-  async getServerSideProps(ctx) {
-    const activeTourneyId = await getActiveTourneyId(supabaseServerClient(ctx));
-    return { props: { activeTourneyId } };
-  }
+export const getServerSideProps = withAuth(async (props) => {
+  return { props };
 });
 
 export default CommishPage;

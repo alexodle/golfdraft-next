@@ -1,4 +1,4 @@
-import { supabaseClient } from '@supabase/auth-helpers-nextjs';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useEffect } from 'react';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { useAutoPickUsers, useCurrentPick } from '../data/draft';
@@ -9,18 +9,20 @@ const INTERVAL = 1000;
 export const AutoPicker = () => {
     const tourneyId = useTourneyId();
     const isAutoPickUser = useIsAutoPickUser();
+    const supabase = useSupabaseClient();
+
     useEffect(() => {
         if (!isAutoPickUser) {
             return;
         }
 
         (async () => {
-            await supabaseClient.rpc('run_auto_pick', {
+            await supabase.rpc('run_auto_pick', {
                 tourney_id: tourneyId
             });
         })();
         const id = setInterval(async () => {
-            await supabaseClient.rpc('run_auto_pick', {
+            await supabase.rpc('run_auto_pick', {
                 tourney_id: tourneyId
             });
         }, INTERVAL);

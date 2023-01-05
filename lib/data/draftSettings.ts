@@ -1,9 +1,10 @@
-import { useEffect, useMemo } from 'react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { useCallback, useMemo } from 'react';
 import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftSettings } from '../models';
-import { supabaseClient } from '@supabase/auth-helpers-nextjs';
-import { openSharedSubscription } from './subscription';
+import { useSharedSubscription } from './subscription';
 
 const DRAFT_SETTINGS_TABLE = 'draft_settings';
 
@@ -11,35 +12,27 @@ export function useDraftSettings(): UseQueryResult<DraftSettings> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getDraftSettingsQueryClientKey(tourneyId), [tourneyId]);
+  const supabase = useSupabaseClient();
 
   const result = useQuery<DraftSettings>(queryClientKey, async () => {
-    return await getDraftSettings(tourneyId);
+    return await getDraftSettings(tourneyId, supabase);
   });
 
-  useEffect(() => {
-    if (!result.isSuccess) {
-      return;
+  useSharedSubscription<DraftSettings>(DRAFT_SETTINGS_TABLE, `tourneyId=eq.${tourneyId}`, useCallback((ev) => {
+    if (ev.eventType === 'UPDATE' || ev.eventType === 'INSERT') {
+      queryClient.setQueryData(queryClientKey, ev.new);
     }
-
-    const sub = openSharedSubscription<DraftSettings>(`${DRAFT_SETTINGS_TABLE}:tourneyId=eq.${tourneyId}`, (ev) => {
-      if (ev.eventType === 'UPDATE' || ev.eventType === 'INSERT') {
-        queryClient.setQueryData(queryClientKey, ev.new);
-      }
-    });
-
-    return () => {
-      sub.unsubscribe();
-    }
-  }, [queryClient, queryClientKey, tourneyId, result.isSuccess]);
+  }, [queryClient, queryClientKey]), { disabled: !result.isSuccess })
 
   return result;
 }
 
 export function useDraftSettingsMutation(): UseMutationResult<unknown, unknown, DraftSettings, unknown> {
   const queryClient = useQueryClient();
+  const supabase = useSupabaseClient();
 
   const draftSettingsMutation = useMutation(async (settings: DraftSettings) => {
-    await upsertDraftSettings(settings);
+    await upsertDraftSettings(settings, supabase);
   }, {
     onMutate: (settings) => {
       const key = getDraftSettingsQueryClientKey(settings.tourneyId);
@@ -55,8 +48,8 @@ export function useDraftSettingsMutation(): UseMutationResult<unknown, unknown, 
   return draftSettingsMutation;
 }
 
-export async function getDraftSettings(tourneyId: number, supabase = supabaseClient): Promise<DraftSettings> {
-  const result = await supabase.from<DraftSettings>(DRAFT_SETTINGS_TABLE)
+export async function getDraftSettings(tourneyId: number, supabase: SupabaseClient): Promise<DraftSettings> {
+  const result = await supabase.from(DRAFT_SETTINGS_TABLE)
     .select(`*`)
     .eq('tourneyId', tourneyId);
   if (result.error) {
@@ -71,10 +64,11 @@ export async function getDraftSettings(tourneyId: number, supabase = supabaseCli
   };
 }
 
-export async function upsertDraftSettings(settings: DraftSettings, supabase = supabaseClient): Promise<DraftSettings> {
+export async function upsertDraftSettings(settings: DraftSettings, supabase: SupabaseClient): Promise<DraftSettings> {
   const result = await supabase
-    .from<DraftSettings>(DRAFT_SETTINGS_TABLE)
+    .from(DRAFT_SETTINGS_TABLE)
     .upsert(settings, { onConflict: 'tourneyId' })
+    .select()
     .single();
 
   if (result.error) {
