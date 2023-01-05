@@ -69,21 +69,6 @@ const openSharedSubscription = <T extends { [key: string]: any }>(table: string,
 export const useSharedSubscription = <T extends { [key: string]: any }>(table: string, filter: string, cb: SubscriptionCallback<T>, { disabled = false }: { disabled?: boolean } = {}) => {
   const supabase = useSupabaseClient();
 
-
-  // hihi
-  useEffect(() => {
-    const sub = supabase.channel('hihi')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'draft_pick',
-        filter: 'tourneyId=eq.68'
-      }, (payload) => {
-        console.log('hihi', payload);
-      })
-      .subscribe();
-  }, []);
-
   useEffect(() => {
     if (disabled) {
       return;
