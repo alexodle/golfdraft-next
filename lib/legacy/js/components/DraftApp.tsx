@@ -166,13 +166,7 @@ const PostDraft: React.FC = () => {
 
       <section>
         <GolfDraftPanel heading="Chat Room">
-          {/* <ChatRoom
-            currentUser={this.props.currentUser}
-            messages={this.props.chatMessages}
-            activeUsers={this.props.activeUsers}
-            enabled={this.props.isViewingActiveTourney}
-          /> */}
-          {<p>hihi TODO: ChatRoom</p>}
+          <ChatRoom />
         </GolfDraftPanel>
       </section>
 
@@ -199,13 +193,7 @@ const PreDraft: React.FC = () => {
 
       <section>
         <GolfDraftPanel heading="Chat Room">
-          {/* <ChatRoom
-            currentUser={this.props.currentUser}
-            messages={this.props.chatMessages}
-            activeUsers={this.props.activeUsers}
-            enabled={this.props.isViewingActiveTourney}
-          /> */}
-          {<p>hihi TODO: ChatRoom</p>}
+          <ChatRoom />
         </GolfDraftPanel>
       </section>
     </section>
