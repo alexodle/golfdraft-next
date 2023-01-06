@@ -103,15 +103,9 @@ export type DbGolferScore = BaseGolferScore &
     scores: string;
   }>;
 
-export type GolferScoreOverride = { golferId: number } & Omit<
-  Partial<GolferScore>,
-  'golferId'
->;
+export type GolferScoreOverride = { golferId: number } & Omit<Partial<GolferScore>, 'golferId'>;
 
-export type DbGolferScoreOverride = { golferId: number } & Omit<
-  Partial<DbGolferScore>,
-  'golferId'
->;
+export type DbGolferScoreOverride = { golferId: number } & Omit<Partial<DbGolferScore>, 'golferId'>;
 
 type BaseTourneyStandings = Readonly<{
   tourneyId: number;
@@ -170,6 +164,7 @@ export type WorstDayScore = Readonly<{
 }>;
 
 export type ChatMessage = Readonly<{
+  id: number;
   tourneyId: number;
   userId: number;
   createdAt: number;

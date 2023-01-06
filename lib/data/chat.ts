@@ -1,10 +1,12 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { uniqBy } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { useMutation, UseMutationResult, useQuery, useQueryClient } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { ChatMessage } from '../models';
 import { SupabaseClient } from '../supabase';
 import { useSharedSubscription } from './subscription';
+import { useCurrentUser } from './users';
 
 const CHAT_MESSAGES_TABLE = 'chat_message';
 
@@ -27,7 +29,7 @@ export function useChatMessages(tourneyIdOverride?: number) {
       (ev) => {
         if (ev.eventType === 'INSERT') {
           queryClient.setQueryData<ChatMessage[]>(queryClientKey, (curr) => {
-            return [...(curr || []), ev.new];
+            return uniqBy([...(curr || []), ev.new], (m) => m.id);
           });
         }
       },
@@ -42,9 +44,10 @@ export function useChatMessages(tourneyIdOverride?: number) {
 export function useChatMessageMutation(): UseMutationResult<unknown, unknown, string> {
   const tourneyId = useTourneyId();
   const supabase = useSupabaseClient();
+  const user = useCurrentUser();
   const mutation = useMutation({
     mutationFn: async (message: string) => {
-      const result = await supabase.from(CHAT_MESSAGES_TABLE).insert({ tourneyId, message });
+      const result = await supabase.from(CHAT_MESSAGES_TABLE).insert({ tourneyId, userId: user?.id ?? -1, message });
       if (result.error) {
         console.dir(result.error);
         throw new Error(`Failed to insert chat message`);
