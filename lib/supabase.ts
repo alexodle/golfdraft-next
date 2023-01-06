@@ -1,6 +1,5 @@
-
-import {createClient, SupabaseClient} from '@supabase/supabase-js';
-import {once} from 'lodash';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { once } from 'lodash';
 
 export type { SupabaseClient };
 

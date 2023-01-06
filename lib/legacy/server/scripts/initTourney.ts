@@ -26,13 +26,13 @@ function ensureTruthy<T>(obj: T, msg: string): T {
 export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
   const reader = readerConfig[tourneyCfg.scores.type].reader;
   if (!reader) {
-    throw new Error(`Unsupported reader type: ${tourneyCfg.scores.type}`)
+    throw new Error(`Unsupported reader type: ${tourneyCfg.scores.type}`);
   }
 
   const users = await getAllUsers(adminSupabase());
-  const usersByName = keyBy(users, u => u.name);
+  const usersByName = keyBy(users, (u) => u.name);
 
-  const commissioners = tourneyCfg.commissioners.map(name => {
+  const commissioners = tourneyCfg.commissioners.map((name) => {
     return { userId: ensureTruthy(usersByName[name]?.id, `Commissioner not found: ${name}`) };
   });
 
@@ -45,35 +45,36 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
   });
 
   const existingPicks = await getDraftPicks(tourney.id, adminSupabase());
-  if (existingPicks.some(p => p.golferId)) {
+  if (existingPicks.some((p) => p.golferId)) {
     throw new Error(`Cannot init tourney after draft has already started`);
   }
-  
-  const sortedUsers = tourneyCfg.draftOrder.map(name => ensureTruthy(usersByName[name], `User not found: ${name}`));
-  const pickOrder = tourneyUtils.snakeDraftOrder(tourney.id, sortedUsers.map(u => u.id));
 
-  await upsertDraftSettings({
-    tourneyId: tourney.id,
-    draftHasStarted: false,
-    isDraftPaused: false,
-    allowClock: true,
-  }, adminSupabase());
+  const sortedUsers = tourneyCfg.draftOrder.map((name) => ensureTruthy(usersByName[name], `User not found: ${name}`));
+  const pickOrder = tourneyUtils.snakeDraftOrder(
+    tourney.id,
+    sortedUsers.map((u) => u.id),
+  );
+
+  await upsertDraftSettings(
+    {
+      tourneyId: tourney.id,
+      draftHasStarted: false,
+      isDraftPaused: false,
+      allowClock: true,
+    },
+    adminSupabase(),
+  );
 
   await setDraftPicks(tourney.id, pickOrder);
-  
-  await updateScore.run(
-    tourney.id,
-    reader,
-    tourneyCfg,
-    true
-  );
+
+  await updateScore.run(tourney.id, reader, tourneyCfg, true);
   await updateTourneyStandings.run(tourney.id);
 
   await upsertAppState({
     activeTourneyId: tourney.id,
   });
 
-  console.log("Updating WGR");
+  console.log('Updating WGR');
   await updateWgr(tourney.id);
 
   return tourney.id;

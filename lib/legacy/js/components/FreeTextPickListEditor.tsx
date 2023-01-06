@@ -7,13 +7,11 @@ import { Golfer } from '../../../models';
 import { levenshteinAll } from '../../server/levenshteinDistance';
 import GolferLogic from '../logic/GolferLogic';
 
-const TEXTAREA_PLACEHOLDER = "Sergio Garcia\nPhil Mickelson\nTiger Woods\nDustin Johnson\nJason Day\n...";
+const TEXTAREA_PLACEHOLDER = 'Sergio Garcia\nPhil Mickelson\nTiger Woods\nDustin Johnson\nJason Day\n...';
 
 export const FreeTextPickListEditor: React.FC<{
   onCancel: () => void;
-}> = ({
-  onCancel
-}) => {
+}> = ({ onCancel }) => {
   const [matches, setMatches] = useState<Match[] | undefined>();
   const [text, setText] = useState<string>('');
   const pickListUpdater = usePickListUpdater();
@@ -36,13 +34,13 @@ export const FreeTextPickListEditor: React.FC<{
     if (matches.every(isExactMatch)) {
       setMatches(undefined);
 
-      const pickList = matches.map(m => m.match.id);
+      const pickList = matches.map((m) => m.match.id);
       pickListUpdater.mutate({ pickList });
       return;
     }
 
     setMatches(matches);
-  }
+  };
 
   if (matches) {
     return (
@@ -57,31 +55,30 @@ export const FreeTextPickListEditor: React.FC<{
       />
     );
   }
-  
+
   return (
     <div>
-      <div className='text-right'>
+      <div className="text-right">
         <span>
-          <button
-            className='btn btn-default'
-            type='button'
-            onClick={onCancel}
-            disabled={pickListUpdater.isLoading}
-          >Cancel</button>{" "}
+          <button className="btn btn-default" type="button" onClick={onCancel} disabled={pickListUpdater.isLoading}>
+            Cancel
+          </button>{' '}
         </span>
         <button
-          className='btn btn-primary'
-          type='button'
+          className="btn btn-primary"
+          type="button"
           disabled={pickListUpdater.isLoading || !text.trim().length}
           onClick={(ev) => {
-            ev.preventDefault(); 
+            ev.preventDefault();
             saveFreeText();
           }}
-        >Save</button>
+        >
+          Save
+        </button>
       </div>
       <p>One golfer per line:</p>
       <textarea
-        className='form-control'
+        className="form-control"
         placeholder={TEXTAREA_PLACEHOLDER}
         disabled={pickListUpdater.isLoading}
         style={{ width: '100%', height: '30em', resize: 'vertical' }}
@@ -90,19 +87,15 @@ export const FreeTextPickListEditor: React.FC<{
       />
     </div>
   );
-}
+};
 
 export default FreeTextPickListEditor;
 
-const SuggestionSelector: React.FC<{ 
+const SuggestionSelector: React.FC<{
   match: Match;
   selection?: Golfer;
   onSelectionChange: (g: Golfer) => void;
-}> = ({
-  match,
-  selection,
-  onSelectionChange
-}) => {
+}> = ({ match, selection, onSelectionChange }) => {
   const [forceViewAll, setForceViewAll] = useState(false);
   const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
 
@@ -111,7 +104,7 @@ const SuggestionSelector: React.FC<{
   }, [allGolfers]);
 
   const isViewingAll = forceViewAll || match.type === 'no_match';
-  const options = isViewingAll ? alphabeticalGolfers : (match.type === 'suggestion' ? match.suggestions : undefined);
+  const options = isViewingAll ? alphabeticalGolfers : match.type === 'suggestion' ? match.suggestions : undefined;
   if (options === undefined) {
     throw new Error('unexpected');
   }
@@ -131,54 +124,64 @@ const SuggestionSelector: React.FC<{
   }
 
   return (
-    <div key={match.given} className='panel panel-default'>
-      <div className='panel-body'>
-
-        <div className='row'>
-          <div className='col-md-2'>
-            <p><em>You entered:</em></p>
+    <div key={match.given} className="panel panel-default">
+      <div className="panel-body">
+        <div className="row">
+          <div className="col-md-2">
+            <p>
+              <em>You entered:</em>
+            </p>
           </div>
-          <div className='col-md-10'>
+          <div className="col-md-10">
             <b>{match.given}</b>
           </div>
         </div>
 
         {!isViewingAll && (
           <section>
-            <div className='row'>
-              <div className='col-md-2'>
-                <p><em>Did you mean:</em></p>
+            <div className="row">
+              <div className="col-md-2">
+                <p>
+                  <em>Did you mean:</em>
+                </p>
               </div>
-              <div className='col-md-10'>
+              <div className="col-md-10">
                 <b>{GolferLogic.renderGolfer(selection)}</b>
               </div>
             </div>
             <p>
-              <a 
-                href="#" 
+              <a
+                href="#"
                 onClick={(ev) => {
                   ev.preventDefault();
                   onSelectionChange(alphabeticalGolfers[0]);
                   setForceViewAll(true);
                 }}
-              >Nope</a></p>
+              >
+                Nope
+              </a>
+            </p>
           </section>
         )}
 
         {isViewingAll && (
           <section>
             {match.type === 'no_match' && (
-              <p className='text-danger'><em>Could not find a potential match.. Please select golfer from list:</em></p>
+              <p className="text-danger">
+                <em>Could not find a potential match.. Please select golfer from list:</em>
+              </p>
             )}
             <select
-              className='form-control'
+              className="form-control"
               value={selection.id}
               onChange={(ev) => {
                 onSelectionChange(getGolfer(+ev.target.value));
               }}
             >
-              {alphabeticalGolfers.map(g => (
-                <option key={g.id} value={g.id}>{GolferLogic.renderGolfer(g)}</option>
+              {alphabeticalGolfers.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {GolferLogic.renderGolfer(g)}
+                </option>
               ))}
             </select>
           </section>
@@ -186,19 +189,14 @@ const SuggestionSelector: React.FC<{
       </div>
     </div>
   );
-}
+};
 
 const SuggestionSelectors: React.FC<{
   matches: Match[];
   onSave: (pickList: number[]) => void;
   onCancel?: () => void;
   isDisabled: boolean;
-}> = ({
-  matches,
-  onSave,
-  onCancel,
-  isDisabled
-}) => {
+}> = ({ matches, onSave, onCancel, isDisabled }) => {
   const [selections, setSelections] = useState<Record<number, Golfer>>([]);
 
   const pickList = useMemo(() => {
@@ -216,15 +214,14 @@ const SuggestionSelectors: React.FC<{
 
   return (
     <div>
-      <div className='text-right' style={{ marginBottom: '1em' }}>
-        <button
-          className='btn btn-default'
-          type='button'
-          onClick={onCancel}
-          disabled={isDisabled}
-        >Back</button>
+      <div className="text-right" style={{ marginBottom: '1em' }}>
+        <button className="btn btn-default" type="button" onClick={onCancel} disabled={isDisabled}>
+          Back
+        </button>
       </div>
-      <div className='alert alert-warning'>Could not find an exact name match for all golfers. Please verify the following matches are correct:</div>
+      <div className="alert alert-warning">
+        Could not find an exact name match for all golfers. Please verify the following matches are correct:
+      </div>
       {matches.map((m, i) => {
         if (isExactMatch(m)) {
           return null;
@@ -235,22 +232,19 @@ const SuggestionSelectors: React.FC<{
             match={m}
             selection={selections[i]}
             onSelectionChange={(g) => {
-              setSelections((curr) => ({ ...curr, [i]: g }))
+              setSelections((curr) => ({ ...curr, [i]: g }));
             }}
           />
         );
       })}
-      <div className='text-right'>
-        <button
-          className='btn btn-default'
-          type='button'
-          onClick={onCancel}
-          disabled={isDisabled}
-        >Back</button>
+      <div className="text-right">
+        <button className="btn btn-default" type="button" onClick={onCancel} disabled={isDisabled}>
+          Back
+        </button>
         <span> </span>
         <button
-          className='btn btn-primary'
-          type='button'
+          className="btn btn-primary"
+          type="button"
           disabled={isDisabled || !pickList?.length}
           onClick={(ev) => {
             ev.preventDefault();
@@ -258,17 +252,21 @@ const SuggestionSelectors: React.FC<{
               onSave(pickList);
             }
           }}
-        >Save</button>
+        >
+          Save
+        </button>
       </div>
     </div>
   );
-}
+};
 
 function cleanedGolfers(text: string) {
-  return uniq(text
-    .split('\n')
-    .map(l => l.trim())
-    .filter(g => !isEmpty(g)));
+  return uniq(
+    text
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((g) => !isEmpty(g)),
+  );
 }
 
 const MIN_COEFF = 0.5;
@@ -276,19 +274,19 @@ const MIN_COEFF = 0.5;
 type NoMatch = {
   type: 'no_match';
   given: string;
-} 
+};
 
 type MatchSuggestion = {
   type: 'suggestion';
   given: string;
-  suggestions: Golfer[]; 
-}
+  suggestions: Golfer[];
+};
 
 type ExactMatch = {
   type: 'match';
   given: string;
   match: Golfer;
-}
+};
 
 type Match = NoMatch | MatchSuggestion | ExactMatch;
 
@@ -298,17 +296,17 @@ function isExactMatch(m: Match): m is ExactMatch {
 
 /** Attempts to match golfers based on name */
 function matchNames(namesList: string[], golfers: Golfer[]): Match[] {
-  const golfersByLcName = keyBy(golfers, g => g.name.toLowerCase());
+  const golfersByLcName = keyBy(golfers, (g) => g.name.toLowerCase());
 
-  return namesList.map(name => {
+  return namesList.map((name) => {
     const exact = golfersByLcName[name.toLowerCase()];
     if (exact) {
       return { type: 'match', given: name, match: exact };
     }
-  
-    const inOrder = levenshteinAll(name, golfers, g => g.name);
+
+    const inOrder = levenshteinAll(name, golfers, (g) => g.name);
     if (inOrder[0]?.coeff ?? 0 > MIN_COEFF) {
-      return { type: 'suggestion', given: name, suggestions: inOrder.map(r => r.target) };
+      return { type: 'suggestion', given: name, suggestions: inOrder.map((r) => r.target) };
     }
 
     return { type: 'no_match', given: name };

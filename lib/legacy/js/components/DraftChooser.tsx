@@ -14,7 +14,7 @@ import GolfDraftPanel from './GolfDraftPanel';
 
 type SortKey = 'pickList' | 'wgr' | 'name';
 
-export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraftingForUser: () => void; }> = ({
+export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraftingForUser: () => void }> = ({
   currentPick,
   onStopDraftingForUser,
 }) => {
@@ -42,14 +42,22 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
         // special case, we cannot show the full list if this a proxy pick
         return [];
       } else {
-        return pickList.map(gid => getGolfer(gid));
+        return pickList.map((gid) => getGolfer(gid));
       }
     }
 
     return sortBy(golfersRemaining, [sortKey, 'name']);
   }, [sortKey, isProxyPick, pickList, golfersRemaining, getGolfer]);
 
-  if (!allUsers || !pickListUsers || !golfersRemaining || !currentUser || pickList === undefined || !allGolfers || !sortedGolfers) {
+  if (
+    !allUsers ||
+    !pickListUsers ||
+    !golfersRemaining ||
+    !currentUser ||
+    pickList === undefined ||
+    !allGolfers ||
+    !sortedGolfers
+  ) {
     return <Loading />;
   }
 
@@ -58,14 +66,20 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
 
   let header = null;
   if (!isProxyPick) {
-    header = (<h4>{`It's your turn. Make your pick.`}</h4>);
+    header = <h4>{`It's your turn. Make your pick.`}</h4>;
   } else {
     const userName = allUsers[currentPick.userId].name;
     header = (
       <section>
         <h4>Make a pick for: {userName}</h4>
         <p>
-          <a href='#' onClick={(ev) => { ev.preventDefault(); onStopDraftingForUser(); }}>
+          <a
+            href="#"
+            onClick={(ev) => {
+              ev.preventDefault();
+              onStopDraftingForUser();
+            }}
+          >
             {`Stop making picks for ${userName}`}
           </a>
         </p>
@@ -74,90 +88,100 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
   }
 
   return (
-    <GolfDraftPanel heading='Draft Picker'>
+    <GolfDraftPanel heading="Draft Picker">
       {header}
 
-      <div className='btn-group' role='group' aria-label='Sorting choices'>
-        <label>Make pick by:</label><br />
+      <div className="btn-group" role="group" aria-label="Sorting choices">
+        <label>Make pick by:</label>
+        <br />
         {!showPickListOption ? null : (
           <button
-            type='button'
+            type="button"
             className={cx({
               'btn btn-default': true,
-              'active': sortKey === 'pickList'
+              active: sortKey === 'pickList',
             })}
             onClick={() => setSortKey('pickList')}
           >
-            {pickListUsers.has(currentPick.userId) ? "Pick List" : `${utils.getOrdinal(constants.ABSENT_PICK_NTH_BEST_WGR)} Best WGR`}
+            {pickListUsers.has(currentPick.userId)
+              ? 'Pick List'
+              : `${utils.getOrdinal(constants.ABSENT_PICK_NTH_BEST_WGR)} Best WGR`}
           </button>
         )}
         <button
-          type='button'
+          type="button"
           className={cx({
             'btn btn-default': true,
-            'active': sortKey === 'name'
+            active: sortKey === 'name',
           })}
           onClick={() => setSortKey('name')}
-        >First Name</button>
+        >
+          First Name
+        </button>
         <button
-          type='button'
+          type="button"
           className={cx({
             'btn btn-default': true,
-            'active': sortKey === 'wgr'
+            active: sortKey === 'wgr',
           })}
           onClick={() => setSortKey('wgr')}
-        >World Golf Ranking</button>
+        >
+          World Golf Ranking
+        </button>
       </div>
 
-      <form role='form'>
-      {isProxyPick && sortKey === 'pickList' ? (
-        <div style={{marginTop: '1em'}}>
-          <button
-            className='btn btn-default btn-primary'
-            disabled={autoPickMutation.isLoading}
-            onClick={(ev) => {
-              ev.preventDefault();
-              autoPickMutation.mutate(currentPick)
-            }}
-          >Pick</button>
-        </div>
-      ) : (
-        <div>
-          <div className='form-group'>
-            <label htmlFor='golfersRemaining'>Select your golfer:</label>
-            <select
-              id='golfersRemaining'
-              value={selectedGolferId}
-              onChange={(ev) => setSelectedGolferId(+ev.target.value)}
-              size={10}
-              className='form-control'
+      <form role="form">
+        {isProxyPick && sortKey === 'pickList' ? (
+          <div style={{ marginTop: '1em' }}>
+            <button
+              className="btn btn-default btn-primary"
+              disabled={autoPickMutation.isLoading}
+              onClick={(ev) => {
+                ev.preventDefault();
+                autoPickMutation.mutate(currentPick);
+              }}
             >
-              {sortedGolfers.map(g => {
-                return (
-                  <option key={g.id} value={g.id}>
-                    {GolferLogic.renderGolfer(g)}
-                  </option>
-                );
-              })}
-            </select>
+              Pick
+            </button>
           </div>
-          <button
-            className='btn btn-default btn-primary'
-            disabled={pickMutation.isLoading}
-            onClick={async (ev) => {
-              ev.preventDefault();
-              pickMutation.mutate({
-                pendingDraftPick: currentPick,
-                golferId: selectedGolferId,
-            })}}
-          >
-            Pick
-          </button>
-        </div>
-      )}
+        ) : (
+          <div>
+            <div className="form-group">
+              <label htmlFor="golfersRemaining">Select your golfer:</label>
+              <select
+                id="golfersRemaining"
+                value={selectedGolferId}
+                onChange={(ev) => setSelectedGolferId(+ev.target.value)}
+                size={10}
+                className="form-control"
+              >
+                {sortedGolfers.map((g) => {
+                  return (
+                    <option key={g.id} value={g.id}>
+                      {GolferLogic.renderGolfer(g)}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <button
+              className="btn btn-default btn-primary"
+              disabled={pickMutation.isLoading}
+              onClick={async (ev) => {
+                ev.preventDefault();
+                pickMutation.mutate({
+                  pendingDraftPick: currentPick,
+                  golferId: selectedGolferId,
+                });
+              }}
+            >
+              Pick
+            </button>
+          </div>
+        )}
       </form>
     </GolfDraftPanel>
   );
-}
+};
 
 export default DraftChooser;

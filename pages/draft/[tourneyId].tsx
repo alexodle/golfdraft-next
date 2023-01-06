@@ -8,7 +8,10 @@ import DraftApp from '../../lib/legacy/js/components/DraftApp';
 import { withAuth } from '../../lib/util/withAuth';
 
 const Draft: NextPage = () => {
-  const { query: { tourneyId: tourneyIdStr }, push } = useRouter();
+  const {
+    query: { tourneyId: tourneyIdStr },
+    push,
+  } = useRouter();
 
   const tourneyId = tourneyIdStr ? +tourneyIdStr : NaN;
   useEffect(() => {
@@ -23,12 +26,12 @@ const Draft: NextPage = () => {
   return (
     <App tourneyId={tourneyId}>
       <AppHeader />
-      <DraftApp  />
+      <DraftApp />
 
       <AutoPicker />
     </App>
   );
-}
+};
 
 export const getServerSideProps = withAuth(async (props) => {
   return { props };

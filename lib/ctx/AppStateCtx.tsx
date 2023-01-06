@@ -6,13 +6,12 @@ export interface AppStateType {
 
 const AppStateCtx = createContext<AppStateType | undefined>(undefined);
 
-export const AppStateCtxProvider: React.FC<{ appState: AppStateType; children?: React.ReactNode }> = ({ appState, children }) => {
-  return (
-    <AppStateCtx.Provider value={appState}>
-      {children}
-    </AppStateCtx.Provider>
-  );
-}
+export const AppStateCtxProvider: React.FC<{ appState: AppStateType; children?: React.ReactNode }> = ({
+  appState,
+  children,
+}) => {
+  return <AppStateCtx.Provider value={appState}>{children}</AppStateCtx.Provider>;
+};
 
 export const useAppState = (): AppStateType => {
   const ctx = useContext(AppStateCtx);
@@ -20,9 +19,9 @@ export const useAppState = (): AppStateType => {
     throw new Error(`Missing app state context`);
   }
   return ctx;
-}
+};
 
 export const useTourneyId = (): number => {
   const { tourneyId } = useAppState();
   return tourneyId;
-}
+};

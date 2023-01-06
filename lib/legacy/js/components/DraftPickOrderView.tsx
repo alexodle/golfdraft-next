@@ -9,17 +9,14 @@ import constants from '../../common/constants';
 export const DraftPickOrderView: React.FC<{
   pickingForUsers: Set<number>;
   onUserSelected: (pid: number) => void;
-}> = ({
-  pickingForUsers,
-  onUserSelected
-}) => {
+}> = ({ pickingForUsers, onUserSelected }) => {
   const { data: draftPicks } = useDraftPicks();
   const { data: allUsers } = useAllUsers();
   const { data: autoPickUsers = new Set() } = useAutoPickUsers();
   const { data: pickListUsers = new Set() } = usePickListUsers();
   const currentUser = useCurrentUser();
   const currentPick = useCurrentPick();
-  
+
   if (!draftPicks || !currentPick || !currentUser || !allUsers) {
     return <Loading />;
   }
@@ -29,33 +26,37 @@ export const DraftPickOrderView: React.FC<{
 
   return (
     <div>
-      <ol className='pick-order-list'>
-        {pickOrder.map(pick => {
+      <ol className="pick-order-list">
+        {pickOrder.map((pick) => {
           return (
             <li
               key={pick.userId}
               className={cx({
-                'my-user': (
-                  currentUser.id === pick.userId ||
-                  pickingForUsers.has(pick.userId)
-                ),
-                'current-user': currentPickUserId === pick.userId
+                'my-user': currentUser.id === pick.userId || pickingForUsers.has(pick.userId),
+                'current-user': currentPickUserId === pick.userId,
               })}
             >
-              <a href='#DraftHistory' onClick={() => onUserSelected(pick.userId)}>
+              <a href="#DraftHistory" onClick={() => onUserSelected(pick.userId)}>
                 {allUsers[pick.userId].name}
               </a>
               {!autoPickUsers.has(pick.userId) ? null : (
-                <span> <span className='label label-success info-label'>AUTO</span></span>
+                <span>
+                  {' '}
+                  <span className="label label-success info-label">AUTO</span>
+                </span>
               )}
               {!pickListUsers.has(pick.userId) ? null : (
-                <span> <span className='label label-info info-label'>PL</span></span>
+                <span>
+                  {' '}
+                  <span className="label label-info info-label">PL</span>
+                </span>
               )}
-            </li>);
+            </li>
+          );
         })}
       </ol>
     </div>
   );
-}
+};
 
 export default DraftPickOrderView;

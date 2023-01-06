@@ -8,12 +8,12 @@ import GolfDraftPanel from './GolfDraftPanel';
 
 export const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange?: (pid?: number) => void }> = ({
   selectedUserId,
-  onSelectionChange
+  onSelectionChange,
 }) => {
   const { data: allDraftPicks } = useDraftPicks();
   const { data: allUsers } = useAllUsers();
   const { data: { getGolfer } = {} } = useGolfers();
-  
+
   if (!allDraftPicks || !allUsers || !getGolfer) {
     return <Loading />;
   }
@@ -22,35 +22,48 @@ export const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange
   let heading: JSX.Element | string = 'Draft History';
 
   if (selectedUserId) {
-    draftPicks = draftPicks.filter(dp => dp.userId === selectedUserId);
+    draftPicks = draftPicks.filter((dp) => dp.userId === selectedUserId);
     heading = (
       <span>
-        <a href='#DraftHistory' onClick={() => onSelectionChange?.(undefined)}>Draft History</a>
-        <span> - </span>{allUsers[selectedUserId].name}
+        <a href="#DraftHistory" onClick={() => onSelectionChange?.(undefined)}>
+          Draft History
+        </a>
+        <span> - </span>
+        {allUsers[selectedUserId].name}
       </span>
     );
   }
 
   return (
     <div>
-      <a id='DraftHistory' />
+      <a id="DraftHistory" />
       <GolfDraftPanel heading={heading}>
         {!selectedUserId ? null : (
-          <p><small>
-            <b>Tip:</b> {'click "Draft History" (above) to view all picks again'}
-          </small></p>
+          <p>
+            <small>
+              <b>Tip:</b> {'click "Draft History" (above) to view all picks again'}
+            </small>
+          </p>
         )}
-        <table className='table'>
-          <thead><tr><th>#</th><th>Pool User</th><th>Golfer</th></tr></thead>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Pool User</th>
+              <th>Golfer</th>
+            </tr>
+          </thead>
           <tbody>
-            {draftPicks.map(p => {
+            {draftPicks.map((p) => {
               const userName = allUsers[p.userId].name;
               return (
                 <tr key={p.pickNumber}>
                   <td>{p.pickNumber}</td>
                   <td>
-                    {selectedUserId ? userName : (
-                      <a href='#DraftHistory' onClick={() => onSelectionChange?.(p.userId)}>
+                    {selectedUserId ? (
+                      userName
+                    ) : (
+                      <a href="#DraftHistory" onClick={() => onSelectionChange?.(p.userId)}>
                         {userName}
                       </a>
                     )}
@@ -64,6 +77,6 @@ export const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange
       </GolfDraftPanel>
     </div>
   );
-}
+};
 
 export default DraftHistory;

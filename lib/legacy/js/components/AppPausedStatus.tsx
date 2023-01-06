@@ -7,13 +7,18 @@ export default class AppPausedStatus extends React.Component {
         <h1>Pause!</h1>
 
         <p>
-          <em><small>noun</small></em>
+          <em>
+            <small>noun</small>
+          </em>
           <ol>
             <li>
-              <span>a temporary stop in action or speech.</span><br />
-              <span className='dict-definition'>
-                {`"she dropped me outside during a brief pause in the rain"`}<br />
-                <em>synonyms:</em> stop, cessation, break, halt, interruption, check, lull, respite, breathing space, discontinuation, hiatus, gap, interlude;
+              <span>a temporary stop in action or speech.</span>
+              <br />
+              <span className="dict-definition">
+                {`"she dropped me outside during a brief pause in the rain"`}
+                <br />
+                <em>synonyms:</em> stop, cessation, break, halt, interruption, check, lull, respite, breathing space,
+                discontinuation, hiatus, gap, interlude;
               </span>
             </li>
           </ol>
@@ -23,9 +28,11 @@ export default class AppPausedStatus extends React.Component {
           <small>verb</small>
           <ol>
             <li>
-              <span>interrupt action or speech briefly.</span><br />
-              <span className='dict-definition'>
-                {`"she paused, at a loss for words"`}<br />
+              <span>interrupt action or speech briefly.</span>
+              <br />
+              <span className="dict-definition">
+                {`"she paused, at a loss for words"`}
+                <br />
                 <em>synonyms:</em> stop, cease, halt, discontinue, break off, take a break;
               </span>
             </li>
@@ -34,5 +41,4 @@ export default class AppPausedStatus extends React.Component {
       </div>
     );
   }
-
-};
+}

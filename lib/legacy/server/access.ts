@@ -54,7 +54,7 @@ export {};
 //   if (!tourneyId || isEmpty(tourneyId)) {
 //     throw new Error("Empty tourney id");
 //   }
-  
+
 //   let obj = _cache[tourneyId];
 //   if (obj) return obj;
 
@@ -188,7 +188,7 @@ export {};
 // let _activeTourneyAccess: Access = null;
 // export async function getActiveTourneyAccess(): Promise<Access> {
 //   if (_activeTourneyAccess) return _activeTourneyAccess;
-  
+
 //   const appState = await getAppState();
 //   _activeTourneyAccess = getAccess(appState.activeTourneyId);
 //   return _activeTourneyAccess;
@@ -405,7 +405,7 @@ export {};
 //       this.getPicks()
 //     ]);
 //     pickList = pickList || [];
-    
+
 //     const pickedGolfers = chain(picks)
 //       .map(p => p.golfer)
 //       .keyBy()
@@ -450,7 +450,7 @@ export {};
 //       tourneyId: this.tourneyId,
 //       id: pick.golfer
 //     };
-    
+
 //     const [nPicks, userIsUp, golferAlreadyDrafted, golferExists] = await Promise.all([
 //       // Ensure correct pick numnber
 //       models.DraftPick.count({ tourneyId: this.tourneyId }).exec(),

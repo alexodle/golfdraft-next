@@ -18,11 +18,19 @@ export function useCurrentTourney(): UseQueryResult<Tourney> {
     return await getTourney(tourneyId, supabase);
   });
 
-  useSharedSubscription<Tourney>(TOURNEY_TABLE, `id=eq.${tourneyId}`, useCallback((ev) => {
-    if (ev.eventType === 'UPDATE') {
-      queryClient.setQueryData(queryClientKey, ev.new);
-    }
-  }, [queryClient, queryClientKey]), { disabled: !result.isSuccess });
+  useSharedSubscription<Tourney>(
+    TOURNEY_TABLE,
+    `id=eq.${tourneyId}`,
+    useCallback(
+      (ev) => {
+        if (ev.eventType === 'UPDATE') {
+          queryClient.setQueryData(queryClientKey, ev.new);
+        }
+      },
+      [queryClient, queryClientKey],
+    ),
+    { disabled: !result.isSuccess },
+  );
 
   return result;
 }
@@ -30,7 +38,8 @@ export function useCurrentTourney(): UseQueryResult<Tourney> {
 export type TourneyInfo = Pick<Tourney, 'id' | 'name' | 'startDateEpochMillis' | 'lastUpdatedEpochMillis'>;
 
 export async function getAllTourneys(supabase: SupabaseClient): Promise<TourneyInfo[]> {
-  const result = await supabase.from(TOURNEY_TABLE)
+  const result = await supabase
+    .from(TOURNEY_TABLE)
     .select('id, name, startDateEpochMillis, lastUpdatedEpochMillis')
     .order('startDateEpochMillis', { ascending: false });
   if (result.error) {
@@ -41,13 +50,16 @@ export async function getAllTourneys(supabase: SupabaseClient): Promise<TourneyI
 }
 
 export async function getTourney(tourneyId: number, supabase: SupabaseClient): Promise<Tourney> {
-  const result = await supabase.from(TOURNEY_TABLE)
-    .select(`
+  const result = await supabase
+    .from(TOURNEY_TABLE)
+    .select(
+      `
         *,
         commissioners (
           userId
         )
-    `)
+    `,
+    )
     .eq('id', tourneyId)
     .single();
   if (result.error) {
@@ -79,10 +91,7 @@ export async function upsertTourney(tourney: Omit<Tourney, 'id'>): Promise<Tourn
 export async function updateTourney(tourney: Partial<Tourney> & { id: number }): Promise<void> {
   const { commissioners, ...tourneyData } = tourney;
 
-  const result = await adminSupabase()
-    .from(TOURNEY_TABLE)
-    .update(tourneyData)
-    .eq('id', tourney.id);
+  const result = await adminSupabase().from(TOURNEY_TABLE).update(tourneyData).eq('id', tourney.id);
 
   await updateCommissioners(tourney.id, commissioners);
 
@@ -93,8 +102,9 @@ export async function updateTourney(tourney: Partial<Tourney> & { id: number }):
 }
 
 export async function touchTourney(tourneyId: number): Promise<Tourney> {
-  const result = await adminSupabase().from(TOURNEY_TABLE)
-    .update({ lastUpdatedEpochMillis: Date.now( )})
+  const result = await adminSupabase()
+    .from(TOURNEY_TABLE)
+    .update({ lastUpdatedEpochMillis: Date.now() })
     .eq('id', tourneyId)
     .select()
     .single();
@@ -112,14 +122,13 @@ async function updateCommissioners(tourneyId: number, commissioners: Tourney['co
 
   const results = [];
 
-  results.push(await adminSupabase()
-    .from('commissioners')
-    .delete()
-    .eq('tourneyId', tourneyId));
+  results.push(await adminSupabase().from('commissioners').delete().eq('tourneyId', tourneyId));
 
-  results.push(await adminSupabase()
-    .from('commissioners')
-    .insert(commissioners.map((c) => ({ userId: c.userId, tourneyId }))));
+  results.push(
+    await adminSupabase()
+      .from('commissioners')
+      .insert(commissioners.map((c) => ({ userId: c.userId, tourneyId }))),
+  );
 
   const errs = results.flatMap((r) => r.error ?? []);
   if (errs.length) {

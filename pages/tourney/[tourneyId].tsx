@@ -8,7 +8,10 @@ import { TourneyApp } from '../../lib/legacy/js/components/TourneyApp';
 import { withAuth } from '../../lib/util/withAuth';
 
 const Tourney: NextPage = () => {
-  const { query: { tourneyId: tourneyIdStr }, push } = useRouter();
+  const {
+    query: { tourneyId: tourneyIdStr },
+    push,
+  } = useRouter();
 
   const tourneyId = tourneyIdStr ? +tourneyIdStr : NaN;
   useEffect(() => {
@@ -23,10 +26,10 @@ const Tourney: NextPage = () => {
   return (
     <App tourneyId={tourneyId}>
       <AppHeader />
-      <TourneyApp  />
+      <TourneyApp />
     </App>
   );
-}
+};
 
 export const getServerSideProps = withAuth(async (props) => {
   return { props };

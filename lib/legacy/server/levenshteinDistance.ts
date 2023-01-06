@@ -1,8 +1,12 @@
 import { levenshtein } from 'underscore.string';
 
 /** Runs the given sourceStr against all strings in the target list, and returns the matches in order of levenshtein distance from source */
-export function levenshteinAll<T>(sourceStr: string, targetList: T[], getValue: (v: T) => string): { target: T; dist: number, coeff: number }[] {
-  const results = targetList.map(targetStr => {
+export function levenshteinAll<T>(
+  sourceStr: string,
+  targetList: T[],
+  getValue: (v: T) => string,
+): { target: T; dist: number; coeff: number }[] {
+  const results = targetList.map((targetStr) => {
     return { target: targetStr, ...calcLevenshtein(sourceStr, getValue(targetStr)) };
   });
 
@@ -17,12 +21,12 @@ export function levenshteinAll<T>(sourceStr: string, targetList: T[], getValue: 
 }
 
 /** VisibleForTesting */
-export function calcLevenshtein(s1: string, s2: string): { dist: number, coeff: number } {
+export function calcLevenshtein(s1: string, s2: string): { dist: number; coeff: number } {
   const norms1 = normalize(s1);
   const norms2 = normalize(s2);
 
   let bestDist = Number.MAX_VALUE;
-  forEachWordPermutation(norms1.split(" "), (s1perm: string) => {
+  forEachWordPermutation(norms1.split(' '), (s1perm: string) => {
     bestDist = Math.min(bestDist, levenshtein(s1perm, norms2));
     return bestDist > 0;
   });
@@ -30,7 +34,7 @@ export function calcLevenshtein(s1: string, s2: string): { dist: number, coeff: 
   const longestLength = Math.max(norms1.length, norms2.length);
   return {
     dist: bestDist,
-    coeff: (longestLength - bestDist) / longestLength
+    coeff: (longestLength - bestDist) / longestLength,
   };
 }
 
@@ -40,7 +44,7 @@ function normalize(s: string): string {
 
 function forEachWordPermutation(words: string[], callback: (perm: string) => void, output: string[] = []): void {
   if (words.length === 0) {
-    return callback(output.join(" "));
+    return callback(output.join(' '));
   }
 
   words.forEach((w, i) => {

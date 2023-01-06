@@ -29,12 +29,8 @@ async function updateScoresApi(req: NextApiRequest, res: NextApiResponse) {
     throw new Error(`Unsupported reader type: ${tourneyConfig.scores.type}`);
   }
 
-  await updateScore.run(
-    tourneyId,
-    reader,
-    tourneyConfig,
-  );
-  
+  await updateScore.run(tourneyId, reader, tourneyConfig);
+
   res.status(201).end();
 }
 

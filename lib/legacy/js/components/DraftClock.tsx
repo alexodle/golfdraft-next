@@ -18,12 +18,9 @@ try {
 export const DraftClock: React.FC<{
   isMyPick: boolean;
   disableClock?: boolean;
-}> = ({ 
-  isMyPick,
-  disableClock = false
-}) => {
+}> = ({ isMyPick, disableClock = false }) => {
   const [totalMillis, setTotalMillis] = useState<number | undefined>(undefined);
-  const totalSeconds = (totalMillis ?? 0) / 1000 ;
+  const totalSeconds = (totalMillis ?? 0) / 1000;
 
   const { data: draftPicks } = useDraftPicks();
   const prevPickIndex = (draftPicks?.findIndex(isPendingDraftPick) ?? -1) - 1;
@@ -41,7 +38,7 @@ export const DraftClock: React.FC<{
 
     return () => {
       clearInterval(id);
-    }
+    };
   }, [prevPickEpochMillis]);
 
   const isInFinalCountdownThreshold = totalSeconds > FINAL_COUNTDOWN_THRESHOLD;
@@ -49,36 +46,39 @@ export const DraftClock: React.FC<{
     if (!isMyPick || !isInFinalCountdownThreshold) {
       return;
     }
-    
+
     const id = setInterval(() => {
       try {
         pickWarningSound?.play();
-      } catch (e) {
-      }
+      } catch (e) {}
     }, WARNING_SOUND_INTERVAL_SECONDS * 1000);
 
     return () => {
       clearInterval(id);
-    }
+    };
   }, [isMyPick, isInFinalCountdownThreshold]);
 
   if (disableClock) {
     return (
-      <p className='draft-clock'><b>{'NA'}</b></p>
+      <p className="draft-clock">
+        <b>{'NA'}</b>
+      </p>
     );
   }
 
-  let className = "";
+  let className = '';
   if (totalMillis && totalMillis > OVERTIME) {
-    className = "text-danger";
+    className = 'text-danger';
   } else if (totalMillis && totalMillis > WARNING_TIME) {
-    className = "text-warning";
+    className = 'text-warning';
   }
 
-  const format = totalMillis === undefined ? '...' : moment.utc(totalMillis).format("mm:ss");
+  const format = totalMillis === undefined ? '...' : moment.utc(totalMillis).format('mm:ss');
   return (
-    <p className='draft-clock'><b className={className}>{format}</b></p>
+    <p className="draft-clock">
+      <b className={className}>{format}</b>
+    </p>
   );
-}
+};
 
 export default DraftClock;

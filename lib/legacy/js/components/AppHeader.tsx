@@ -13,19 +13,20 @@ export const AppHeader: React.FC = () => {
   }
 
   return (
-    <div className='page-header draft-page-header'>
-      <div className='header-title-section'>
+    <div className="page-header draft-page-header">
+      <div className="header-title-section">
         <h1>
-          Welcome to the Pool Party<br />
+          Welcome to the Pool Party
+          <br />
           <small>{tourney.name}</small>
         </h1>
       </div>
-      <div className='header-user-section'>
-        <span className='name'>{currentUser.name}</span>
+      <div className="header-user-section">
+        <span className="name">{currentUser.name}</span>
         <LogoutButton />
       </div>
     </div>
   );
-}
+};
 
 export default AppHeader;

@@ -14,80 +14,82 @@ function requireParseInt(intStr: string, errMsg: string): number {
 
 class PgaTourScraperReader implements Reader {
   async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
-    const html = await getLeaderboardHTML(url)
-    return parse(html, config.par)
+    const html = await getLeaderboardHTML(url);
+    return parse(html, config.par);
   }
 }
 
 async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
-  const browser = await puppeteer.launch({ defaultViewport: { width: 800, height: 1000 } })
+  const browser = await puppeteer.launch({ defaultViewport: { width: 800, height: 1000 } });
   try {
-    const page = await browser.newPage()
-    await page.goto(leaderboardHTMLUrl)
+    const page = await browser.newPage();
+    await page.goto(leaderboardHTMLUrl);
 
     // HACK - taking a screenshot seems to force the table to load, when nothing else will
-    await page.screenshot({ path: '/tmp/last.png' })
+    await page.screenshot({ path: '/tmp/last.png' });
 
-    await page.waitForSelector('table.leaderboard tbody tr.line-row', { timeout: 1000*60 })
-    const contents = await page.content()
-    return contents
+    await page.waitForSelector('table.leaderboard tbody tr.line-row', { timeout: 1000 * 60 });
+    const contents = await page.content();
+    return contents;
   } finally {
     await browser.close();
   }
 }
 
 export function parse(html: string | Buffer, par: number): ReaderResult {
-  const $ = load(html)
+  const $ = load(html);
   const rows = $('table.leaderboard tbody tr.line-row');
 
-  const golfers: UpdateGolfer[] = rows.map((_i, tr) => {
-    const name = $(tr).find('td.player-name .player-name-col').text()
-      .replace(' #', '')
-      .replace(' (a)', '')
-      .trim()
-    const rawThru = $(tr).find('td.thru').text().replace('*', '').trim()
-    const rawRounds: string[] = $(tr).find('td.round-x').map((_i, td) => $(td).text().trim()).get()
+  const golfers: UpdateGolfer[] = rows
+    .map((_i, tr) => {
+      const name = $(tr).find('td.player-name .player-name-col').text().replace(' #', '').replace(' (a)', '').trim();
+      const rawThru = $(tr).find('td.thru').text().replace('*', '').trim();
+      const rawRounds: string[] = $(tr)
+        .find('td.round-x')
+        .map((_i, td) => $(td).text().trim())
+        .get();
 
-    const positionStr = $(tr).find('td.position').text().trim()
-    const isWD = positionStr === 'WD'
-    const isCut = positionStr === 'CUT'
+      const positionStr = $(tr).find('td.position').text().trim();
+      const isWD = positionStr === 'WD';
+      const isCut = positionStr === 'CUT';
 
-    let scores: Score[] = rawRounds.map(safeParseInt).map(n => n !== null ? n - par : null)
-    let thru = parseThru(rawThru)
-    const day = calcCurrentDay(scores, rawThru === 'F')
+      let scores: Score[] = rawRounds.map(safeParseInt).map((n) => (n !== null ? n - par : null));
+      let thru = parseThru(rawThru);
+      const day = calcCurrentDay(scores, rawThru === 'F');
 
-    if (rawThru !== 'F') {
-      if (!isWD) {
-        const currentRoundScore = parseRoundScore($(tr).find('td.round').text().trim())
-        scores[day] = currentRoundScore
-      } else {
-        scores[day] = constants.MISSED_CUT
+      if (rawThru !== 'F') {
+        if (!isWD) {
+          const currentRoundScore = parseRoundScore($(tr).find('td.round').text().trim());
+          scores[day] = currentRoundScore;
+        } else {
+          scores[day] = constants.MISSED_CUT;
+        }
       }
-    }
 
-    if (isWD) {
-      scores = scores.map(s => s === null ? constants.MISSED_CUT : s)
-      thru = null
-    }
+      if (isWD) {
+        scores = scores.map((s) => (s === null ? constants.MISSED_CUT : s));
+        thru = null;
+      }
 
-    if (isCut) {
-      scores[3] = constants.MISSED_CUT;
-      scores[2] = constants.MISSED_CUT
-    }
+      if (isCut) {
+        scores[3] = constants.MISSED_CUT;
+        scores[2] = constants.MISSED_CUT;
+      }
 
-    const g: UpdateGolfer = { golfer: name, scores: scores.map(s => s || 0), day: day + 1, thru }
-    return g
-  }).get()
+      const g: UpdateGolfer = { golfer: name, scores: scores.map((s) => s || 0), day: day + 1, thru };
+      return g;
+    })
+    .get();
 
-  return { par, golfers }
+  return { par, golfers };
 }
 
 export function calcCurrentDay(rounds: Score[], isFinished: boolean): number {
-  let d = isFinished ? -1 : 0
+  let d = isFinished ? -1 : 0;
   for (let i = 0; i < rounds.length && rounds[i] !== null; i++) {
-    d++
+    d++;
   }
-  return d
+  return d;
 }
 
 function safeParseInt(str: string): number | null {
@@ -99,11 +101,11 @@ function isNullStr(str: string): boolean {
 }
 
 function parseThru(thruStr: string): Thru {
-  thruStr = thruStr.replace('*', '').trim()
+  thruStr = thruStr.replace('*', '').trim();
   if (isNullStr(thruStr)) {
     return null;
   }
-  return thruStr === 'F' ? constants.NHOLES : requireParseInt(thruStr, 'failed to parse thruStr')
+  return thruStr === 'F' ? constants.NHOLES : requireParseInt(thruStr, 'failed to parse thruStr');
 }
 
 function parseRoundScore(str: string): number {

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prettier-format": "prettier --config .prettierrc 'lib/**/*.ts* pages/**/*.ts*' --write"
+    "prettier-format": "prettier --config .prettierrc 'lib/**/*.ts*' --write && prettier --config .prettierrc 'pages/**/*.ts*' --write"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.5.2",

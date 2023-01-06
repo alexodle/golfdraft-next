@@ -7,7 +7,10 @@ import Loading from '../../../Loading';
 import GolferLogic from '../logic/GolferLogic';
 import FreeTextPickListEditor from './FreeTextPickListEditor';
 
-export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean; }> = ({ height, preDraftMode = false }) => {
+export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean }> = ({
+  height,
+  preDraftMode = false,
+}) => {
   const { data: syncedPickList, isLoading } = usePickList();
   const pickListUpdater = usePickListUpdater();
 
@@ -15,7 +18,11 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
 
   const remainingGolfers = useRemainingGolfers();
   const remainingGolfersByWgr = useMemo(() => {
-    return sortBy(Object.values(remainingGolfers ?? {}), (g => g.wgr ?? Infinity), (g => g.name)).map(g => g.id);
+    return sortBy(
+      Object.values(remainingGolfers ?? {}),
+      (g) => g.wgr ?? Infinity,
+      (g) => g.name,
+    ).map((g) => g.id);
   }, [remainingGolfers]);
 
   const [pendingPickList, setPendingPickList] = useState<number[] | null>(null);
@@ -28,11 +35,7 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
   }
 
   if (isFreeTextMode || (preDraftMode && !syncedPickList?.length)) {
-    return (
-      <FreeTextPickListEditor
-        onCancel={() => setIsFreeTextMode(false)}
-      />
-    );
+    return <FreeTextPickListEditor onCancel={() => setIsFreeTextMode(false)} />;
   }
 
   const getDisplayPickList = (): number[] => {
@@ -41,7 +44,7 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
       displayPickList = displayPickList ?? remainingGolfersByWgr;
     }
     return displayPickList ?? [];
-  }
+  };
   const displayPickListOrig = getDisplayPickList();
 
   const newOrder = (fromIndex: number, toIndex: number): number[] => {
@@ -52,11 +55,11 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
     copy.splice(toIndex, 0, movingGolfer);
 
     return copy;
-  }
+  };
 
   const move = (fromIndex: number, amount: number) => {
     setPendingPickList(newOrder(fromIndex, fromIndex + amount));
-  }
+  };
 
   const unsavedChanges = !!pendingPickList?.length;
   const draggingGolferId = isNumber(draggingIndex) ? displayPickListOrig[draggingIndex] : null;
@@ -68,8 +71,7 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
 
   return (
     <section>
-
-      <div className="row" style={{marginBottom: "1em"}}>
+      <div className="row" style={{ marginBottom: '1em' }}>
         <div className="col-md-12">
           {preDraftMode && (
             <span>
@@ -81,7 +83,9 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
                   setPendingPickList(null);
                   setIsFreeTextMode(true);
                 }}
-              >Paste list</button>
+              >
+                Paste list
+              </button>
             </span>
           )}
           <span className="pull-right">
@@ -92,7 +96,9 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
               onClick={() => {
                 setPendingPickList(null);
               }}
-            >Reset</button>
+            >
+              Reset
+            </button>
             <span> </span>
             <button
               className="btn btn-default btn-primary"
@@ -105,17 +111,24 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
                 pickListUpdater.mutate({ pickList: pendingPickList });
                 setPendingPickList(null);
               }}
-            >Save</button>
+            >
+              Save
+            </button>
           </span>
           {!unsavedChanges ? null : (
-            <p><small>* Unsaved changes</small></p>
+            <p>
+              <small>* Unsaved changes</small>
+            </p>
           )}
         </div>
       </div>
-      <div className="row" style={{
-        height: height || "100%",
-        overflowY: "scroll"
-      }}>
+      <div
+        className="row"
+        style={{
+          height: height || '100%',
+          overflowY: 'scroll',
+        }}
+      >
         <div className="col-md-12">
           <table className="table table-condensed table-striped">
             <thead></thead>
@@ -131,14 +144,11 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
               {displayPickList.map((gid, i) => {
                 const g = getGolfer(gid);
                 return (
-                  <tr
-                    key={gid}
-                    className={!draggingGolferId || draggingGolferId !== g.id ? "" : "info"}
-                  >
+                  <tr key={gid} className={!draggingGolferId || draggingGolferId !== g.id ? '' : 'info'}>
                     <td
                       draggable
                       onDragStart={() => {
-                        setDraggingIndex(i)
+                        setDraggingIndex(i);
                       }}
                       onDragOver={() => {
                         setDraggingHoverIndex(i);
@@ -146,16 +156,19 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
                     >
                       <span className="hidden-xs">
                         <span className="hidden-xs glyphicon glyphicon-menu-hamburger text-muted" />
-                        &nbsp;&nbsp;{i+1}.&nbsp;&nbsp;{GolferLogic.renderGolfer(g)}
+                        &nbsp;&nbsp;{i + 1}.&nbsp;&nbsp;{GolferLogic.renderGolfer(g)}
                       </span>
 
                       <span className="visible-xs">
-                        <ArrowLink arrowClass='glyphicon-arrow-up' onClick={() => move(i, -1)} isDisabled={i === 0} />
+                        <ArrowLink arrowClass="glyphicon-arrow-up" onClick={() => move(i, -1)} isDisabled={i === 0} />
                         <span>&nbsp;</span>
-                        <ArrowLink arrowClass='glyphicon-arrow-down' onClick={() => move(i, 1)} isDisabled={i === displayPickList.length - 1} />
-                        &nbsp;&nbsp;{i+1}.&nbsp;&nbsp;{GolferLogic.renderGolfer(g)}
+                        <ArrowLink
+                          arrowClass="glyphicon-arrow-down"
+                          onClick={() => move(i, 1)}
+                          isDisabled={i === displayPickList.length - 1}
+                        />
+                        &nbsp;&nbsp;{i + 1}.&nbsp;&nbsp;{GolferLogic.renderGolfer(g)}
                       </span>
-
                     </td>
                   </tr>
                 );
@@ -166,26 +179,25 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean;
       </div>
     </section>
   );
-}
+};
 
 const ArrowLink: React.FC<{
   isDisabled: boolean;
   arrowClass: string;
   onClick: () => void;
-}> = ({
-  isDisabled,
-  arrowClass,
-  onClick
-}) => {
+}> = ({ isDisabled, arrowClass, onClick }) => {
   if (isDisabled) {
-    return (<span className={"text-muted glyphicon " + arrowClass} />);
+    return <span className={'text-muted glyphicon ' + arrowClass} />;
   }
   return (
-    <a href="#" onClick={(ev) => {
-      ev.preventDefault();
-      onClick();
-    }}>
-      <span className={"glyphicon " + arrowClass} />
+    <a
+      href="#"
+      onClick={(ev) => {
+        ev.preventDefault();
+        onClick();
+      }}
+    >
+      <span className={'glyphicon ' + arrowClass} />
     </a>
   );
-}
+};

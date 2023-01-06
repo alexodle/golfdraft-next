@@ -19,5 +19,5 @@ export default {
   // we auto-pick the next nth best WGR player
   ABSENT_PICK_NTH_BEST_WGR: 7,
 
-  TOURNEY_ID_PARAM: ':tourneyId([0-9a-f]{24})'
+  TOURNEY_ID_PARAM: ':tourneyId([0-9a-f]{24})',
 };

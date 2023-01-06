@@ -13,14 +13,16 @@ interface LbDataGolfer {
     firstName: string;
     lastName: string;
     playerNameAddOns: string;
-  },
+  };
   playerRoundId: string; // "<number>"
   round: string; // round score :: "<number>" || "--"
-  rounds: [{
-    strokes: string; // "<number>" || "--"
-  }],
+  rounds: [
+    {
+      strokes: string; // "<number>" || "--"
+    },
+  ];
   strokes: string; // "<number>" || "--"
-  status: "active" | "cut" | "wd";
+  status: 'active' | 'cut' | 'wd';
   thru: string; // "<number>" || "--"
   total: string; // "<number>" || "--"
   roundComplete: boolean; // ONLY VALID FOR ACTIVE GOLFERS
@@ -85,7 +87,7 @@ function parseMissedCutGolferScores(par: number, g: LbDataGolfer): Score[] {
   if (!finishedRound) {
     latestRound--;
   }
-  return g.rounds.map((r, i) => i < latestRound ? (safeParseInt(r.strokes) ?? 0) - par : MISSED_CUT);
+  return g.rounds.map((r, i) => (i < latestRound ? (safeParseInt(r.strokes) ?? 0) - par : MISSED_CUT));
 }
 
 function parseGolferScores(par: number, g: LbDataGolfer): Score[] {
@@ -96,9 +98,7 @@ function parseGolferScores(par: number, g: LbDataGolfer): Score[] {
   const currentRoundScore = parseRoundScore(g);
 
   // Logic for getting the current round score is different than earlier rounds
-  const scores = g.rounds
-    .slice(0, currentRound - 1)
-    .map(r => (safeParseInt(r.strokes) ?? 0) - par);
+  const scores = g.rounds.slice(0, currentRound - 1).map((r) => (safeParseInt(r.strokes) ?? 0) - par);
   scores.push(currentRoundScore);
   for (let i = scores.length; i < NDAYS; i++) {
     scores.push(0);

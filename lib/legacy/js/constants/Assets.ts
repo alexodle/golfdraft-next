@@ -4,5 +4,5 @@ export default {
   NEW_CHAT_MESSAGE_SOUND: '/assets/tone1.wav',
 
   // TODO: Pick new sounds
-  PICK_WARNING_SOUND: '/assets/bleep1.wav'
+  PICK_WARNING_SOUND: '/assets/bleep1.wav',
 };

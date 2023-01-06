@@ -9,25 +9,23 @@ export interface ReaderConfig {
 }
 
 const readerConfig: ReaderConfig = {
-
   pgatour_field: {
-    reader: pgatourFieldReader
+    reader: pgatourFieldReader,
   },
 
   pgatour_historic_html: {
-    reader: pgaTourHistoricHtmlReader
+    reader: pgaTourHistoricHtmlReader,
   },
 
   // New pgatour.com json format (2019)
   pgatour_lbdata: {
-    reader: pgaTourLbDataReader
+    reader: pgaTourLbDataReader,
   },
 
   // Required for unique pgatour_lbdata urls (2020)
   pgatour_lbdata_scraper: {
-    reader: pgaTourLbDataScraperReader
+    reader: pgaTourLbDataScraperReader,
   },
-
 };
 
 export default readerConfig as ReaderConfig;

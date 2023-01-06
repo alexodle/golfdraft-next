@@ -27,23 +27,23 @@ export const UserDetails = ({ userId }: UserDetailsProps) => {
   const currentDayIndex = standings.data.currentDay ?? 0 - 1;
   const userScores = standings.data.standings;
 
-  const userScoreIndex = userScores.findIndex(us => us.userId === user?.id);
+  const userScoreIndex = userScores.findIndex((us) => us.userId === user?.id);
   const userScore = userScores[userScoreIndex];
 
-  const golferPickNumbers: Record<string, number> = {}; 
+  const golferPickNumbers: Record<string, number> = {};
   draftPicks.data.forEach((dp, i) => {
     golferPickNumbers[dp.golferId] = i;
   });
 
   const golferScores = _.chain(userScore.dayScores)
-    .flatMap(ds => ds.golferScores)
-    .groupBy(gs => gs.golferId)
+    .flatMap((ds) => ds.golferScores)
+    .groupBy((gs) => gs.golferId)
     .toPairs()
     .sortBy(([golfer]) => golferPickNumbers[golfer])
     .value();
 
   const trs = _.map(golferScores, ([golferId, golferScores], i) => {
-    const golferTotal = _.sumBy(golferScores, gs => gs.score);
+    const golferTotal = _.sumBy(golferScores, (gs) => gs.score);
     const golfer = golferLookup.data.getGolfer(Number(golferId));
     return (
       <tr key={golferId}>
@@ -58,14 +58,12 @@ export const UserDetails = ({ userId }: UserDetailsProps) => {
               key={i}
               className={cx({
                 'missed-cut': gs.missedCut,
-                'score-used': gs.scoreUsed
+                'score-used': gs.scoreUsed,
               })}
             >
               {utils.toGolferScoreStr(gs.score)}
               <sup className="missed-cut-text"> MC</sup>
-              {i !== currentDayIndex ? null : (
-                <sup className="thru-text"> {utils.toThruStr(gs.thru ?? 0)}</sup>
-              )}
+              {i !== currentDayIndex ? null : <sup className="thru-text"> {utils.toThruStr(gs.thru ?? 0)}</sup>}
             </td>
           );
         })}
@@ -78,9 +76,12 @@ export const UserDetails = ({ userId }: UserDetailsProps) => {
       <h2>
         {user.name}
         <span> </span>({utils.toGolferScoreStr(userScore.totalScore)})
-        <small> {utils.getOrdinal(userScore.standing + 1)} place {userScore.isTied ? "(Tie)" : null}</small>
+        <small>
+          {' '}
+          {utils.getOrdinal(userScore.standing + 1)} place {userScore.isTied ? '(Tie)' : null}
+        </small>
       </h2>
-      <table className='table user-details-table'>
+      <table className="table user-details-table">
         <thead>
           <tr>
             <th>Golfer</th>
@@ -95,4 +96,4 @@ export const UserDetails = ({ userId }: UserDetailsProps) => {
       </table>
     </section>
   );
-}
+};

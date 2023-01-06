@@ -1,10 +1,10 @@
-import {some} from 'lodash';
+import { some } from 'lodash';
 import constants from './constants';
 
 export function getOrdinal(n: number): string {
-  const s=["th","st","nd","rd"],
-      v=n%100;
-  return n+(s[(v-20)%10]||s[v]||s[0]);
+  const s = ['th', 'st', 'nd', 'rd'],
+    v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 export function toGolferScoreStr(n: number): string {
@@ -33,5 +33,5 @@ export function oidsAreEqual(a: any, b: any) {
 }
 
 export function containsObjectId(oidList: any[], targetOid: any) {
-  return some(oidList, oid => oidsAreEqual(oid, targetOid));
+  return some(oidList, (oid) => oidsAreEqual(oid, targetOid));
 }

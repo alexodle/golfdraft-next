@@ -13,7 +13,7 @@ describe('PgaTourScraperReader', function () {
     it('parses for mid-day WD', () => {
       // TODO
     });
-  })
+  });
 
   /*
   NF: [,,,] -> 0
@@ -26,19 +26,19 @@ describe('PgaTourScraperReader', function () {
   */
   describe('calcCurrentDay', () => {
     it('parses active day 0', () => {
-      expect(calcCurrentDay([null, null, null, null], false)).toEqual(0)
-    })
+      expect(calcCurrentDay([null, null, null, null], false)).toEqual(0);
+    });
 
     it('parses finished day 0', () => {
-      expect(calcCurrentDay([0, null, null, null], true)).toEqual(0)
-    })
+      expect(calcCurrentDay([0, null, null, null], true)).toEqual(0);
+    });
 
     it('parses active day 1', () => {
-      expect(calcCurrentDay([0, null, null, null], false)).toEqual(1)
-    })
+      expect(calcCurrentDay([0, null, null, null], false)).toEqual(1);
+    });
 
     it('parses finished final day', () => {
-      expect(calcCurrentDay([0, 0, 0, 0], true)).toEqual(3)
-    })
+      expect(calcCurrentDay([0, 0, 0, 0], true)).toEqual(3);
+    });
   });
 });

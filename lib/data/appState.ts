@@ -5,14 +5,10 @@ const APP_STATE_TABLE = 'app_state';
 const ID = 1;
 
 export async function getAppStateFromDb(supabase: SupabaseClient): Promise<AppState> {
-  const result = await supabase
-    .from(APP_STATE_TABLE)
-    .select('*')
-    .eq('id', ID)
-    .single();
+  const result = await supabase.from(APP_STATE_TABLE).select('*').eq('id', ID).single();
   if (result.error) {
     console.dir(result.error);
-    throw new Error('Failed to fetch app state')
+    throw new Error('Failed to fetch app state');
   }
   return result.data;
 }
@@ -27,6 +23,6 @@ export async function upsertAppState(appState: Omit<AppState, 'id'>): Promise<vo
     .upsert({ ...appState, id: ID });
   if (result.error) {
     console.dir(result.error);
-    throw new Error('Failed to update app state')
+    throw new Error('Failed to update app state');
   }
 }

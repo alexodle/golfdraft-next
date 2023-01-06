@@ -1,4 +1,4 @@
-import { TourneyConfig } from "../../models";
+import { TourneyConfig } from '../../models';
 
 export type Thru = number | null;
 export type Score = number | 'MC' | null;

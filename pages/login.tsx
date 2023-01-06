@@ -4,9 +4,7 @@ import { NextPage } from 'next';
 
 const AuthPage: NextPage = () => {
   const supabase = useSupabaseClient();
-  return (
-    <Auth supabaseClient={supabase} magicLink redirectTo='/' />
-  )
-}
+  return <Auth supabaseClient={supabase} magicLink redirectTo="/" />;
+};
 
 export default AuthPage;

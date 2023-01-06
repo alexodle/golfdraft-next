@@ -27,7 +27,7 @@ async function _fetch(url: string, init?: RequestInit) {
   const normalizedUrl = normalizeUrl(url);
   const resp = ensureSuccess(await window.fetch(normalizedUrl, ensureCredentials(init)));
   if (!resp.json) return null;
-  
+
   try {
     return await resp.json();
   } catch (e) {
@@ -41,33 +41,33 @@ export function fetch(url: string, init?: RequestInit) {
 }
 
 export function del(url: string) {
-  return fetch(url, { method: "DELETE" });
+  return fetch(url, { method: 'DELETE' });
 }
 
 export function post(url: string) {
-  return fetch(url, { method: "POST" });
+  return fetch(url, { method: 'POST' });
 }
 
 export function postJson<T>(url: string, data: unknown): Promise<T> {
   return fetch(url, {
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(data),
     headers: {
-      "Content-Type": "application/json"
-    }
+      'Content-Type': 'application/json',
+    },
   }) as Promise<T>;
 }
 
 export function put(url: string) {
-  return fetch(url, { method: "PUT" });
+  return fetch(url, { method: 'PUT' });
 }
 
 export function putJson(url: string, data: unknown) {
   return fetch(url, {
-    method: "PUT",
+    method: 'PUT',
     body: JSON.stringify(data),
     headers: {
-      "Content-Type": "application/json"
-    }
+      'Content-Type': 'application/json',
+    },
   });
 }

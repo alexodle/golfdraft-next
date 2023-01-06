@@ -20,7 +20,7 @@ async function initTourneyApi(req: NextApiRequest, res: NextApiResponse) {
     res.status(400).json({ issues });
     return;
   }
-  
+
   const tourneyId = await initTourney(cfg);
   res.send({ tourneyId });
 }
@@ -40,7 +40,7 @@ const tourneyConfigValidations: [(cfg: Partial<TourneyConfig>) => boolean, strin
 ];
 
 function validateTourneyConfig(cfg: TourneyConfig): [boolean, string[]] {
-  const issues = tourneyConfigValidations.filter(([v]) => !v(cfg)).map(([,issue]) => issue);
+  const issues = tourneyConfigValidations.filter(([v]) => !v(cfg)).map(([, issue]) => issue);
   return [issues.length === 0, issues];
 }
 

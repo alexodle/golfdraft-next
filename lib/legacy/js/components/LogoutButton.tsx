@@ -10,9 +10,9 @@ export const LogoutButton: React.FC = () => {
   }
 
   return (
-    <form action='/logout' method='post'>
+    <form action="/logout" method="post">
       <input
-        type='submit'
+        type="submit"
         className="logout-button"
         value={`I'm not ${currentUser.name}`}
         onSubmit={() => {
@@ -21,6 +21,6 @@ export const LogoutButton: React.FC = () => {
       />
     </form>
   );
-}
+};
 
 export default LogoutButton;
