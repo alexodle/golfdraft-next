@@ -18,7 +18,7 @@ export function useCurrentUser(): GDUser | undefined {
     if (!userLookup.data || !user?.id) {
       return undefined;
     }
-    return Object.values(userLookup.data ?? {}).find((u) => u.profileId === user.id);
+    return Object.values(userLookup.data ?? {}).find((u) => u.profileIds.includes(user.id));
   }, [userLookup, user?.id]);
 
   useEffect(() => {

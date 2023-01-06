@@ -66,10 +66,7 @@ BEGIN
   WHERE "tourneyId" = tourney_id AND "userId" = user_id;
 
   IF auto_pick_user_id IS NULL THEN
-    SELECT "id" INTO picked_by_user_id
-    FROM gd_user
-    WHERE auth.uid() = "profileId"
-    LIMIT 1;
+    SELECT get_user_id(auth.uid()) INTO picked_by_user_id;
   END IF;
 
   UPDATE draft_pick

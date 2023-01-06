@@ -6,10 +6,7 @@ DECLARE
     user_id int;
     golfer_ids_arr INT[];
 BEGIN
-    SELECT "id" INTO user_id
-    FROM gd_user
-    WHERE auth.uid() = "profileId"
-    LIMIT 1;
+    SELECT get_user_id(auth.uid()) INTO user_id;
 
     golfer_ids_arr := string_to_array(golfer_ids, ',')::INT[];
 

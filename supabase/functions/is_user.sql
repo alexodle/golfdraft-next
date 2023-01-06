@@ -1,14 +1,13 @@
 CREATE OR REPLACE FUNCTION is_user(user_id int)
 RETURNS boolean
+SECURITY DEFINER
 AS
 $$
 DECLARE
     current_user_id int;
 BEGIN
-    SELECT gd_user.id INTO current_user_id
-    FROM gd_user
-    WHERE (gd_user."profileId" = auth.uid());
-
+    SELECT get_user_id(auth.uid()) INTO current_user_id;
+    
     RETURN user_id = current_user_id;
 END;
 $$

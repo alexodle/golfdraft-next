@@ -8,9 +8,7 @@ DECLARE
     uuid1 uuid;
     uuid2 uuid;
     uuid3 uuid;
-    user_id1 int;
-    user_id2 int;
-    user_id3 int;
+    uuid3dup uuid;
 BEGIN
     -- tourney
     INSERT INTO tourney ("name", "startDateEpochMillis", "lastUpdatedEpochMillis", "config")
@@ -24,13 +22,16 @@ BEGIN
     SELECT * INTO uuid1 FROM tests.create_supabase_user('sbuser1');
     SELECT * INTO uuid2 FROM tests.create_supabase_user('sbuser2');
     SELECT * INTO uuid3 FROM tests.create_supabase_user('sbuser3');
-    INSERT INTO gd_user ("name", "username", "profileId") VALUES
-        ('User One', 'user1', uuid1),
-        ('User Two', 'user2', uuid2),
-        ('User Three', 'user3', uuid3);
-    SELECT id INTO user_id1 FROM gd_user WHERE "profileId" = uuid1;
-    SELECT id INTO user_id2 FROM gd_user WHERE "profileId" = uuid2;
-    SELECT id INTO user_id3 FROM gd_user WHERE "profileId" = uuid3;
+    SELECT * INTO uuid3dup FROM tests.create_supabase_user('sbuser3_dup');
+    INSERT INTO gd_user ("name", "username") VALUES
+        ('User One', 'user1'),
+        ('User Two', 'user2'),
+        ('User Three', 'user3');
+    INSERT INTO gd_user_map ("gdUserId", "profileId") VALUES
+        (tests.get_gd_user1(), uuid1),
+        (tests.get_gd_user2(), uuid2),
+        (tests.get_gd_user3(), uuid3),
+        (tests.get_gd_user3(), uuid3dup);
 
     -- commissioners
     INSERT INTO commissioners ("tourneyId", "userId") VALUES
@@ -38,12 +39,12 @@ BEGIN
 
     -- draft_picks
     INSERT INTO draft_pick ("tourneyId", "pickNumber", "userId") VALUES
-        (tourney_id, 1, user_id1),
-        (tourney_id, 2, user_id2),
-        (tourney_id, 3, user_id3),
-        (tourney_id, 6, user_id3),
-        (tourney_id, 7, user_id2),
-        (tourney_id, 8, user_id1);
+        (tourney_id, 1, tests.get_gd_user1()),
+        (tourney_id, 2, tests.get_gd_user2()),
+        (tourney_id, 3, tests.get_gd_user3()),
+        (tourney_id, 6, tests.get_gd_user3()),
+        (tourney_id, 7, tests.get_gd_user2()),
+        (tourney_id, 8, tests.get_gd_user1());
 
     -- golfers
     INSERT INTO golfer ("tourneyId", "name", "wgr") VALUES 
@@ -134,6 +135,15 @@ SECURITY DEFINER
 AS $$
     BEGIN
         RETURN tests.get_gd_user_id('user2');
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION tests.get_gd_user3()
+RETURNS int
+SECURITY DEFINER
+AS $$
+    BEGIN
+        RETURN tests.get_gd_user_id('user3');
     END;
 $$ LANGUAGE plpgsql;
 

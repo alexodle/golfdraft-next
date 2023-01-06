@@ -24,11 +24,8 @@ BEGIN
   IF next_pick_number <> pick_number THEN
     raise exception 'Invalid pick number: %, expected %', pick_number, next_pick_number;
   END IF;
-  
-  SELECT "id" INTO picked_by_user_id
-  FROM gd_user
-  WHERE auth.uid() = "profileId"
-  LIMIT 1;
+
+  SELECT get_user_id(auth.uid()) INTO picked_by_user_id;
 
   UPDATE draft_pick
   SET
