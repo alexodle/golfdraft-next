@@ -12,13 +12,13 @@ export type IndexedUsers = Record<number, GDUser>;
 export function useCurrentUser(): GDUser | undefined {
   const user = useUser();
   const { push } = useRouter();
-  
-  const userLookup = useAllUsers(); 
+
+  const userLookup = useAllUsers();
   const me = useMemo(() => {
     if (!userLookup.data || !user?.id) {
       return undefined;
     }
-    return Object.values(userLookup.data ?? {}).find(u => u.profileId === user.id);
+    return Object.values(userLookup.data ?? {}).find((u) => u.profileId === user.id);
   }, [userLookup, user?.id]);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function useAllUsers(): UseQueryResult<IndexedUsers> {
   const supabase = useSupabaseClient();
   return useQuery<IndexedUsers>(USER_TABLE, async () => {
     const result = await getAllUsers(supabase);
-    return keyBy(result, u => u.id);
+    return keyBy(result, (u) => u.id);
   });
 }
 

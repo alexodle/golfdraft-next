@@ -10,14 +10,14 @@ const GOLFERS_TABLE = 'golfer';
 export const PENDING_GOLFER: Omit<Golfer, 'tourneyId'> = {
   id: -2,
   name: 'Pending...',
-}
+};
 
 export type UseGolfersResult = Readonly<{
   /** Lookup golfers by ID, including PENDING_GOLFER. Throws if not found. */
   getGolfer: (gid: number) => Golfer;
   /** Unordered list of all golfers */
   golfers: Golfer[];
-}>
+}>;
 
 export function useGolfers(): UseQueryResult<UseGolfersResult> {
   const tourneyId = useTourneyId();
@@ -25,7 +25,7 @@ export function useGolfers(): UseQueryResult<UseGolfersResult> {
 
   return useQuery<UseGolfersResult>(GOLFERS_TABLE, async () => {
     const golfers = await getGolfers(tourneyId, supabase);
-    const lookup = keyBy([...golfers, { ...PENDING_GOLFER, tourneyId }], g => g.id);
+    const lookup = keyBy([...golfers, { ...PENDING_GOLFER, tourneyId }], (g) => g.id);
     return {
       golfers,
       getGolfer: (gid: number) => {
@@ -40,10 +40,7 @@ export function useGolfers(): UseQueryResult<UseGolfersResult> {
 }
 
 export async function getGolfers(tourneyId: number, supabase: SupabaseClient): Promise<Golfer[]> {
-  const result = await supabase
-    .from(GOLFERS_TABLE)
-    .select('*')
-    .eq('tourneyId', tourneyId);
+  const result = await supabase.from(GOLFERS_TABLE).select('*').eq('tourneyId', tourneyId);
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to get golfers for tourneyId: ${tourneyId}`);
@@ -52,7 +49,7 @@ export async function getGolfers(tourneyId: number, supabase: SupabaseClient): P
 }
 
 export async function upsertGolfers(golfers: Omit<Golfer, 'id'>[]): Promise<Golfer[]> {
-  const withoutId = golfers.map(g => omit(g, 'id'));
+  const withoutId = golfers.map((g) => omit(g, 'id'));
   const result = await adminSupabase()
     .from(GOLFERS_TABLE)
     .upsert(withoutId, { onConflict: 'tourneyId, name' })

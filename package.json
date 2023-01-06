@@ -6,7 +6,8 @@
     "dev": "next dev -p 4000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prettier-format": "prettier --config .prettierrc 'lib/**/*.ts* pages/**/*.ts*' --write"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.5.2",
@@ -42,6 +43,7 @@
     "less-loader": "^10.2.0",
     "next-compose-plugins": "^2.2.1",
     "next-with-less": "^2.0.5",
+    "prettier": "^2.8.1",
     "supabase": "^1.27.10",
     "typescript": "^4.6.4",
     "webpack": "^5.72.1"
