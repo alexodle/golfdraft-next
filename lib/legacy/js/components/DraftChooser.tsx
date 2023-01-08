@@ -23,7 +23,7 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
   const { pickMutation, autoPickMutation } = useDraftPicker();
 
   const golfersRemaining = useRemainingGolfers();
-  const currentUser = useCurrentUser();
+  const { data: currentUser } = useCurrentUser();
   const { data: allUsers } = useAllUsers();
   const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
 

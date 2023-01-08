@@ -28,7 +28,7 @@ try {
 
 export const DraftApp: React.FC = () => {
   const { data: draftSettings } = useDraftSettings();
-  const currentUser = useCurrentUser();
+  const { data: currentUser } = useCurrentUser();
 
   const { data: draftPicks } = useDraftPicks();
   const currentPick = useCurrentPick();

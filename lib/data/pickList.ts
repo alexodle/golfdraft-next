@@ -34,7 +34,7 @@ export function usePickListUsers(): UseQueryResult<Set<number>> {
 
 export function usePickList(): UseQueryResult<number[] | null> {
   const tourneyId = useTourneyId();
-  const myUser = useCurrentUser();
+  const { data: myUser } = useCurrentUser();
   const queryClientKey = useMemo(() => getPickListQueryClientKey(tourneyId, myUser?.id), [tourneyId, myUser?.id]);
   const supabase = useSupabaseClient();
 
@@ -60,7 +60,7 @@ export function usePickListUpdater():
   | UseMutationResult<UpdatePickListRequest, unknown, UpdatePickListRequest, unknown>
   | undefined {
   const tourneyId = useTourneyId();
-  const myUser = useCurrentUser();
+  const { data: myUser } = useCurrentUser();
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getPickListQueryClientKey(tourneyId, myUser?.id), [tourneyId, myUser?.id]);
   const supabase = useSupabaseClient();

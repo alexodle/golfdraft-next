@@ -44,7 +44,8 @@ export function useChatMessages(tourneyIdOverride?: number) {
 export function useChatMessageMutation(): UseMutationResult<unknown, unknown, string> {
   const tourneyId = useTourneyId();
   const supabase = useSupabaseClient();
-  const user = useCurrentUser();
+  const { data: user } = useCurrentUser();
+
   const mutation = useMutation({
     mutationFn: async (message: string) => {
       const result = await supabase.from(CHAT_MESSAGES_TABLE).insert({ tourneyId, userId: user?.id ?? -1, message });
@@ -54,6 +55,7 @@ export function useChatMessageMutation(): UseMutationResult<unknown, unknown, st
       }
     },
   });
+
   return mutation;
 }
 

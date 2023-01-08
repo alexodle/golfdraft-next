@@ -43,7 +43,6 @@ export type DraftAutoPick = Readonly<{
 }>;
 
 export type GDUser = Readonly<{
-  profileIds: string[];
   id: number;
   name: string;
   username: string;

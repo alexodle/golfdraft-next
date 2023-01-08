@@ -1,33 +1,30 @@
-import { SupabaseClient, useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { SupabaseClient, User, useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { keyBy } from 'lodash';
-import { useRouter } from 'next/router';
-import { useEffect, useMemo } from 'react';
 import { useQuery, UseQueryResult } from 'react-query';
 import { GDUser } from '../models';
+import { useSharedSubscription } from './subscription';
 
 const USER_TABLE = 'gd_user';
 
 export type IndexedUsers = Record<number, GDUser>;
 
-export function useCurrentUser(): GDUser | undefined {
+export function useCurrentUser(): UseQueryResult<GDUser | undefined> {
+  const supabase = useSupabaseClient();
   const user = useUser();
-  const { push } = useRouter();
 
-  const userLookup = useAllUsers();
-  const me = useMemo(() => {
-    if (!userLookup.data || !user?.id) {
-      return undefined;
-    }
-    return Object.values(userLookup.data ?? {}).find((u) => u.profileIds.includes(user.id));
-  }, [userLookup, user?.id]);
+  if (!user) {
+    throw new Error('Unexpectedly missing auth user');
+  }
 
-  useEffect(() => {
-    if (!userLookup.isLoading && userLookup.isSuccess && !me) {
-      push('/pending'); // hihi TODO fix
-    }
-  }, [push, userLookup, me]);
+  const myUserResult = useQuery<GDUser | undefined>([USER_TABLE, user.id], async () => {
+    return await getMyGdUser(user, supabase);
+  });
 
-  return me;
+  useSharedSubscription('gd_user_map', `profileId=eq.${user.id}`, () => {
+    myUserResult.refetch();
+  });
+
+  return myUserResult;
 }
 
 export function useAllUsers(): UseQueryResult<IndexedUsers> {
@@ -36,6 +33,26 @@ export function useAllUsers(): UseQueryResult<IndexedUsers> {
     const result = await getAllUsers(supabase);
     return keyBy(result, (u) => u.id);
   });
+}
+
+export async function getMyGdUser(user: User, supabase: SupabaseClient): Promise<GDUser | undefined> {
+  const result = await supabase
+    .from(USER_TABLE)
+    .select(
+      `
+    *, gd_user_map!inner (
+      profileId
+    )
+    `,
+    )
+    .eq('gd_user_map.profileId', user.id)
+    .maybeSingle();
+
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error('Failed to fetch my user');
+  }
+  return result.data;
 }
 
 export async function getAllUsers(supabase: SupabaseClient): Promise<GDUser[]> {

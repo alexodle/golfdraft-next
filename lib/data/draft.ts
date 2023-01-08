@@ -63,7 +63,7 @@ export function useDraftPicker(): {
   const queryClient = useQueryClient();
   const tourneyId = useTourneyId();
   const supabase = useSupabaseClient();
-  const user = useCurrentUser();
+  const { data: user } = useCurrentUser();
 
   const pickMutation = useMutation(
     async ({ pendingDraftPick: draftPick, golferId }: { pendingDraftPick: PendingDraftPick; golferId: number }) => {

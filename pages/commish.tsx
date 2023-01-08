@@ -45,7 +45,7 @@ const InnerCommish: React.FC = () => {
 
   const { data: allUsers } = useAllUsers();
 
-  const user = useCurrentUser();
+  const { data: user } = useCurrentUser();
   const { data: pickListUsers } = usePickListUsers();
 
   if (!user || !tourney || !draftSettings || !pickListUsers || !autoPickUsers || !allUsers || !draftPicks) {

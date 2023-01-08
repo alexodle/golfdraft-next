@@ -13,7 +13,7 @@ import { useGolfers } from '../../../data/golfers';
 import Loading from '../../../Loading';
 
 export const TourneyApp = () => {
-  const user = useCurrentUser();
+  const { data: currentUser } = useCurrentUser();
   const tourney = useCurrentTourney();
   const standings = useTourneyStandings();
   const golferLookup = useGolfers();

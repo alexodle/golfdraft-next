@@ -9,13 +9,25 @@ import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import type { AppProps } from 'next/app';
 import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000 * 60,
+      retry: 2,
+    },
+  },
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [supabase] = useState(() => createBrowserSupabaseClient());
   return (
-    <SessionContextProvider supabaseClient={supabase} initialSession={pageProps.initialSession}>
-      <Component {...pageProps} />
-    </SessionContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabase} initialSession={pageProps.initialSession}>
+        <Component {...pageProps} />
+      </SessionContextProvider>
+    </QueryClientProvider>
   );
 }
 

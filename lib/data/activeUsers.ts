@@ -16,7 +16,7 @@ type ActiveUserPresenceState = {
  */
 export const useActiveUsersData = () => {
   const supabase = useSupabaseClient();
-  const user = useCurrentUser();
+  const { data: user } = useCurrentUser();
 
   const [activeUsers, setActiveUsers] = useState(() => new Set<number>());
 

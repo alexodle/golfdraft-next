@@ -3,7 +3,7 @@ import { useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
 
 export const LogoutButton: React.FC = () => {
-  const currentUser = useCurrentUser();
+  const { data: currentUser } = useCurrentUser();
 
   if (!currentUser) {
     return <Loading />;

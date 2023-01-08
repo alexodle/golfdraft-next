@@ -13,7 +13,7 @@ export type UserDetailsProps = Readonly<{
 }>;
 
 export const UserStandings = ({ selectedUserId, onUserSelected }: UserDetailsProps) => {
-  const user = useCurrentUser();
+  const { data: user } = useCurrentUser();
   const allUsers = useAllUsers();
   const tourney = useCurrentTourney();
   const standings = useTourneyStandings();

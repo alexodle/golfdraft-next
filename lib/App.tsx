@@ -1,40 +1,33 @@
 import { useSession } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import { ActiveUsersCtxProvider } from './ctx/ActiveUsersCtx';
 import { AppStateCtxProvider } from './ctx/AppStateCtx';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60_000 * 60,
-      retry: 2,
-    },
-  },
-});
+import { useCurrentUser } from './data/users';
 
 const App: React.FC<{ tourneyId: number; children?: React.ReactNode }> = ({ tourneyId, children }) => {
   const session = useSession();
   const router = useRouter();
+  const gdUserResult = useCurrentUser();
 
   useEffect(() => {
     if (!session) {
       router.push('/login');
     }
-  }, [router]);
+    if (!gdUserResult.isLoading && !gdUserResult.data) {
+      router.push('/pending');
+    }
+  }, [router, session, gdUserResult.isLoading, gdUserResult.data]);
 
-  if (!session) {
+  if (!session || !gdUserResult.data) {
     return null;
   }
 
   return (
     <AppStateCtxProvider appState={{ tourneyId }}>
-      <QueryClientProvider client={queryClient}>
-        <ActiveUsersCtxProvider>
-          <div className="container">{children}</div>
-        </ActiveUsersCtxProvider>
-      </QueryClientProvider>
+      <ActiveUsersCtxProvider>
+        <div className="container">{children}</div>
+      </ActiveUsersCtxProvider>
     </AppStateCtxProvider>
   );
 };

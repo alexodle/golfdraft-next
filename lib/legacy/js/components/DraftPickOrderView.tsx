@@ -14,7 +14,7 @@ export const DraftPickOrderView: React.FC<{
   const { data: allUsers } = useAllUsers();
   const { data: autoPickUsers = new Set() } = useAutoPickUsers();
   const { data: pickListUsers = new Set() } = usePickListUsers();
-  const currentUser = useCurrentUser();
+  const { data: currentUser } = useCurrentUser();
   const currentPick = useCurrentPick();
 
   if (!draftPicks || !currentPick || !currentUser || !allUsers) {

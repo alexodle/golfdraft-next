@@ -6,7 +6,7 @@ import LogoutButton from './LogoutButton';
 
 export const AppHeader: React.FC = () => {
   const { data: tourney } = useCurrentTourney();
-  const currentUser = useCurrentUser();
+  const { data: currentUser } = useCurrentUser();
 
   if (!tourney || !currentUser) {
     return <Loading />;
