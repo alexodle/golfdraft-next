@@ -13,6 +13,7 @@ BEGIN
     -- tourney
     INSERT INTO tourney ("name", "startDateEpochMillis", "lastUpdatedEpochMillis", "config")
     VALUES ('Test Tourney', 1620000000000, 1620000000000, '{}') RETURNING id INTO tourney_id;
+    INSERT INTO app_state ("id", "activeTourneyId") VALUES (1, tourney_id);
 
     -- dummy tourney to test negative rls cases
     INSERT INTO tourney ("name", "startDateEpochMillis", "lastUpdatedEpochMillis", "config")
