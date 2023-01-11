@@ -2,6 +2,7 @@ import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { withAuth } from '../lib/util/withAuth';
 
 const LogoutPage: NextPage = () => {
   const supabase = useSupabaseClient();
@@ -28,5 +29,9 @@ const LogoutPage: NextPage = () => {
 
   return null;
 };
+
+export const getServerSideProps = withAuth(async (props) => {
+  return { props };
+});
 
 export default LogoutPage;

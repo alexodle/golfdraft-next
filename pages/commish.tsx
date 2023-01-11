@@ -1,8 +1,6 @@
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { GetServerSideProps, NextPage } from 'next';
-import { useMemo, useState } from 'react';
+import { NextPage } from 'next';
+import { useMemo } from 'react';
 import App from '../lib/App';
-import { getActiveTourneyId } from '../lib/data/appState';
 import {
   isPendingDraftPick,
   useAutoPickUsers,
@@ -20,11 +18,11 @@ import {
   userUserMappingsMutationCommishOnly,
   useUserMappingsCommishOnly,
 } from '../lib/data/users';
+import AppHeader from '../lib/legacy/js/components/AppHeader';
 import DraftHistory from '../lib/legacy/js/components/DraftHistory';
 import GolfDraftPanel from '../lib/legacy/js/components/GolfDraftPanel';
 import Loading from '../lib/Loading';
 import { GDUser } from '../lib/models';
-import { adminSupabase } from '../lib/supabase';
 import { withAuth } from '../lib/util/withAuth';
 
 type CommishPageProps = {
@@ -34,6 +32,7 @@ type CommishPageProps = {
 const CommishPage: NextPage<CommishPageProps> = ({ activeTourneyId }) => {
   return (
     <App tourneyId={activeTourneyId}>
+      <AppHeader />
       <InnerCommish />
     </App>
   );

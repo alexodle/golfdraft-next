@@ -1,4 +1,3 @@
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import App from '../lib/App';
@@ -19,7 +18,7 @@ const PendingPage = ({ activeTourneyId }: { activeTourneyId: number }) => {
   }, [router, currentUser]);
 
   return (
-    <App tourneyId={activeTourneyId}>
+    <App tourneyId={activeTourneyId} requireGdUser={false}>
       <AppHeader />
       <div className="jumbotron">
         <h1>Waiting for confirmation</h1>
@@ -33,9 +32,9 @@ const PendingPage = ({ activeTourneyId }: { activeTourneyId: number }) => {
   );
 };
 
-export default PendingPage;
-
 export const getServerSideProps = withAuth(async (props) => {
   const activeTourneyId = await getActiveTourneyId(adminSupabase());
   return { props: { ...props, activeTourneyId } };
 });
+
+export default PendingPage;

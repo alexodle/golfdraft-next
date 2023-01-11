@@ -20,10 +20,10 @@ BEGIN
     VALUES ('Dummy Tourney', 1620000000000, 1620000000000, '{}') RETURNING id INTO dummy_tourney_id;
 
     -- users
-    SELECT * INTO uuid1 FROM tests.create_supabase_user('sbuser1');
-    SELECT * INTO uuid2 FROM tests.create_supabase_user('sbuser2');
-    SELECT * INTO uuid3 FROM tests.create_supabase_user('sbuser3');
-    SELECT * INTO uuid3dup FROM tests.create_supabase_user('sbuser3_dup');
+    SELECT * INTO uuid1 FROM tests.create_supabase_user('sbuser1', 'sbuser1@golfpools.com');
+    SELECT * INTO uuid2 FROM tests.create_supabase_user('sbuser2', 'sbuser2@golfpools.com');
+    SELECT * INTO uuid3 FROM tests.create_supabase_user('sbuser3', 'sbuser3@golfpools.com');
+    SELECT * INTO uuid3dup FROM tests.create_supabase_user('sbuser3_dup', 'sbuser3_dup@golfpools.com');
     INSERT INTO gd_user ("name", "username") VALUES
         ('User One', 'user1'),
         ('User Two', 'user2'),

@@ -1,4 +1,4 @@
-import { useSession } from '@supabase/auth-helpers-react';
+import { useSession, useUser } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import { ActiveUsersCtxProvider } from './ctx/ActiveUsersCtx';
@@ -7,7 +7,7 @@ import { useCurrentUser } from './data/users';
 
 const App = ({
   tourneyId,
-  requireGdUser = true,
+  requireGdUser,
   children,
 }: {
   tourneyId: number;
@@ -16,18 +16,43 @@ const App = ({
 }): React.ReactElement | null => {
   const session = useSession();
   const router = useRouter();
-  const gdUserResult = useCurrentUser();
 
   useEffect(() => {
     if (!session) {
       router.push('/login');
     }
+  }, [router, session]);
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <InnerApp tourneyId={tourneyId} requireGdUser={requireGdUser}>
+      {children}
+    </InnerApp>
+  );
+};
+
+const InnerApp = ({
+  tourneyId,
+  requireGdUser = true,
+  children,
+}: {
+  tourneyId: number;
+  requireGdUser?: boolean;
+  children?: React.ReactNode;
+}) => {
+  const router = useRouter();
+  const gdUserResult = useCurrentUser();
+
+  useEffect(() => {
     if (requireGdUser && !gdUserResult.isLoading && !gdUserResult.data) {
       router.push('/pending');
     }
-  }, [requireGdUser, router, session, gdUserResult.isLoading, gdUserResult.data]);
+  }, [requireGdUser, router, gdUserResult.isLoading, gdUserResult.data]);
 
-  if (!session || gdUserResult.isLoading) {
+  if (requireGdUser && !gdUserResult.data) {
     return null;
   }
 

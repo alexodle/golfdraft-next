@@ -9,9 +9,9 @@ BEGIN
     END IF;
 
     RETURN QUERY
-    SELECT gd_user."id" as "userId", gd_user."profileId" AS "profileId", auth.users.email AS "email"
-    FROM gd_user
-    JOIN auth.users ON auth.users.id = gd_user."profileId";
+    SELECT gd_user_map."gdUserId" as "userId", auth.users.id AS "profileId", auth.users.email AS "email"
+    FROM auth.users
+    LEFT JOIN gd_user_map ON gd_user_map."profileId" = auth.users.id;
 END;
 $$
 LANGUAGE plpgsql;
