@@ -1,5 +1,5 @@
 import { NextPage } from 'next';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import App from '../lib/App';
 import {
   isPendingDraftPick,
@@ -62,6 +62,7 @@ const InnerCommish: React.FC = () => {
   const { data: pickListUsers } = usePickListUsers();
 
   const { data: userMappings } = useUserMappingsCommishOnly();
+  const [displayNonPendingMappings, setDisplayNonPendingMappings] = useState(false);
 
   if (tourney && user && !tourney.commissioners?.find(({ userId }) => userId === user.id)) {
     return (
@@ -85,24 +86,45 @@ const InnerCommish: React.FC = () => {
   }
 
   const pendingUserMappings = userMappings.filter((m) => !m.userId);
+  const nonPendingUserMappings = userMappings.filter((m) => m.userId);
 
   const lastPickIndex = draftPicks.findIndex(isPendingDraftPick);
   return (
     <>
-      {pendingUserMappings.length > 0 && (
-        <GolfDraftPanel heading={'Pending users'}>
-          <p>
-            These users signed up via email but their email has not been matched to their user yet. Match these ASAP.
-          </p>
+      <GolfDraftPanel heading={'User Mapping'}>
+        {pendingUserMappings.length > 0 && (
+          <>
+            <p>
+              These users signed up via email but their email has not been matched to their user yet. Match these ASAP.
+            </p>
+            <ul>
+              {pendingUserMappings.map((m) => (
+                <li key={m.profileId} className="list-unstyled">
+                  <UserMappingEntry userMapping={m} sortedUsers={sortedAllUsers} />
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            setDisplayNonPendingMappings(!displayNonPendingMappings);
+          }}
+        >
+          {displayNonPendingMappings ? 'Hide mapped users' : 'See mapped users'}
+        </a>
+        <div style={{ display: displayNonPendingMappings ? '' : 'none' }}>
           <ul>
-            {pendingUserMappings.map((m) => (
+            {nonPendingUserMappings.map((m) => (
               <li key={m.profileId} className="list-unstyled">
                 <UserMappingEntry userMapping={m} sortedUsers={sortedAllUsers} />
               </li>
             ))}
           </ul>
-        </GolfDraftPanel>
-      )}
+        </div>
+      </GolfDraftPanel>
       <GolfDraftPanel heading={draftSettings.draftHasStarted ? 'Draft STARTED' : 'Draft NOT STARTED'}>
         <button
           className="btn btn-default"
@@ -176,7 +198,10 @@ const UserMappingEntry = ({ userMapping, sortedUsers }: { userMapping: UserMappi
   const inputId = `user-mapping-${userMapping.profileId}`;
 
   return (
-    <div className="form-check">
+    <div className="form-check" style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
+      <label className="form-check-label" htmlFor={inputId}>
+        {userMapping.email}
+      </label>
       <select
         id={inputId}
         className="form-input"
@@ -198,9 +223,6 @@ const UserMappingEntry = ({ userMapping, sortedUsers }: { userMapping: UserMappi
           );
         })}
       </select>
-      <label className="form-check-label" htmlFor={inputId}>
-        {userMapping.email}
-      </label>
     </div>
   );
 };

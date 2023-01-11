@@ -54,7 +54,7 @@ export function useUserMappingsCommishOnly(): UseQueryResult<UserMapping[]> {
     return await getUserMappings(supabase);
   });
 
-  useSharedSubscription<{ userId: number | null; profileId: number }>(USER_MAP_TABLE, '', () => {
+  useSharedSubscription(USER_MAP_TABLE, '', () => {
     results.refetch();
   });
 
@@ -73,7 +73,7 @@ export function userUserMappingsMutationCommishOnly() {
 
       if (userId !== undefined) {
         const addResult = await supabase.from(USER_MAP_TABLE).insert({
-          userId,
+          gdUserId: userId,
           profileId,
         });
         if (addResult.error) {
