@@ -1,19 +1,19 @@
 import moment from 'moment';
-import React, { useState } from 'react';
-//import ChatRoom from './ChatRoom';
-import GolfDraftPanel from './GolfDraftPanel';
+import { useState } from 'react';
+import { useGolfers } from '../../../data/golfers';
+import { useCurrentTourney } from '../../../data/tourney';
+import { useTourneyStandings } from '../../../data/tourneyStandings';
+import { useCurrentUser } from '../../../data/users';
+import Loading from '../../../Loading';
+import { toGolferScoreStr } from '../../common/utils';
 import GolferLogic from '../logic/GolferLogic';
+import ChatRoom from './ChatRoom';
+import GolfDraftPanel from './GolfDraftPanel';
 import { UserDetails } from './UserDetails';
 import { UserStandings } from './UserStandings';
-import * as utils from '../../common/utils';
-import { useCurrentTourney } from '../../../data/tourney';
-import { useCurrentUser } from '../../../data/users';
-import { useTourneyStandings } from '../../../data/tourneyStandings';
-import { useGolfers } from '../../../data/golfers';
-import Loading from '../../../Loading';
 
 export const TourneyApp = () => {
-  const { data: currentUser } = useCurrentUser();
+  const { data: user } = useCurrentUser();
   const tourney = useCurrentTourney();
   const standings = useTourneyStandings();
   const golferLookup = useGolfers();
@@ -56,7 +56,7 @@ export const TourneyApp = () => {
               const golfer = golferLookup.data.getGolfer(s.golferId);
               return (
                 <li key={s.day}>
-                  <b>Day {s.day + 1}</b>: {utils.toGolferScoreStr(s.score)}
+                  <b>Day {s.day + 1}</b>: {toGolferScoreStr(s.score)}
                   <span> </span>
                   {GolferLogic.renderGolfer(golfer)}
                 </li>
@@ -66,12 +66,7 @@ export const TourneyApp = () => {
         </GolfDraftPanel>
       )}
 
-      {/* <ChatRoom
-          currentUser={this.props.currentUser}
-          messages={this.props.chatMessages}
-          activeUsers={this.props.activeUsers}
-          enabled={this.props.isViewingActiveTourney}
-        /> */}
+      <ChatRoom />
     </section>
   );
 };
