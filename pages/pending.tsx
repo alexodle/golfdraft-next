@@ -1,9 +1,14 @@
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import App from '../lib/App';
+import { getActiveTourneyId } from '../lib/data/appState';
 import { useCurrentUser } from '../lib/data/users';
+import AppHeader from '../lib/legacy/js/components/AppHeader';
+import { adminSupabase } from '../lib/supabase';
 import { withAuth } from '../lib/util/withAuth';
 
-const PendingPage = () => {
+const PendingPage = ({ activeTourneyId }: { activeTourneyId: number }) => {
   const { data: currentUser } = useCurrentUser();
   const router = useRouter();
 
@@ -14,7 +19,8 @@ const PendingPage = () => {
   }, [router, currentUser]);
 
   return (
-    <div className="container">
+    <App tourneyId={activeTourneyId}>
+      <AppHeader />
       <div className="jumbotron">
         <h1>Waiting for confirmation</h1>
         <p>
@@ -23,12 +29,13 @@ const PendingPage = () => {
         </p>
         {/** TODO: chat room */}
       </div>
-    </div>
+    </App>
   );
 };
 
 export default PendingPage;
 
 export const getServerSideProps = withAuth(async (props) => {
-  return { props };
+  const activeTourneyId = await getActiveTourneyId(adminSupabase());
+  return { props: { ...props, activeTourneyId } };
 });

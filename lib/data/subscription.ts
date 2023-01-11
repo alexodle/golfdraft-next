@@ -23,7 +23,7 @@ const getOrCreateSub = memoize(
             event: '*',
             schema: 'public',
             table,
-            filter,
+            filter: filter.length ? filter : undefined,
           },
           (payload) => {
             cbs.forEach((cb) => {
