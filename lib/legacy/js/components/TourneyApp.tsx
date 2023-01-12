@@ -66,7 +66,9 @@ export const TourneyApp = () => {
         </GolfDraftPanel>
       )}
 
-      <ChatRoom />
+      <GolfDraftPanel heading="Chat Room">
+        <ChatRoom />
+      </GolfDraftPanel>
     </section>
   );
 };
