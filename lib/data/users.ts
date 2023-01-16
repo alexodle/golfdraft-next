@@ -50,9 +50,15 @@ export function useUserMappingsCommishOnly(): UseQueryResult<UserMapping[]> {
     throw new Error('Unexpectedly missing auth user');
   }
 
-  const results = useQuery(USER_MAP_TABLE, async () => {
-    return await getUserMappings(supabase);
-  });
+  const results = useQuery(
+    USER_MAP_TABLE,
+    async () => {
+      return await getUserMappings(supabase);
+    },
+    {
+      refetchInterval: 10_000,
+    },
+  );
 
   useSharedSubscription(USER_MAP_TABLE, '', () => {
     results.refetch();
