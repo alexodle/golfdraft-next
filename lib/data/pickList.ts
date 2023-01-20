@@ -1,7 +1,7 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { useCallback, useMemo } from 'react';
-import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftPickList } from '../models';
 import { useSharedSubscription } from './subscription';
@@ -50,6 +50,16 @@ export function usePickList(): UseQueryResult<number[] | null> {
   );
 
   return result;
+}
+
+export function prefetchPickList(
+  { userId, tourneyId }: { userId: number; tourneyId: number },
+  queryClient: QueryClient,
+  supabase: SupabaseClient,
+): Promise<void> {
+  return queryClient.prefetchQuery(getPickListQueryClientKey(tourneyId, userId), async () => {
+    return await getDraftPickList(tourneyId, userId, supabase);
+  });
 }
 
 export type UpdatePickListRequest = {

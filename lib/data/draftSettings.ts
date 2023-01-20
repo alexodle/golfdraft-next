@@ -1,7 +1,7 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { useCallback, useMemo } from 'react';
-import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftSettings } from '../models';
 import { useSharedSubscription } from './subscription';
@@ -33,6 +33,16 @@ export function useDraftSettings(): UseQueryResult<DraftSettings> {
   );
 
   return result;
+}
+
+export function prefetchDraftSettings(
+  tourneyId: number,
+  queryClient: QueryClient,
+  supabase: SupabaseClient,
+): Promise<void> {
+  return queryClient.prefetchQuery(getDraftSettingsQueryClientKey(tourneyId), async () => {
+    return await getDraftSettings(tourneyId, supabase);
+  });
 }
 
 export function useDraftSettingsMutation(): UseMutationResult<unknown, unknown, DraftSettings, unknown> {
