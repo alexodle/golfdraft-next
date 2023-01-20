@@ -1,6 +1,6 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useCallback, useMemo } from 'react';
-import { useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { Tourney } from '../models';
 import { adminSupabase, SupabaseClient } from '../supabase';
@@ -11,8 +11,9 @@ const TOURNEY_TABLE = 'tourney';
 export function useCurrentTourney(): UseQueryResult<Tourney> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
-  const queryClientKey = useMemo(() => getTourneyQueryClientKey(tourneyId), [tourneyId]);
   const supabase = useSupabaseClient();
+
+  const queryClientKey = useMemo(() => getTourneyQueryClientKey(tourneyId), [tourneyId]);
 
   const result = useQuery<Tourney>(queryClientKey, async () => {
     return await getTourney(tourneyId, supabase);
@@ -33,6 +34,12 @@ export function useCurrentTourney(): UseQueryResult<Tourney> {
   );
 
   return result;
+}
+
+export function prefetchTourney(tourneyId: number, queryClient: QueryClient, supabase: SupabaseClient): void {
+  queryClient.prefetchQuery(getTourneyQueryClientKey(tourneyId), async () => {
+    return await getTourney(tourneyId, supabase);
+  });
 }
 
 export type TourneyInfo = Pick<Tourney, 'id' | 'name' | 'startDateEpochMillis' | 'lastUpdatedEpochMillis'>;

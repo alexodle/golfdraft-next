@@ -5,6 +5,7 @@ import { dehydrate, QueryClient } from 'react-query';
 import App from '../../lib/App';
 import { prefetchDraftPicks } from '../../lib/data/draft';
 import { prefetchGolfers } from '../../lib/data/golfers';
+import { prefetchTourney } from '../../lib/data/tourney';
 import { prefetchTourneyStandings } from '../../lib/data/tourneyStandings';
 import { prefetchAllUsers } from '../../lib/data/users';
 import AppHeader from '../../lib/legacy/js/components/AppHeader';
@@ -44,6 +45,7 @@ export const getServerSideProps = withAuth(async (props, ctx, supabase) => {
   }
 
   await Promise.all([
+    prefetchTourney(tourneyId, queryClient, supabase),
     prefetchDraftPicks(tourneyId, queryClient, supabase),
     prefetchGolfers(tourneyId, queryClient, supabase),
     prefetchTourneyStandings(tourneyId, queryClient, supabase),
