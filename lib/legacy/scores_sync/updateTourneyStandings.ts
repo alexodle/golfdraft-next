@@ -1,5 +1,5 @@
 import { chain, groupBy, isNumber, keyBy, mapValues, maxBy, sortBy, sumBy, times } from 'lodash';
-import { getCompletedDraftPicks } from '../../data/draft';
+import { getDraftPicks, isCompletedDraftPick } from '../../data/draft';
 import { getGolferScores } from '../../data/scores';
 import { TourneyStandings, updateTourneyStandings } from '../../data/tourneyStandings';
 import {
@@ -100,10 +100,12 @@ function estimateCurrentDay(scores: GolferScore[]) {
 export async function run(tourneyId: number): Promise<TourneyStandings> {
   console.log(`Running player score update for tourney: ${tourneyId}`);
 
-  const [scores, draftPicks] = await Promise.all([
+  const [scores, allDraftPicks] = await Promise.all([
     getGolferScores(tourneyId, adminSupabase()),
-    getCompletedDraftPicks(tourneyId, adminSupabase()),
+    getDraftPicks(tourneyId, adminSupabase()),
   ]);
+
+  const completedDraftPicks = allDraftPicks.filter(isCompletedDraftPick);
 
   if (!scores.length) {
     throw new Error(`No scores found for tourney: ${tourneyId}`);
@@ -122,7 +124,7 @@ export async function run(tourneyId: number): Promise<TourneyStandings> {
     };
   });
 
-  const picksByUser = groupBy(draftPicks, (p) => p.userId);
+  const picksByUser = groupBy(completedDraftPicks, (p) => p.userId);
   const scoresByPlayer = keyBy(scores, (s) => s.golferId);
   const playerRawScores = mapValues(picksByUser, (picks) => {
     const scores = picks.map((p) => {
