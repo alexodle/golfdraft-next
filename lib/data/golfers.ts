@@ -1,6 +1,7 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { keyBy, omit } from 'lodash';
-import { useQuery, UseQueryResult } from 'react-query';
+import { useMemo } from 'react';
+import { QueryClient, useQuery, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { Golfer } from '../models';
 import { adminSupabase, SupabaseClient } from '../supabase';
@@ -12,30 +13,52 @@ export const PENDING_GOLFER: Omit<Golfer, 'tourneyId'> = {
   name: 'Pending...',
 };
 
-export type UseGolfersResult = Readonly<{
+export type GolferLookup = Readonly<{
   /** Lookup golfers by ID, including PENDING_GOLFER. Throws if not found. */
   getGolfer: (gid: number) => Golfer;
   /** Unordered list of all golfers */
   golfers: Golfer[];
 }>;
 
-export function useGolfers(): UseQueryResult<UseGolfersResult> {
+export function useGolfers(): UseQueryResult<GolferLookup> {
   const tourneyId = useTourneyId();
-  const supabase = useSupabaseClient();
-
-  return useQuery<UseGolfersResult>(GOLFERS_TABLE, async () => {
-    const golfers = await getGolfers(tourneyId, supabase);
-    const lookup = keyBy([...golfers, { ...PENDING_GOLFER, tourneyId }], (g) => g.id);
-    return {
+  const golfersResults = useGolfersQuery();
+  const data = useMemo(() => {
+    if (!golfersResults.data) {
+      return undefined;
+    }
+    const golfers = golfersResults.data as Golfer[];
+    const map = keyBy([...golfers, { ...PENDING_GOLFER, tourneyId }], (g) => g.id);
+    const lookup: GolferLookup = {
       golfers,
       getGolfer: (gid: number) => {
-        const g = lookup[gid];
+        const g = map[gid];
         if (!g) {
           throw new Error(`Golfer not found: ${gid}`);
         }
         return g;
       },
     };
+    return lookup;
+  }, [golfersResults.data]);
+  return { ...golfersResults, data } as UseQueryResult<GolferLookup>;
+}
+
+function useGolfersQuery(): UseQueryResult<Golfer[]> {
+  const tourneyId = useTourneyId();
+  const supabase = useSupabaseClient();
+  return useQuery<Golfer[]>(GOLFERS_TABLE, async () => {
+    return await getGolfers(tourneyId, supabase);
+  });
+}
+
+export async function prefetchGolfers(
+  tourneyId: number,
+  queryClient: QueryClient,
+  supabase: SupabaseClient,
+): Promise<void> {
+  return queryClient.prefetchQuery(GOLFERS_TABLE, async () => {
+    return await getGolfers(tourneyId, supabase);
   });
 }
 

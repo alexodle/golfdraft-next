@@ -1,6 +1,6 @@
 import { SupabaseClient, User, useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { keyBy } from 'lodash';
-import { useMutation, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, useMutation, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { GDUser } from '../models';
 import { useSharedSubscription } from './subscription';
 
@@ -37,8 +37,13 @@ export function useCurrentUser(): UseQueryResult<GDUser | undefined> {
 export function useAllUsers(): UseQueryResult<IndexedUsers> {
   const supabase = useSupabaseClient();
   return useQuery<IndexedUsers>(USER_TABLE, async () => {
-    const result = await getAllUsers(supabase);
-    return keyBy(result, (u) => u.id);
+    return await getAllUsers(supabase);
+  });
+}
+
+export async function prefetchAllUsers(queryClient: QueryClient, supabase: SupabaseClient): Promise<void> {
+  return queryClient.prefetchQuery(USER_TABLE, async () => {
+    return await getAllUsers(supabase);
   });
 }
 
@@ -111,13 +116,13 @@ export async function getMyGdUser(user: User, supabase: SupabaseClient): Promise
   return result.data;
 }
 
-export async function getAllUsers(supabase: SupabaseClient): Promise<GDUser[]> {
+export async function getAllUsers(supabase: SupabaseClient): Promise<IndexedUsers> {
   const result = await supabase.from(USER_TABLE).select('*');
   if (result.error) {
     console.dir(result.error);
     throw new Error('Failed to fetch users');
   }
-  return result.data;
+  return keyBy(result.data, (u) => u.id);
 }
 
 export async function getUserMappings(supabase: SupabaseClient): Promise<UserMapping[]> {

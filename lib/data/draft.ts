@@ -1,7 +1,7 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { PostgrestResponse, SupabaseClient } from '@supabase/supabase-js';
 import { useCallback, useMemo } from 'react';
-import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { CompletedDraftPick, DraftPick, DraftPickList, Golfer, PendingDraftPick } from '../models';
 import { adminSupabase } from '../supabase';
@@ -44,16 +44,24 @@ export function useDraftPicks(): UseQueryResult<DraftPick[]> {
   return result;
 }
 
-export function useCompleteDraftPicks(): UseQueryResult<CompletedDraftPick[]> {
-  const tourneyId = useTourneyId();
-  const queryClientKey = [...getDraftPicksQueryClientKey(tourneyId), 'completed'];
-  const supabase = useSupabaseClient();
-
-  const result = useQuery(queryClientKey, async () => {
-    return await getCompletedDraftPicks(tourneyId, supabase);
+export function prefetchDraftPicks(
+  tourneyId: number,
+  queryClient: QueryClient,
+  supabase: SupabaseClient,
+): Promise<void> {
+  return queryClient.prefetchQuery(getDraftPicksQueryClientKey(tourneyId), async () => {
+    return await getDraftPicks(tourneyId, supabase);
   });
+}
 
-  return result;
+export function useCompleteDraftPicks(): UseQueryResult<CompletedDraftPick[]> {
+  const draftPicksResult = useDraftPicks();
+
+  const data = useMemo(() => {
+    return draftPicksResult.data?.filter(isCompletedDraftPick);
+  }, [draftPicksResult.data]);
+
+  return { ...draftPicksResult, data } as UseQueryResult<CompletedDraftPick[]>;
 }
 
 export function useDraftPicker(): {
@@ -263,23 +271,6 @@ export async function getDraftPicks(tourneyId: number, supabase: SupabaseClient)
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to fetch picks`);
-  }
-  return result.data;
-}
-
-export async function getCompletedDraftPicks(
-  tourneyId: number,
-  supabase: SupabaseClient,
-): Promise<CompletedDraftPick[]> {
-  const result = await supabase
-    .from(DRAFT_PICKS_TABLE)
-    .select('*')
-    .eq('tourneyId', tourneyId)
-    .not('golferId', 'is', null)
-    .order('pickNumber');
-  if (result.error) {
-    console.dir(result.error);
-    throw new Error(`Failed to fetch completed picks`);
   }
   return result.data;
 }

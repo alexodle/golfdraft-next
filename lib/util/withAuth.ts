@@ -1,4 +1,4 @@
-import { createServerSupabaseClient, Session, User } from '@supabase/auth-helpers-nextjs';
+import { createServerSupabaseClient, Session, SupabaseClient, User } from '@supabase/auth-helpers-nextjs';
 import { GetServerSideProps, GetServerSidePropsContext, PreviewData, GetServerSidePropsResult } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import { getActiveTourneyId } from '../data/appState';
@@ -13,20 +13,20 @@ export const withAuth = <P extends { [key: string]: any }>(
   getServerSideProps: (
     props: ActiveProps,
     ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>,
+    supabase: SupabaseClient,
   ) => Promise<GetServerSidePropsResult<P>>,
 ): GetServerSideProps<P> => {
   return async (ctx) => {
-    const props = await getServerSidePropsHelper(ctx);
+    const supabase = createServerSupabaseClient(ctx);
+    const props = await getServerSidePropsHelper(supabase);
     if (props.redirect) {
       return props;
     }
-    return getServerSideProps(props.props, ctx);
+    return getServerSideProps(props.props, ctx, supabase);
   };
 };
 
-const getServerSidePropsHelper = async (ctx: GetServerSidePropsContext) => {
-  const supabase = createServerSupabaseClient(ctx);
-
+const getServerSidePropsHelper = async (supabase: SupabaseClient) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();

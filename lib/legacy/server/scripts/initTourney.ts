@@ -29,7 +29,7 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
     throw new Error(`Unsupported reader type: ${tourneyCfg.scores.type}`);
   }
 
-  const users = await getAllUsers(adminSupabase());
+  const users = Object.values(await getAllUsers(adminSupabase()));
   const usersByName = keyBy(users, (u) => u.name);
 
   const commissioners = tourneyCfg.commissioners.map((name) => {

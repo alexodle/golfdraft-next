@@ -1,7 +1,7 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { omit } from 'lodash';
 import { useCallback, useMemo } from 'react';
-import { useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import {
   DbTourneyStandingPlayerScore,
@@ -48,6 +48,16 @@ export function useTourneyStandings(): UseQueryResult<TourneyStandings> {
   );
 
   return result;
+}
+
+export async function prefetchTourneyStandings(
+  tourneyId: number,
+  queryClient: QueryClient,
+  supabase: SupabaseClient,
+): Promise<void> {
+  return queryClient.prefetchQuery(getTourneyStandingsQueryKey(tourneyId), async () => {
+    return await getTourneyStandings(tourneyId, supabase);
+  });
 }
 
 export async function getTourneyStandings(tourneyId: number, supabase: SupabaseClient): Promise<TourneyStandings> {
