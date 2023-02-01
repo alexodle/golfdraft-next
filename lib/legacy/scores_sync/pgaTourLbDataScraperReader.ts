@@ -1,8 +1,11 @@
 import { load } from 'cheerio';
-import * as puppeteer from 'puppeteer';
+import edgeChromium from 'chrome-aws-lambda';
+import puppeteer from 'puppeteer-core';
 import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
 import { Reader, ReaderResult, Score, Thru, UpdateGolfer } from './Types';
+
+const LOCAL_CHROME_EXECUTABLE = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 function requireParseInt(intStr: string, errMsg: string): number {
   const n = parseInt(intStr, 10);
@@ -20,7 +23,15 @@ class PgaTourScraperReader implements Reader {
 }
 
 async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
-  const browser = await puppeteer.launch({ defaultViewport: { width: 800, height: 1000 } });
+  // Edge executable will return an empty string locally.
+  const executablePath = (await edgeChromium.executablePath) ?? LOCAL_CHROME_EXECUTABLE;
+
+  const browser = await puppeteer.launch({
+    executablePath,
+    args: edgeChromium.args,
+    headless: false,
+    defaultViewport: { width: 800, height: 1000 },
+  });
   try {
     const page = await browser.newPage();
     await page.goto(leaderboardHTMLUrl);
