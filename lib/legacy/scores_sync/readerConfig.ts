@@ -1,5 +1,4 @@
 import pgatourFieldReader from './pgatourFieldReader';
-import pgaTourHistoricHtmlReader from './pgaTourHistoricHtmlReader';
 import pgaTourLbDataReader from './pgaTourLbDataReader';
 import pgaTourLbDataScraperReader from './pgaTourLbDataScraperReader';
 import { Reader } from './Types';
@@ -11,10 +10,6 @@ export interface ReaderConfig {
 const readerConfig: ReaderConfig = {
   pgatour_field: {
     reader: pgatourFieldReader,
-  },
-
-  pgatour_historic_html: {
-    reader: pgaTourHistoricHtmlReader,
   },
 
   // New pgatour.com json format (2019)
