@@ -1,11 +1,8 @@
-import { load } from 'cheerio';
-import edgeChromium from 'chrome-aws-lambda';
-import puppeteer from 'puppeteer-core';
+import { Page } from 'puppeteer-core';
 import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
+import { createPuppeteerBrowser } from './puppeteer';
 import { Reader, ReaderResult, Score, Thru, UpdateGolfer } from './Types';
-
-const LOCAL_CHROME_EXECUTABLE = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 function requireParseInt(intStr: string, errMsg: string): number {
   const n = parseInt(intStr, 10);
@@ -17,21 +14,13 @@ function requireParseInt(intStr: string, errMsg: string): number {
 
 class PgaTourScraperReader implements Reader {
   async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
-    const html = await getLeaderboardHTML(url);
-    return parse(html, config.par);
+    const page = await getLeaderboardPage(url);
+    return parse(page, config.par);
   }
 }
 
-async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
-  // Edge executable will return an empty string locally.
-  const executablePath = (await edgeChromium.executablePath) ?? LOCAL_CHROME_EXECUTABLE;
-
-  const browser = await puppeteer.launch({
-    executablePath,
-    args: edgeChromium.args,
-    headless: false,
-    defaultViewport: { width: 800, height: 1000 },
-  });
+async function getLeaderboardPage(leaderboardHTMLUrl: string): Promise<Page> {
+  const browser = await createPuppeteerBrowser();
   try {
     const page = await browser.newPage();
     await page.goto(leaderboardHTMLUrl);
@@ -40,27 +29,46 @@ async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
     await page.screenshot({ path: '/tmp/last.png' });
 
     await page.waitForSelector('table.leaderboard tbody tr.line-row', { timeout: 1000 * 60 });
-    const contents = await page.content();
-    return contents;
+
+    return page;
   } finally {
     await browser.close();
   }
 }
 
-export function parse(html: string | Buffer, par: number): ReaderResult {
-  const $ = load(html);
-  const rows = $('table.leaderboard tbody tr.line-row');
+export async function parse(page: Page, par: number): Promise<ReaderResult> {
+  const rows = await page.$$('table.leaderboard tbody tr.line-row');
 
-  const golfers: UpdateGolfer[] = rows
-    .map((_i, tr) => {
-      const name = $(tr).find('td.player-name .player-name-col').text().replace(' #', '').replace(' (a)', '').trim();
-      const rawThru = $(tr).find('td.thru').text().replace('*', '').trim();
-      const rawRounds: string[] = $(tr)
-        .find('td.round-x')
-        .map((_i, td) => $(td).text().trim())
-        .get();
+  const golfers: UpdateGolfer[] = await Promise.all(
+    rows.map(async (tr) => {
+      const nameCol = await tr.$('td.player-name .player-name-col');
+      if (!nameCol) {
+        throw new Error(`Failed to find nameCol for row: ${await tr.asElement()?.getInnerHTML()}`);
+      }
+      const thruCol = await tr.$('td.thru');
+      if (!thruCol) {
+        throw new Error(`Failed to find thruCol for row: ${await tr.asElement()?.getInnerHTML()}`);
+      }
+      const roundsCols = await tr.$$('td.round-x');
+      if (!roundsCols.length) {
+        throw new Error(`Failed to find roundsCols for row: ${await tr.asElement()?.getInnerHTML()}`);
+      }
+      const positionCol = await tr.$('td.position');
+      if (!positionCol) {
+        throw new Error(`Failed to find positionCol for row: ${await tr.asElement()?.getInnerHTML()}`);
+      }
+      const roundCol = await tr.$('td.round');
+      if (!roundCol) {
+        throw new Error(`Failed to find roundCol for row: ${await tr.asElement()?.getInnerHTML()}`);
+      }
 
-      const positionStr = $(tr).find('td.position').text().trim();
+      const name = (await nameCol.getInnerText()).replace(' #', '').replace(' (a)', '').trim();
+      const rawThru = (await thruCol.getInnerText()).replace('*', '').trim();
+      const rawRounds: string[] = await Promise.all(
+        roundsCols.map(async (td) => await (await td.getInnerText()).trim()),
+      );
+
+      const positionStr = (await positionCol.getInnerText()).trim();
       const isWD = positionStr === 'WD';
       const isCut = positionStr === 'CUT';
 
@@ -70,7 +78,7 @@ export function parse(html: string | Buffer, par: number): ReaderResult {
 
       if (rawThru !== 'F') {
         if (!isWD) {
-          const currentRoundScore = parseRoundScore($(tr).find('td.round').text().trim());
+          const currentRoundScore = parseRoundScore((await roundCol.getInnerText()).trim());
           scores[day] = currentRoundScore;
         } else {
           scores[day] = constants.MISSED_CUT;
@@ -89,8 +97,8 @@ export function parse(html: string | Buffer, par: number): ReaderResult {
 
       const g: UpdateGolfer = { golfer: name, scores: scores.map((s) => s || 0), day: day + 1, thru };
       return g;
-    })
-    .get();
+    }),
+  );
 
   return { par, golfers };
 }
