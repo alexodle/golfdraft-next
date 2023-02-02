@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer-core';
+import { load } from 'cheerio';
 import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
 import { createPuppeteerBrowser } from './puppeteer';
@@ -14,12 +14,12 @@ function requireParseInt(intStr: string, errMsg: string): number {
 
 class PgaTourScraperReader implements Reader {
   async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
-    const page = await getLeaderboardPage(url);
-    return parse(page, config.par);
+    const html = await getLeaderboardHTML(url);
+    return parse(html, config.par);
   }
 }
 
-async function getLeaderboardPage(leaderboardHTMLUrl: string): Promise<Page> {
+async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
   const browser = await createPuppeteerBrowser();
   try {
     const page = await browser.newPage();
@@ -30,45 +30,27 @@ async function getLeaderboardPage(leaderboardHTMLUrl: string): Promise<Page> {
 
     await page.waitForSelector('table.leaderboard tbody tr.line-row', { timeout: 1000 * 60 });
 
-    return page;
+    const contents = await page.content();
+    return contents;
   } finally {
     await browser.close();
   }
 }
 
-export async function parse(page: Page, par: number): Promise<ReaderResult> {
-  const rows = await page.$$('table.leaderboard tbody tr.line-row');
+export function parse(html: string | Buffer, par: number): ReaderResult {
+  const $ = load(html);
+  const rows = $('table.leaderboard tbody tr.line-row');
 
-  const golfers: UpdateGolfer[] = await Promise.all(
-    rows.map(async (tr) => {
-      const nameCol = await tr.$('td.player-name .player-name-col');
-      if (!nameCol) {
-        throw new Error(`Failed to find nameCol for row: ${await tr.asElement()?.getInnerHTML()}`);
-      }
-      const thruCol = await tr.$('td.thru');
-      if (!thruCol) {
-        throw new Error(`Failed to find thruCol for row: ${await tr.asElement()?.getInnerHTML()}`);
-      }
-      const roundsCols = await tr.$$('td.round-x');
-      if (!roundsCols.length) {
-        throw new Error(`Failed to find roundsCols for row: ${await tr.asElement()?.getInnerHTML()}`);
-      }
-      const positionCol = await tr.$('td.position');
-      if (!positionCol) {
-        throw new Error(`Failed to find positionCol for row: ${await tr.asElement()?.getInnerHTML()}`);
-      }
-      const roundCol = await tr.$('td.round');
-      if (!roundCol) {
-        throw new Error(`Failed to find roundCol for row: ${await tr.asElement()?.getInnerHTML()}`);
-      }
+  const golfers: UpdateGolfer[] = rows
+    .map((_i, tr) => {
+      const name = $(tr).find('td.player-name .player-name-col').text().replace(' #', '').replace(' (a)', '').trim();
+      const rawThru = $(tr).find('td.thru').text().replace('*', '').trim();
+      const rawRounds: string[] = $(tr)
+        .find('td.round-x')
+        .map((_i, td) => $(td).text().trim())
+        .get();
 
-      const name = (await nameCol.getInnerText()).replace(' #', '').replace(' (a)', '').trim();
-      const rawThru = (await thruCol.getInnerText()).replace('*', '').trim();
-      const rawRounds: string[] = await Promise.all(
-        roundsCols.map(async (td) => await (await td.getInnerText()).trim()),
-      );
-
-      const positionStr = (await positionCol.getInnerText()).trim();
+      const positionStr = $(tr).find('td.position').text().trim();
       const isWD = positionStr === 'WD';
       const isCut = positionStr === 'CUT';
 
@@ -78,7 +60,7 @@ export async function parse(page: Page, par: number): Promise<ReaderResult> {
 
       if (rawThru !== 'F') {
         if (!isWD) {
-          const currentRoundScore = parseRoundScore((await roundCol.getInnerText()).trim());
+          const currentRoundScore = parseRoundScore($(tr).find('td.round').text().trim());
           scores[day] = currentRoundScore;
         } else {
           scores[day] = constants.MISSED_CUT;
@@ -97,8 +79,8 @@ export async function parse(page: Page, par: number): Promise<ReaderResult> {
 
       const g: UpdateGolfer = { golfer: name, scores: scores.map((s) => s || 0), day: day + 1, thru };
       return g;
-    }),
-  );
+    })
+    .get();
 
   return { par, golfers };
 }
