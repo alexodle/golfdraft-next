@@ -2,7 +2,6 @@
   border-bottom: 1px solid #eee;
   padding-bottom: 9px;
   margin: 40px 0 20px;
-
   display: grid;
   grid-template-columns: auto auto;
 }
@@ -11,23 +10,23 @@
   text-align: right;
   margin-top: 25px;
   font-size: 25px;
+}
 
-  .name {
-    display:block;
-  }
+.header-user-section .name {
+  display: block;
+}
 
-  form {
-    display: inline-block;
-  }
+.header-user-section form {
+  display: inline-block;
 }
 
 input.logout-button {
   text-align: right;
   font-size: small;
   color: #337ab7;
-  background: none!important;
+  background: none !important;
   border: none;
-  padding: 0!important;
+  padding: 0 !important;
   text-decoration: underline;
   cursor: pointer;
 }

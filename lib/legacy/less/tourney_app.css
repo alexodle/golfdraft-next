@@ -1,0 +1,56 @@
+.draft {
+  display: grid;
+  column-gap: 10px;
+  row-gap: 10px;
+  grid-template-columns: 1fr 1fr 300px;
+}
+
+.draft.draft-active {
+  grid-template-areas: "chooser chooser clock" "picklist picklist order" "chat chat chat" "hist hist hist";
+}
+
+.draft.draft-paused {
+  grid-template-areas: "paused paused paused" "picklist picklist order" "chat chat chat" "hist hist hist";
+}
+
+.draft .app-paused-section {
+  grid-area: paused;
+}
+
+.draft .chooser-section {
+  grid-area: chooser;
+}
+
+.draft .draft-order-section {
+  grid-area: order;
+}
+
+.draft .draft-clock-section {
+  grid-area: clock;
+}
+
+.draft .pick-list-section {
+  grid-area: picklist;
+}
+
+.draft .chatroom-section {
+  grid-area: chat;
+}
+
+.draft .draft-history-section {
+  grid-area: hist;
+}
+
+@media only screen and (max-width: 920px) {
+  .draft {
+    grid-template-columns: 1fr;
+  }
+
+  .draft.draft-active {
+    grid-template-areas: "clock" "chooser" "chat" "order" "picklist" "hist" !important;
+  }
+
+  .draft.draft-paused {
+    grid-template-areas: "paused" "chooser" "chat" "order" "picklist" "hist" !important;
+  }
+}

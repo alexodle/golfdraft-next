@@ -1,9 +1,9 @@
 import '../styles/globals.css';
-// import '../lib/legacy/less/app.less';
-// import '../lib/legacy/less/app_header.less';
-// import '../lib/legacy/less/bootstrap_repl.less';
-// import '../lib/legacy/less/chat.less';
-// import '../lib/legacy/less/tourney_app.less';
+import '../lib/legacy/less/app.css';
+import '../lib/legacy/less/app_header.css';
+import '../lib/legacy/less/bootstrap_repl.css';
+import '../lib/legacy/less/chat.css';
+import '../lib/legacy/less/tourney_app.css';
 
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
