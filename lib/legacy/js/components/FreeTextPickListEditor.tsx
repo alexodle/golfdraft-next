@@ -100,7 +100,7 @@ const SuggestionSelector: React.FC<{
   const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
 
   const alphabeticalGolfers = useMemo(() => {
-    return allGolfers?.sort() ?? [];
+    return allGolfers?.sort((a, b) => a.name.localeCompare(b.name)) ?? [];
   }, [allGolfers]);
 
   const isViewingAll = forceViewAll || match.type === 'no_match';

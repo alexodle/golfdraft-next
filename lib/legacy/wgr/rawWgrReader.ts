@@ -1,35 +1,32 @@
-// const AMATEUR_REGEX = /\(Am\)$/i;
+import { fetchData } from '../scores_sync/util';
 
 export type WgrEntry = Readonly<{
   name: string;
   wgr: number;
 }>;
 
+type Response = Readonly<{
+  rankingsList: {
+    player: {
+      fullName: string;
+    };
+    rank: number;
+  }[];
+}>;
+
+async function getJson(url: string): Promise<Response> {
+  const data = await fetchData(url);
+  const json = JSON.parse(data);
+  return json;
+}
+
 export async function rawWgrReader(url: string): Promise<WgrEntry[]> {
-  // TODO hihi implement using web scraper
-  console.error(`rawWgrReader NOT IMPLMENTED - NO WGR`);
-  return [];
+  const wgrs: WgrEntry[] = [];
 
-  // const wgrs: WgrEntry[] = [];
+  const response = await getJson(url);
 
-  // const body = await download(url);
-  // const dom = new JSDOM(body);
-
-  // const trs = dom.window.document.body.querySelectorAll('#ranking_table > .table_container > table > tbody > tr');
-  // trs.forEach((tr) => {
-  //   const tds = tr.querySelectorAll('td');
-  //   const wgr = +(tds.item(0).textContent ?? NaN);
-  //   if (isNaN(wgr)) {
-  //     throw new Error(`Invalid wgr for row: ${tr.textContent}`);
-  //   }
-
-  //   const name = tr.querySelector('td.name')?.textContent?.trim().replace(AMATEUR_REGEX, '');
-  //   if (!name?.length) {
-  //     throw new Error(`Invalid name for row: ${tr.textContent}`);
-  //   }
-
-  //   wgrs.push({ wgr, name });
-  // });
-
-  // return wgrs;
+  return response.rankingsList.map((r) => ({
+    name: r.player.fullName,
+    wgr: r.rank,
+  }));
 }
