@@ -32,11 +32,11 @@ export const UserStandings = ({ selectedUserId, onUserSelected }: UserDetailsPro
 
     const holesLeft = ps.dayScores[currentDayIndex].golferScores.reduce((memo, gs) => {
       if (gs.missedCut) {
-        return 0;
+        return memo;
       } else if (gs.thru === null) {
-        return constants.NHOLES;
+        return memo + constants.NHOLES;
       } else {
-        return constants.NHOLES - gs.thru;
+        return memo + constants.NHOLES - gs.thru;
       }
     }, 0);
 
