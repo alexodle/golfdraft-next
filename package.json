@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "prettier-format": "prettier --config .prettierrc 'lib/**/*.ts*' --write && prettier --config .prettierrc 'pages/**/*.ts*' --write",
-    "test": "echo 'jest --roots lib'",
+    "test": "NEXT_PUBLIC_SUPABASE_URL=test jest --roots lib",
     "testDb": "npx supabase db test"
   },
   "dependencies": {

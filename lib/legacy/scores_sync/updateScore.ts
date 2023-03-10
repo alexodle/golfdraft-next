@@ -62,7 +62,7 @@ export function mergeOverrides(scores: GolferScore[], scoreOverrides: GolferScor
   return newScores;
 }
 
-export async function run(tourneyId: number, reader: Reader, config: TourneyConfig, populateGolfers = false) {
+export async function run(tourneyId: number, reader: Reader, config: TourneyConfig, populateGolfers = true) {
   const url = config.scores.url;
 
   const ts = moment().format('YMMDD_HHmmss');

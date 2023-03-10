@@ -8,6 +8,8 @@
 # testing
 /coverage
 
+/pages/api/admin
+
 # next.js
 /.next/
 /out/

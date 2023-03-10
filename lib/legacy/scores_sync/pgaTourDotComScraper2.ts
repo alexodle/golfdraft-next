@@ -1,4 +1,5 @@
 import { load } from 'cheerio';
+import { writeFileSync } from 'fs';
 import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
 import { createPuppeteerBrowser } from './puppeteer';
@@ -12,7 +13,7 @@ function requireParseInt(intStr: string, errMsg: string): number {
   return n;
 }
 
-class PgaTourScraperReader implements Reader {
+class PgaTourDotComScraper2Reader implements Reader {
   async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
     const html = await getLeaderboardHTML(url);
     return parse(html, config.par);
@@ -44,7 +45,7 @@ export function parse(html: string | Buffer, par: number): ReaderResult {
   const golfers: UpdateGolfer[] = [];
 
   rows.each((_i, tr) => {
-    const name = $($(tr).children()[2]).text();
+    const name = $($(tr).children()[2]).text().trim();
     if (name.length === 0) {
       return;
     }
@@ -64,10 +65,9 @@ export function parse(html: string | Buffer, par: number): ReaderResult {
     let scores: Score[] = rawRounds.map(safeParseInt).map((n) => (n !== null ? n - par : null));
     let thru = parseThru(rawThru);
     const day = calcCurrentDay(scores, rawThru === 'F');
-
     if (rawThru !== 'F') {
       if (!isWD) {
-        const currentRoundScore = parseRoundScore($(tr).find('td.round').text().trim());
+        const currentRoundScore = parseRoundScore($($(tr).children()[5]).text().trim());
         scores[day] = currentRoundScore;
       } else {
         scores[day] = constants.MISSED_CUT;
@@ -123,4 +123,4 @@ function parseRoundScore(str: string): number {
   throw new Error(`Unexpected round score: ${str}`);
 }
 
-export default new PgaTourScraperReader();
+export default new PgaTourDotComScraper2Reader();
