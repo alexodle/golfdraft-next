@@ -40,7 +40,7 @@ export const UserStandings = ({ selectedUserId, onUserSelected }: UserDetailsPro
       }
     }, 0);
 
-    const pickNumber = draftPicks.data.findIndex((dpo) => dpo.userId === ps.userId);
+    const pickNumber = draftPicks.data.findIndex((dpo) => dpo.userId === ps.userId) + 1;
 
     return (
       <tr
