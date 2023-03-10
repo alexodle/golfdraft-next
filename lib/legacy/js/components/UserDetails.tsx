@@ -24,7 +24,7 @@ export const UserDetails = ({ userId }: UserDetailsProps) => {
 
   const user = allUsers.data[userId];
 
-  const currentDayIndex = standings.data.currentDay ?? 0 - 1;
+  const currentDayIndex = (standings.data.currentDay ?? 0) - 1;
   const userScores = standings.data.standings;
 
   const userScoreIndex = userScores.findIndex((us) => us.userId === user?.id);
