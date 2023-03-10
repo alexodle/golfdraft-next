@@ -1,5 +1,5 @@
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useActiveUsers } from '../../../ctx/ActiveUsersCtx';
 import { useChatMessageMutation, useChatMessages } from '../../../data/chat';
 import { useAllUsers } from '../../../data/users';
@@ -12,6 +12,8 @@ export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.Re
   const { activeUsers } = useActiveUsers();
   const { data: allUsers } = useAllUsers();
 
+  const [ready, scrollPaneRef] = useScrollToBottom();
+
   if (!allUsers) {
     return <Loading />;
   }
@@ -20,7 +22,11 @@ export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.Re
     return (
       <div className="row">
         <div className="col-md-12">
-          <div className="panel panel-default chat-panel">
+          <div
+            className="panel panel-default chat-panel"
+            style={{ visibility: !ready ? 'hidden' : undefined }}
+            ref={scrollPaneRef}
+          >
             <div className="panel-body">
               <ChatRoomBody />
             </div>
@@ -33,7 +39,11 @@ export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.Re
   return (
     <div className="chat-room-container">
       <div className="col-md-9">
-        <div className="panel panel-default chat-panel">
+        <div
+          className="panel panel-default chat-panel"
+          style={{ visibility: !ready ? 'hidden' : undefined }}
+          ref={scrollPaneRef}
+        >
           <div className="panel-body">
             <ChatRoomBody />
           </div>
@@ -129,6 +139,28 @@ const ChatRoomInput = (): React.ReactElement => {
       </form>
     </div>
   );
+};
+
+const useScrollToBottom = () => {
+  const [ready, setReady] = useState(false);
+  const scrollPaneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!scrollPaneRef.current || ready) {
+      return;
+    }
+
+    setTimeout(() => {
+      if (!scrollPaneRef.current || ready) {
+        return;
+      }
+
+      scrollPaneRef.current.scrollTo(0, scrollPaneRef.current.scrollHeight);
+      setReady(true);
+    }, 500);
+  }, [ready]);
+
+  return [ready, scrollPaneRef] as const;
 };
 
 export default ChatRoom;
