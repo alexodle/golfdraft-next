@@ -1,9 +1,11 @@
+import { countBy } from 'lodash';
 import moment from 'moment';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useActiveUsers } from '../../../ctx/ActiveUsersCtx';
 import { useChatMessageMutation, useChatMessages } from '../../../data/chat';
 import { useAllUsers } from '../../../data/users';
 import Loading from '../../../Loading';
+import { GDUser } from '../../../models';
 
 const BOT_NAME = 'DraftBot';
 
@@ -36,6 +38,8 @@ export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.Re
     );
   }
 
+  const activeUserShortNames = asShortNames([...activeUsers].map((uid) => allUsers[uid]));
+
   return (
     <div className="chat-room-container">
       <div className="col-md-9">
@@ -55,18 +59,40 @@ export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.Re
           <div className="panel-body">
             <b>Online:</b>
             <ul className="list-unstyled">
-              {[...activeUsers]
-                .map((uid) => allUsers[uid].name)
-                .sort()
-                .map((name) => (
-                  <li key={name}>{name}</li>
-                ))}
+              {activeUserShortNames.map((name) => (
+                <li key={name}>{name}</li>
+              ))}
             </ul>
           </div>
         </div>
       </div>
     </div>
   );
+};
+
+/** Returns a list of names using firstName, adding last initial if duplicates are found, and then adding the full last name if duplicates still exist */
+const asShortNames = (users: GDUser[]): string[] => {
+  const firstLast = users.map((u) => {
+    return u.name.split(' ');
+  });
+
+  const byFirst = countBy(firstLast, ([first]) => first);
+  const byFirstLastInitial = countBy(firstLast, ([first, last]) => `${first} ${last[0]}`);
+
+  const shortNames = firstLast.map(([first, last]) => {
+    if (byFirst[first] < 2) {
+      return first;
+    }
+
+    const firstLastInitial = `${first} ${last[0]}`;
+    if (byFirstLastInitial[firstLastInitial] < 2) {
+      return firstLastInitial;
+    }
+
+    return `${first} ${last}`;
+  });
+
+  return shortNames.sort();
 };
 
 const ChatRoomBody = (): React.ReactElement => {
