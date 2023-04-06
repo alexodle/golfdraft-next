@@ -120,7 +120,6 @@ export async function run(tourneyId: number, reader: Reader, config: TourneyConf
 
   // Calculate standings
   const tourneyStanding = await updateTourneyStandings.run(tourneyId);
-  console.log(tourneyStanding);
 
   // Mark as updated
   touchTourney(tourneyId);

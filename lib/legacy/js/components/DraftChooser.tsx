@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { sortBy } from 'lodash';
+import { keyBy, sortBy } from 'lodash';
 import React, { useMemo, useState } from 'react';
 import { useDraftPicker, useRemainingGolfers } from '../../../data/draft';
 import { useGolfers } from '../../../data/golfers';
@@ -23,6 +23,7 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
   const { pickMutation, autoPickMutation } = useDraftPicker();
 
   const golfersRemaining = useRemainingGolfers();
+  const golfersRemainingLookup = keyBy(golfersRemaining, 'id');
   const { data: currentUser } = useCurrentUser();
   const { data: allUsers } = useAllUsers();
   const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
@@ -42,12 +43,12 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
         // special case, we cannot show the full list if this a proxy pick
         return [];
       } else {
-        return pickList.map((gid) => getGolfer(gid));
+        return pickList.filter((gid) => !!golfersRemainingLookup[gid]).map((gid) => getGolfer(gid));
       }
     }
 
     return sortBy(golfersRemaining, [sortKey, 'name']);
-  }, [sortKey, isProxyPick, pickList, golfersRemaining, getGolfer]);
+  }, [sortKey, isProxyPick, pickList, golfersRemaining, golfersRemainingLookup, getGolfer]);
 
   if (
     !allUsers ||
