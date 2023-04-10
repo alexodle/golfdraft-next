@@ -14,7 +14,10 @@ export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.Re
   const { activeUsers } = useActiveUsers();
   const { data: allUsers } = useAllUsers();
 
-  const [ready, scrollPaneRef] = useScrollToBottom();
+  const [scrollPaneRef, setScrollPaneRef] = useState<HTMLDivElement | null>(null);
+
+  const ready = useInitialScrollToBottom(scrollPaneRef);
+  useScrollAfterNewMessage({ scrollPaneRef, enabled: ready });
 
   if (!allUsers) {
     return <Loading />;
@@ -27,7 +30,7 @@ export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.Re
           <div
             className="panel panel-default chat-panel"
             style={{ visibility: !ready ? 'hidden' : undefined }}
-            ref={scrollPaneRef}
+            ref={setScrollPaneRef}
           >
             <div className="panel-body">
               <ChatRoomBody />
@@ -46,7 +49,7 @@ export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.Re
         <div
           className="panel panel-default chat-panel"
           style={{ visibility: !ready ? 'hidden' : undefined }}
-          ref={scrollPaneRef}
+          ref={setScrollPaneRef}
         >
           <div className="panel-body">
             <ChatRoomBody />
@@ -167,26 +170,57 @@ const ChatRoomInput = (): React.ReactElement => {
   );
 };
 
-const useScrollToBottom = () => {
+const useInitialScrollToBottom = (scrollPaneRef: HTMLDivElement | null) => {
   const [ready, setReady] = useState(false);
-  const scrollPaneRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!scrollPaneRef.current || ready) {
+    if (!scrollPaneRef || ready) {
       return;
     }
 
     setTimeout(() => {
-      if (!scrollPaneRef.current || ready) {
+      if (!scrollPaneRef || ready) {
         return;
       }
 
-      scrollPaneRef.current.scrollTo(0, scrollPaneRef.current.scrollHeight);
+      scrollPaneRef.scrollTo(0, scrollPaneRef.scrollHeight);
       setReady(true);
     }, 500);
-  }, [ready]);
+  }, [ready, scrollPaneRef]);
 
-  return [ready, scrollPaneRef] as const;
+  return ready;
+};
+
+const useScrollAfterNewMessage = ({
+  scrollPaneRef,
+  enabled,
+}: {
+  scrollPaneRef: HTMLDivElement | null;
+  enabled: boolean;
+}) => {
+  const messages = useChatMessages();
+
+  const messageCount = messages.data?.length ?? 0;
+
+  const lastMessageCountRef = useRef(messageCount);
+  useEffect(() => {
+    lastMessageCountRef.current = messageCount;
+  }, [messageCount]);
+
+  const lastMessageCount = lastMessageCountRef.current ?? 0;
+
+  useEffect(() => {
+    if (!enabled || !scrollPaneRef || lastMessageCount >= messageCount) {
+      return;
+    }
+
+    const position = scrollPaneRef.scrollTop + scrollPaneRef.offsetHeight;
+    const isAtBottom = position >= scrollPaneRef.scrollHeight - 100;
+
+    if (isAtBottom) {
+      scrollPaneRef.scrollTo(0, scrollPaneRef.scrollHeight);
+    }
+  }, [enabled, lastMessageCount, messageCount, scrollPaneRef]);
 };
 
 export default ChatRoom;

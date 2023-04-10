@@ -1,6 +1,6 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { PostgrestResponse, SupabaseClient } from '@supabase/supabase-js';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { CompletedDraftPick, DraftPick, DraftPickList, Golfer, PendingDraftPick } from '../models';
@@ -19,25 +19,34 @@ export function useDraftPicks(): UseQueryResult<DraftPick[]> {
   const queryClientKey = useMemo(() => getDraftPicksQueryClientKey(tourneyId), [tourneyId]);
   const supabase = useSupabaseClient();
 
-  const result = useQuery<DraftPick[]>(queryClientKey, async () => {
-    return await getDraftPicks(tourneyId, supabase);
-  });
+  const [isDone, setIsDone] = useState(false);
+
+  const result = useQuery<DraftPick[]>(
+    queryClientKey,
+    async () => {
+      return await getDraftPicks(tourneyId, supabase);
+    },
+    {
+      refetchInterval: isDone ? 0 : 30_000,
+      staleTime: isDone ? Infinity : 30_000,
+    },
+  );
+
+  useEffect(() => {
+    if (isDone) {
+      return;
+    }
+    if (result.data?.every(isCompletedDraftPick)) {
+      setIsDone(true);
+    }
+  }, [result.data, isDone]);
 
   useSharedSubscription<DraftPick>(
     DRAFT_PICKS_TABLE,
     `tourneyId=eq.${tourneyId}`,
-    useCallback(
-      (ev) => {
-        if (ev.eventType === 'UPDATE') {
-          queryClient.setQueryData<DraftPick[]>(queryClientKey, (curr) => {
-            return (curr ?? []).map((dp) =>
-              dp.tourneyId === ev.new.tourneyId && dp.pickNumber === ev.new.pickNumber ? ev.new : dp,
-            );
-          });
-        }
-      },
-      [queryClient, queryClientKey],
-    ),
+    useCallback(() => {
+      queryClient.invalidateQueries(queryClientKey);
+    }, [queryClient, queryClientKey]),
     { disabled: !result.isSuccess },
   );
 
@@ -73,6 +82,8 @@ export function useDraftPicker(): {
   const supabase = useSupabaseClient();
   const { data: user } = useCurrentUser();
 
+  const draftQueryClientKey = getDraftPicksQueryClientKey(tourneyId);
+
   const pickMutation = useMutation(
     async ({ pendingDraftPick: draftPick, golferId }: { pendingDraftPick: PendingDraftPick; golferId: number }) => {
       const result = await supabase.rpc('make_pick', {
@@ -101,10 +112,11 @@ export function useDraftPicker(): {
           );
         });
       },
-      onError: (e, { pendingDraftPick }) => {
-        console.dir(e);
-        const queryClientKey = getDraftPicksQueryClientKey(pendingDraftPick.tourneyId);
-        queryClient.invalidateQueries(queryClientKey);
+      onError: (e) => {
+        console.error(e);
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries(draftQueryClientKey);
       },
     },
   );
