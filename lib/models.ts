@@ -165,7 +165,7 @@ export type WorstDayScore = Readonly<{
 export type ChatMessage = Readonly<{
   id: number;
   tourneyId: number;
-  userId?: number;
+  userId?: number | null;
   createdAt: number;
   message: string;
 }>;

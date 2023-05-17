@@ -114,8 +114,8 @@ const ChatRoomBody = (): React.ReactElement => {
     <div>
       <dl className="chat-list dl-horizontal">
         {messages.map((message, i) => {
-          const displayName = message.userId === undefined ? BOT_NAME : users[message.userId].name;
-          const className = message.userId === undefined ? 'bot-message' : '';
+          const displayName = !message.userId ? BOT_NAME : users[message.userId].name;
+          const className = !message.userId ? 'bot-message' : '';
           return (
             <React.Fragment key={i}>
               <dt className={className}>
