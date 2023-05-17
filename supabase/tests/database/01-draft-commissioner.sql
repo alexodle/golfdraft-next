@@ -1,6 +1,6 @@
 BEGIN;
 
-select plan(14);
+select plan(16);
 
 select tests.create_test_tourney();
 select tests.authenticate_as('sbuser1');
@@ -27,6 +27,12 @@ SELECT throws_ok(
 SELECT IS("pickNumber", 1, 'expected noop from undoing last pick when no pick has been made. pickNumber is not 1') 
 FROM get_next_pick(tests.get_tourney_id());
 
+SELECT results_eq(
+    $$ SELECT "message" FROM chat_message WHERE "tourneyId" = tests.get_tourney_id() $$,
+    ARRAY[]::varchar[],
+    'expected no chat messages for noop'
+);
+
 -- make pick
 SELECT lives_ok(
     $$ SELECT make_pick_list_or_wgr_pick(tests.get_tourney_id(), tests.get_gd_user1(), 1) $$,
@@ -48,6 +54,12 @@ FROM get_next_pick(tests.get_tourney_id());
 
 SELECT IS("golferId", NULL, 'expected pick to be undone. golferId is not NULL')
 FROM get_next_pick(tests.get_tourney_id());
+
+SELECT results_eq(
+    $$ SELECT "message" FROM chat_message WHERE "tourneyId" = tests.get_tourney_id() ORDER BY id desc LIMIT 1 $$,
+    $$ SELECT 'Pick #1: rolled back by commissioner' $$,
+    'expected chat message for undo pick'
+);
 
 -- AUTO PICK USERS TESTS
 

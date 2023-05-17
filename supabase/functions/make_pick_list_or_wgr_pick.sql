@@ -11,6 +11,7 @@ DECLARE
   golfer_to_pick_id int;
   picked_by_user_id int;
   auto_pick_user_id int;
+  picked_via varchar;
   tx varchar;
 BEGIN
   SELECT pg_try_advisory_xact_lock(tourney_id) INTO tx;
@@ -54,8 +55,10 @@ BEGIN
 
   IF pick_list_golfer_id IS NOT NULL THEN
     golfer_to_pick_id := pick_list_golfer_id;
+    picked_via = 'Pick List';
   ELSE
     golfer_to_pick_id := wgr_golfer_id;
+    picked_via = 'WGR+7';
   END IF;
   IF golfer_to_pick_id IS NULL THEN
      raise exception 'No golfer found for auto pick';
@@ -80,6 +83,11 @@ BEGIN
     AND "pickNumber" = pick_number
     AND "userId" = user_id
     AND "golferId" IS NULL;
+  
+  INSERT INTO chat_message ("tourneyId", message)
+  SELECT tourney_id, 'Pick #' || pick_number || ': ' || u.name || ' selects ' || g.name || ' (' || picked_via || ')'
+  FROM gd_user AS u, golfer AS g
+  WHERE u.id = user_id AND g.id = golfer_to_pick_id;
   
   RETURN;
 END;

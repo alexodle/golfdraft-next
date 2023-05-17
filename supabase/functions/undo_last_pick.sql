@@ -35,6 +35,12 @@ BEGIN
         "pickedByUserId" = NULL
     WHERE "tourneyId" = tourney_id AND "pickNumber" = last_pick_number;
 
+    INSERT INTO chat_message ("tourneyId", message)
+    VALUES (
+        tourney_id,
+        'Pick #' || last_pick_number || ': rolled back by commissioner'
+    );
+
     RETURN;
 END;
 $$

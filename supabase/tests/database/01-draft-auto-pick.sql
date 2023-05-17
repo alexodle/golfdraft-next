@@ -1,6 +1,6 @@
 BEGIN;
 
-select plan(8);
+select plan(10);
 
 select tests.create_test_tourney();
 select tests.authenticate_as('sbuser2');
@@ -28,8 +28,14 @@ FROM draft_pick WHERE "tourneyId" = tests.get_tourney_id() AND "pickNumber" = 1;
 
 SELECT results_eq(
     $$ SELECT "golferId" FROM draft_pick WHERE "tourneyId" = tests.get_tourney_id() AND "pickNumber" = 1 $$,
-    $$ SELECT "id" FROM golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 7 $$,
+    $$ SELECT id FROM golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 7 $$,
     'auto pick should pick 7th best wgr if no pick list'
+);
+
+SELECT results_eq(
+    $$ SELECT "message" FROM chat_message WHERE "tourneyId" = tests.get_tourney_id() $$,
+    $$ SELECT 'Pick #1: User One selects ' || "name" || ' (WGR+7)' FROM  golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 7 $$,
+    'expected chat message for new pick'
 );
 
 -- pick 2 should be from pick list
@@ -49,6 +55,12 @@ SELECT results_eq(
     $$ SELECT "golferId" FROM draft_pick WHERE "tourneyId" = tests.get_tourney_id() AND "pickNumber" = 2 $$,
     ARRAY[tests.get_golfer_id('Sungjae Im')],
     'auto pick should pick 7th best wgr if no pick list'
+);
+
+SELECT results_eq(
+    $$ SELECT "message" FROM chat_message WHERE "tourneyId" = tests.get_tourney_id() ORDER BY id desc LIMIT 1 $$,
+    $$ SELECT 'Pick #2: User Two selects Sungjae Im (Pick List)' $$,
+    'expected chat message for new pick'
 );
 
 -- pick 3 should be fail (not an auto-pick user)

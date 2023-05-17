@@ -8,6 +8,7 @@ DECLARE
   next_pick_number int;
   already_picked_golfer_id int;
   picked_by_user_id int;
+  pick_proxy_message varchar;
   tx varchar;
 BEGIN
   SELECT pg_try_advisory_xact_lock(tourney_id) INTO tx;
@@ -38,6 +39,18 @@ BEGIN
     AND "pickNumber" = pick_number
     AND "userId" = user_id
     AND "golferId" IS NULL;
+
+  pick_proxy_message = '';
+  IF picked_by_user_id != user_id THEN
+    SELECT ' (proxy by ' || "name" || ')' INTO pick_proxy_message
+    FROM gd_user
+    WHERE id = picked_by_user_id;
+  END IF;
+
+  INSERT INTO chat_message ("tourneyId", message)
+  SELECT tourney_id, 'Pick #' || pick_number || ': ' || u.name || ' selects ' || g.name || pick_proxy_message
+  FROM gd_user AS u, golfer AS g
+  WHERE u.id = user_id AND g.id = golfer_id;
   
   RETURN;
 END;
