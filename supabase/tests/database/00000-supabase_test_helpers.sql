@@ -43,8 +43,8 @@ BEGIN
 
     -- create the user
     user_id := extensions.uuid_generate_v4();
-    INSERT INTO auth.users (id, email, phone, raw_user_meta_data)
-    VALUES (user_id, coalesce(email, concat(user_id, '@test.com')), phone, json_build_object('test_identifier', identifier))
+    INSERT INTO auth.users (id, email, phone, raw_user_meta_data, email_confirmed_at)
+    VALUES (user_id, coalesce(email, concat(user_id, '@test.com')), phone, json_build_object('test_identifier', identifier), now())
     RETURNING id INTO user_id;
 
     RETURN user_id;
