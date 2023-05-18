@@ -79,14 +79,9 @@ const asShortNames = (users: GDUser[]): string[] => {
     return u.name.split(' ');
   });
 
-  const byFirst = countBy(firstLast, ([first]) => first);
   const byFirstLastInitial = countBy(firstLast, ([first, last]) => `${first} ${last[0]}`);
 
   const shortNames = firstLast.map(([first, last]) => {
-    if (byFirst[first] < 2) {
-      return first;
-    }
-
     const firstLastInitial = `${first} ${last[0]}`;
     if (byFirstLastInitial[firstLastInitial] < 2) {
       return firstLastInitial;
