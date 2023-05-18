@@ -120,7 +120,7 @@ const ChatRoomBody = (): React.ReactElement => {
             <React.Fragment key={i}>
               <dt className={className}>
                 {displayName}
-                <span className="message-date"> ({moment(message.createdAt).format('l LT')})</span>:
+                <span className="message-date"> ({moment(message.createdAt).format('LT')})</span>:
               </dt>
               <dd className={className}>{message.message}</dd>
             </React.Fragment>
