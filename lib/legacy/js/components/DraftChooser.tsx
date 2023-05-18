@@ -105,8 +105,8 @@ export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraft
             onClick={() => setSortKey('pickList')}
           >
             {pickListUsers.has(currentPick.userId)
-              ? 'Pick List'
-              : `${utils.getOrdinal(constants.ABSENT_PICK_NTH_BEST_WGR)} Best WGR`}
+              ? 'Pick List (Default)'
+              : `WGR+${constants.ABSENT_PICK_NTH_BEST_WGR} (Default)`}
           </button>
         )}
         <button
