@@ -10,7 +10,7 @@
 # testing
 /coverage
 
-/pages/api/admin
+# /pages/api/admin
 
 # next.js
 /.next/
