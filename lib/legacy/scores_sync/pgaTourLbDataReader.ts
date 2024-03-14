@@ -2,7 +2,7 @@ import { parseInt } from 'lodash';
 import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
 import { Reader, ReaderResult, Score, UpdateGolfer } from './Types';
-import { fetchData } from './util';
+import { fetch } from '../js/fetch';
 
 const { MISSED_CUT, NHOLES, NDAYS } = constants;
 
@@ -122,8 +122,7 @@ function parseGolfer(par: number, g: LbDataGolfer): UpdateGolfer {
 
 class PgaTourLbDataReader implements Reader {
   async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
-    const data = await fetchData(url);
-    const json = JSON.parse(data);
+    const json = await fetch(url);
 
     const par = config.par;
     const golfers = json.rows.map((g: LbDataGolfer) => parseGolfer(par, g));

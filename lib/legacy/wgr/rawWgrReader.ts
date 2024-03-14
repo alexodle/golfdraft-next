@@ -1,4 +1,4 @@
-import { fetchData } from '../scores_sync/util';
+import { fetch } from '../js/fetch';
 
 export type WgrEntry = Readonly<{
   name: string;
@@ -14,17 +14,10 @@ type Response = Readonly<{
   }[];
 }>;
 
-async function getJson(url: string): Promise<Response> {
-  const data = await fetchData(url);
-  const json = JSON.parse(data);
-  return json;
-}
-
 export async function rawWgrReader(url: string): Promise<WgrEntry[]> {
   const wgrs: WgrEntry[] = [];
 
-  const response = await getJson(url);
-
+  const response = (await fetch(url)) as Response;
   return response.rankingsList.map((r) => ({
     name: r.player.fullName,
     wgr: r.rank,
