@@ -1,4 +1,4 @@
-import { chain, groupBy, isNumber, keyBy, mapValues, maxBy, sortBy, sumBy, times } from 'lodash';
+import { groupBy, isNumber, keyBy, mapValues, maxBy, sortBy, sumBy, take, times } from 'lodash';
 import { getDraftPicks, isCompletedDraftPick } from '../../data/draft';
 import { getGolferScores } from '../../data/scores';
 import { TourneyStandings, updateTourneyStandings } from '../../data/tourneyStandings';
@@ -32,11 +32,10 @@ function buildPlayerScore(
       };
     });
 
-    const usedScores = chain(golferScores)
-      .sortBy((ds) => ds.score)
-      .take(constants.NSCORES_PER_DAY)
-      .map((ds) => ds.idx)
-      .value();
+    const usedScores = take(
+      sortBy(golferScores, (ds) => ds.score),
+      constants.NSCORES_PER_DAY,
+    ).map((ds) => ds.idx);
     const golferScoresFinal = golferScores.map<TourneyStandingGolferScore>((gs) => {
       const scoreUsed = usedScores.indexOf(gs.idx) >= 0;
       return {
