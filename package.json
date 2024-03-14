@@ -12,10 +12,10 @@
     "testDb": "npx supabase db test"
   },
   "dependencies": {
-    "@supabase/auth-helpers-nextjs": "^0.9.0",
-    "@supabase/auth-helpers-react": "^0.4.2",
-    "@supabase/auth-ui-react": "^0.4.7",
-    "@supabase/supabase-js": "^2.39.8",
+    "@supabase/auth-helpers-nextjs": "^0.5.2",
+    "@supabase/auth-helpers-react": "^0.3.1",
+    "@supabase/auth-ui-react": "^0.2.6",
+    "@supabase/supabase-js": "^2.2.3",
     "@types/classnames": "^2.3.1",
     "@types/lodash": "^4.17.0",
     "cheerio": "^1.0.0-rc.12",
@@ -42,6 +42,7 @@
     "jest-environment-jsdom": "^29.4.1",
     "next-compose-plugins": "^2.2.1",
     "prettier": "^2.8.1",
+    "supabase": "^1.27.10",
     "typescript": "^4.6.4"
   },
   "engines": {
