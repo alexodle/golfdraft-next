@@ -1,12 +1,16 @@
-import chrome from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium-min';
 import puppeteer, { Browser } from 'puppeteer-core';
 
 export async function createPuppeteerBrowser(): Promise<Browser> {
   const options = process.env.AWS_REGION
     ? {
-        args: chrome.args,
-        executablePath: await chrome.executablePath,
-        headless: chrome.headless,
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(
+          'https://github.com/Sparticuz/chromium/releases/download/v110.0.1/chromium-v110.0.1-pack.tar',
+        ),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
       }
     : {
         args: [],
