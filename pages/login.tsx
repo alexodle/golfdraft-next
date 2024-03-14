@@ -1,5 +1,5 @@
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
-import { Auth } from '@supabase/auth-ui-react';
+import { Auth, ThemeSupa } from '@supabase/auth-ui-react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -22,7 +22,7 @@ const AuthPage: NextPage = () => {
 
   return (
     <div className="container">
-      <Auth supabaseClient={supabase} magicLink redirectTo="/" view="magic_link" />
+      <Auth supabaseClient={supabase} magicLink redirectTo="/" view="magic_link" appearance={{ theme: ThemeSupa }} />
     </div>
   );
 };
