@@ -1,15 +1,15 @@
 import chromium from '@sparticuz/chromium-min';
-import puppeteer, { Browser } from 'puppeteer-core';
+import puppeteer, { Browser, PuppeteerLaunchOptions } from 'puppeteer-core';
 
 export async function createPuppeteerBrowser(): Promise<Browser> {
-  const options = process.env.AWS_REGION
+  const options: PuppeteerLaunchOptions = process.env.AWS_REGION
     ? {
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(
           'https://github.com/Sparticuz/chromium/releases/download/v122.0.0/chromium-v122.0.0-pack.tar',
         ),
-        headless: chromium.headless,
+        headless: true,
         ignoreHTTPSErrors: true,
       }
     : {
