@@ -38,8 +38,8 @@ async function updateScoresApi(req: NextApiRequest, res: NextApiResponse) {
 
 // export const runtime = 'edge';
 
-export const config = {
-  maxDuration: 30, // seconds
-};
+// export const config = {
+//   maxDuration: 30, // seconds
+// };
 
 export default updateScoresApi;
