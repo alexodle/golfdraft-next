@@ -1,9 +1,9 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useCallback, useMemo } from 'react';
-import { QueryClient, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, UseQueryResult, useQuery, useQueryClient } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { Tourney } from '../models';
-import { adminSupabase, SupabaseClient } from '../supabase';
+import { SupabaseClient, adminSupabase } from '../supabase';
+import { createClient } from '../supabase/component';
 import { useSharedSubscription } from './subscription';
 
 const TOURNEY_TABLE = 'tourney';
@@ -11,7 +11,7 @@ const TOURNEY_TABLE = 'tourney';
 export function useCurrentTourney(): UseQueryResult<Tourney> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const queryClientKey = useMemo(() => getTourneyQueryClientKey(tourneyId), [tourneyId]);
 

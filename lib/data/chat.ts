@@ -1,10 +1,10 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { uniqBy } from 'lodash';
 import { useCallback, useMemo } from 'react';
-import { useMutation, UseMutationResult, useQuery, useQueryClient } from 'react-query';
+import { UseMutationResult, useMutation, useQuery, useQueryClient } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { ChatMessage } from '../models';
 import { SupabaseClient } from '../supabase';
+import { createClient } from '../supabase/component';
 import { useSharedSubscription } from './subscription';
 import { useCurrentUser } from './users';
 
@@ -16,7 +16,7 @@ export function useChatMessages(tourneyIdOverride?: number) {
 
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getChatMessagesQueryClientKey(tourneyId), [tourneyId]);
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const result = useQuery<ChatMessage[]>(queryClientKey, async () => {
     return getChatMessages(tourneyId, supabase);
@@ -43,7 +43,7 @@ export function useChatMessages(tourneyIdOverride?: number) {
 
 export function useChatMessageMutation(): UseMutationResult<unknown, unknown, string> {
   const tourneyId = useTourneyId();
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
   const { data: user } = useCurrentUser();
 
   const mutation = useMutation({

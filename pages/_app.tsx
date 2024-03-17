@@ -5,14 +5,14 @@ import '../lib/legacy/less/bootstrap_repl.css';
 import '../lib/legacy/less/chat.css';
 import '../lib/legacy/less/tourney_app.css';
 
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import type { AppProps } from 'next/app';
 import { useState } from 'react';
 import { Hydrate, QueryClient, QueryClientProvider } from 'react-query';
+import { createClient } from '../lib/supabase/component';
+import { SessionContext } from '../lib/ctx/SessionContext';
+import { Session } from '@supabase/supabase-js';
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [supabase] = useState(() => createBrowserSupabaseClient());
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -28,9 +28,9 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
-        <SessionContextProvider supabaseClient={supabase} initialSession={pageProps.initialSession}>
+        <SessionContext.Provider value={{ session: pageProps.initialSession as Session }}>
           <Component {...pageProps} />
-        </SessionContextProvider>
+        </SessionContext.Provider>
       </Hydrate>
     </QueryClientProvider>
   );

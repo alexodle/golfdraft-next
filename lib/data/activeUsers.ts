@@ -1,4 +1,4 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { createClient } from '../supabase/component';
 import { useEffect, useState } from 'react';
 import { useCurrentUser } from './users';
 
@@ -15,7 +15,7 @@ type ActiveUserPresenceState = {
  * Opens up presence channel for active users. Note: do not use directly. Use context instead.
  */
 export const useActiveUsersData = () => {
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
   const { data: user } = useCurrentUser();
 
   const [activeUsers, setActiveUsers] = useState(() => new Set<number>());

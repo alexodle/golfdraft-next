@@ -1,7 +1,8 @@
-import { createServerSupabaseClient, Session, SupabaseClient, User } from '@supabase/auth-helpers-nextjs';
-import { GetServerSideProps, GetServerSidePropsContext, PreviewData, GetServerSidePropsResult } from 'next';
+import { Session, SupabaseClient, User } from '@supabase/supabase-js';
+import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult, PreviewData } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import { getActiveTourneyId } from '../data/appState';
+import { createClient } from '../supabase/server-props';
 
 export type ActiveProps = Readonly<{
   activeTourneyId: number;
@@ -17,7 +18,7 @@ export const withAuth = <P extends { [key: string]: any }>(
   ) => Promise<GetServerSidePropsResult<P>>,
 ): GetServerSideProps<P> => {
   return async (ctx) => {
-    const supabase = createServerSupabaseClient(ctx);
+    const supabase = createClient(ctx);
     const props = await getServerSidePropsHelper(supabase);
     if (props.redirect) {
       return props;
@@ -28,9 +29,9 @@ export const withAuth = <P extends { [key: string]: any }>(
 
 const getServerSidePropsHelper = async (supabase: SupabaseClient) => {
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     return {
       redirect: {
         permanent: false,
@@ -39,12 +40,16 @@ const getServerSidePropsHelper = async (supabase: SupabaseClient) => {
     };
   }
 
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   const activeTourneyId = await getActiveTourneyId(supabase);
   return {
     props: {
       activeTourneyId,
-      initialSession: session,
-      user: session.user,
+      initialSession: session!,
+      user,
     },
   };
 };

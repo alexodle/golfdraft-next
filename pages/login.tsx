@@ -1,28 +1,19 @@
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
-import { Auth, ThemeSupa } from '@supabase/auth-ui-react';
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { createClient } from '../lib/supabase/component';
 
 const AuthPage: NextPage = () => {
-  const supabase = useSupabaseClient();
-
-  const user = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (user) {
-      router.push('/');
-    }
-  }, [router, user]);
-
-  if (user) {
-    return null;
-  }
-
   return (
     <div className="container">
-      <Auth supabaseClient={supabase} magicLink redirectTo="/" view="magic_link" appearance={{ theme: ThemeSupa }} />
+      <Auth
+        supabaseClient={createClient()}
+        magicLink
+        redirectTo="/"
+        view="magic_link"
+        providers={[]}
+        appearance={{ theme: ThemeSupa }}
+      />
     </div>
   );
 };

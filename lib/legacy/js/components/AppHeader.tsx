@@ -1,14 +1,14 @@
-import { useUser } from '@supabase/auth-helpers-react';
 import React from 'react';
 import { useCurrentTourney } from '../../../data/tourney';
 import { useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
 import LogoutButton from './LogoutButton';
+import { useSession } from '../../../ctx/SessionContext';
 
 export const AppHeader = (): React.ReactElement => {
   const { data: tourney } = useCurrentTourney();
   const { isLoading: userIsLoading, data: currentUser } = useCurrentUser();
-  const sessionUser = useUser();
+  const sessionUser = useSession()?.user;
 
   if (!sessionUser) {
     throw new Error('No session user');

@@ -1,9 +1,9 @@
-import { useSession, useUser } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import { ActiveUsersCtxProvider } from './ctx/ActiveUsersCtx';
 import { AppStateCtxProvider } from './ctx/AppStateCtx';
 import { useCurrentUser } from './data/users';
+import { useSession } from './ctx/SessionContext';
 
 const App = ({
   tourneyId,

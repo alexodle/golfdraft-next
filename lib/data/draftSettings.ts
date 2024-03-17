@@ -1,4 +1,4 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { createClient } from '../supabase/component';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { useCallback, useMemo } from 'react';
 import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
@@ -12,7 +12,7 @@ export function useDraftSettings(): UseQueryResult<DraftSettings> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getDraftSettingsQueryClientKey(tourneyId), [tourneyId]);
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const result = useQuery<DraftSettings>(queryClientKey, async () => {
     return await getDraftSettings(tourneyId, supabase);
@@ -47,7 +47,7 @@ export function prefetchDraftSettings(
 
 export function useDraftSettingsMutation(): UseMutationResult<unknown, unknown, DraftSettings, unknown> {
   const queryClient = useQueryClient();
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const draftSettingsMutation = useMutation(
     async (settings: DraftSettings) => {

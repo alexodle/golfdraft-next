@@ -1,15 +1,15 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useEffect } from 'react';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { useAutoPickUsers, useCurrentPick } from '../data/draft';
 import { useDraftSettings } from '../data/draftSettings';
+import { createClient } from '../supabase/component';
 
 const INTERVAL = 1000;
 
 export const AutoPicker = () => {
   const tourneyId = useTourneyId();
   const isAutoPickUser = useIsAutoPickUser();
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   useEffect(() => {
     if (!isAutoPickUser) {

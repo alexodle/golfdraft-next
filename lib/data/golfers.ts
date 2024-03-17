@@ -1,4 +1,4 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { createClient } from '../supabase/component';
 import { keyBy, omit } from 'lodash';
 import { useMemo } from 'react';
 import { QueryClient, useQuery, UseQueryResult } from 'react-query';
@@ -46,7 +46,7 @@ export function useGolfers(): UseQueryResult<GolferLookup> {
 
 function useGolfersQuery(): UseQueryResult<Golfer[]> {
   const tourneyId = useTourneyId();
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
   return useQuery<Golfer[]>(GOLFERS_TABLE, async () => {
     return await getGolfers(tourneyId, supabase);
   });

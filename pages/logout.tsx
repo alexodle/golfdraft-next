@@ -1,13 +1,14 @@
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { useSession } from '../lib/ctx/SessionContext';
+import { createClient } from '../lib/supabase/component';
 import { withAuth } from '../lib/util/withAuth';
 
 const LogoutPage: NextPage = () => {
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
   const router = useRouter();
-  const user = useUser();
+  const user = useSession()?.user;
 
   const [isLoading, setIsLoading] = useState(false);
 

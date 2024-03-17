@@ -1,9 +1,9 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { useCallback, useMemo } from 'react';
-import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, UseMutationResult, UseQueryResult, useMutation, useQuery, useQueryClient } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftPickList } from '../models';
+import { createClient } from '../supabase/component';
 import { useSharedSubscription } from './subscription';
 import { useCurrentUser } from './users';
 
@@ -14,7 +14,7 @@ export function usePickListUsers(): UseQueryResult<Set<number>> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getPickListUsersQueryClientKey(tourneyId), [tourneyId]);
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const result = useQuery<Set<number>>(queryClientKey, async () => {
     return new Set(await getDraftPickListUsers(tourneyId, supabase));
@@ -36,7 +36,7 @@ export function usePickList(): UseQueryResult<number[] | null> {
   const tourneyId = useTourneyId();
   const { data: myUser } = useCurrentUser();
   const queryClientKey = useMemo(() => getPickListQueryClientKey(tourneyId, myUser?.id), [tourneyId, myUser?.id]);
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const result = useQuery<number[] | null>(
     queryClientKey,
@@ -73,7 +73,7 @@ export function usePickListUpdater():
   const { data: myUser } = useCurrentUser();
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getPickListQueryClientKey(tourneyId, myUser?.id), [tourneyId, myUser?.id]);
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const result = useMutation(
     async ({ pickList }: UpdatePickListRequest) => {

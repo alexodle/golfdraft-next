@@ -1,7 +1,7 @@
-import { SupabaseClient, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { RealtimeChannel, RealtimePostgresChangesPayload, SupabaseClient } from '@supabase/supabase-js';
 import { memoize } from 'lodash';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createClient } from '../supabase/component';
 
 export type SubscriptionCallback<T extends { [key: string]: any }> = (ev: RealtimePostgresChangesPayload<T>) => void;
 
@@ -82,7 +82,7 @@ export const useSharedSubscription = <T extends { [key: string]: any }>(
   cb: SubscriptionCallback<T>,
   { disabled = false }: { disabled?: boolean } = {},
 ) => {
-  const supabase = useSupabaseClient();
+  const [supabase] = useState(() => createClient());
 
   useEffect(() => {
     if (disabled) {

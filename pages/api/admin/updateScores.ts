@@ -18,6 +18,8 @@ async function updateScoresApi(req: NextApiRequest, res: NextApiResponse) {
     return res.status(401).end();
   }
 
+  res.send('Running');
+
   const supabase = adminSupabase();
   const tourneyId = await getActiveTourneyId(supabase);
   const tourney = await getTourney(tourneyId, supabase);
@@ -33,5 +35,7 @@ async function updateScoresApi(req: NextApiRequest, res: NextApiResponse) {
 
   res.status(201).end();
 }
+
+// export const runtime = 'edge';
 
 export default updateScoresApi;

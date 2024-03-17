@@ -1,4 +1,4 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { createClient } from '../supabase/component';
 import { PostgrestResponse, SupabaseClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
@@ -17,7 +17,7 @@ export function useDraftPicks(): UseQueryResult<DraftPick[]> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getDraftPicksQueryClientKey(tourneyId), [tourneyId]);
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const [isDone, setIsDone] = useState(false);
 
@@ -79,7 +79,7 @@ export function useDraftPicker(): {
 } {
   const queryClient = useQueryClient();
   const tourneyId = useTourneyId();
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
   const { data: user } = useCurrentUser();
 
   const draftQueryClientKey = getDraftPicksQueryClientKey(tourneyId);
@@ -161,7 +161,7 @@ export function useDraftPicker(): {
 }
 
 export function useUndoLastPickMutation(): UseMutationResult<PostgrestResponse<any>, unknown, void, unknown> {
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
   const tourneyId = useTourneyId();
 
   const mutation = useMutation(async () => {
@@ -204,7 +204,7 @@ export function useAutoPickUsers(): UseQueryResult<Set<number>> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getAutoPickUsersQueryClientKey(tourneyId), [tourneyId]);
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const result = useQuery<Set<number>>(queryClientKey, async () => {
     return new Set(await getAutoPickUsers(tourneyId, supabase));
@@ -236,7 +236,7 @@ export function useAutoPickUsersMutation(): UseMutationResult<void, unknown, { u
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
   const queryClientKey = useMemo(() => getAutoPickUsersQueryClientKey(tourneyId), [tourneyId]);
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const mutation = useMutation(
     async ({ userId, autoPick }: { userId: number; autoPick: boolean }) => {

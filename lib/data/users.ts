@@ -1,8 +1,10 @@
-import { SupabaseClient, User, useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 import { keyBy } from 'lodash';
-import { QueryClient, useMutation, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, useMutation, useQuery, UseQueryResult } from 'react-query';
 import { GDUser } from '../models';
+import { createClient } from '../supabase/component';
 import { useSharedSubscription } from './subscription';
+import { useSession } from '../ctx/SessionContext';
 
 const USER_TABLE = 'gd_user';
 const USER_MAP_TABLE = 'gd_user_map';
@@ -16,8 +18,8 @@ export type UserMapping = Readonly<{
 }>;
 
 export function useCurrentUser(): UseQueryResult<GDUser | undefined> {
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const supabase = createClient();
+  const user = useSession()?.user;
 
   if (!user) {
     throw new Error('Unexpectedly missing auth user');
@@ -35,7 +37,7 @@ export function useCurrentUser(): UseQueryResult<GDUser | undefined> {
 }
 
 export function useAllUsers(): UseQueryResult<IndexedUsers> {
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
   return useQuery<IndexedUsers>(USER_TABLE, async () => {
     return await getAllUsers(supabase);
   });
@@ -48,8 +50,8 @@ export async function prefetchAllUsers(queryClient: QueryClient, supabase: Supab
 }
 
 export function useUserMappingsCommishOnly(): UseQueryResult<UserMapping[]> {
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const supabase = createClient();
+  const user = useSession()?.user;
 
   if (!user) {
     throw new Error('Unexpectedly missing auth user');
@@ -73,7 +75,7 @@ export function useUserMappingsCommishOnly(): UseQueryResult<UserMapping[]> {
 }
 
 export function userUserMappingsMutationCommishOnly() {
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
   return useMutation({
     mutationFn: async ({ userId, profileId }: { userId?: number; profileId: string }) => {
       const delResult = await supabase.from(USER_MAP_TABLE).delete().eq('profileId', profileId);

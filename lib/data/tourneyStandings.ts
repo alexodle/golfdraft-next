@@ -1,17 +1,17 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { omit } from 'lodash';
 import { useCallback, useMemo } from 'react';
-import { QueryClient, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { QueryClient, UseQueryResult, useQuery, useQueryClient } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import {
   DbTourneyStandingPlayerScore,
   DbTourneyStandings,
+  TourneyStandings as ModelTourneyStandings,
   TourneyStandingPlayerDayScore,
   TourneyStandingPlayerScore,
-  TourneyStandings as ModelTourneyStandings,
   WorstDayScore,
 } from '../models';
-import { adminSupabase, SupabaseClient } from '../supabase';
+import { SupabaseClient, adminSupabase } from '../supabase';
+import { createClient } from '../supabase/component';
 import { useSharedSubscription } from './subscription';
 
 const TOURNEY_STANDINGS_TABLE = 'tourney_standings';
@@ -25,7 +25,7 @@ export type TourneyStandings = ModelTourneyStandings &
 export function useTourneyStandings(): UseQueryResult<TourneyStandings> {
   const tourneyId = useTourneyId();
   const queryClient = useQueryClient();
-  const supabase = useSupabaseClient();
+  const supabase = createClient();
 
   const queryClientKey = useMemo(() => getTourneyStandingsQueryKey(tourneyId), [tourneyId]);
 

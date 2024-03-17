@@ -1,14 +1,14 @@
-import { useUser } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
 import React from 'react';
-import { useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
+import { useSession } from '../../../ctx/SessionContext';
+import { useCurrentUser } from '../../../data/users';
 
 export const LogoutButton: React.FC = () => {
   const router = useRouter();
 
   const { isLoading: userIsLoading, data: currentUser } = useCurrentUser();
-  const sessionUser = useUser();
+  const sessionUser = useSession()?.user;
 
   if (userIsLoading) {
     return <Loading />;

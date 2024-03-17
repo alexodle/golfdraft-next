@@ -1,16 +1,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { once } from 'lodash';
+import { supabaseUrl } from './supabase/constants';
 
 export type { SupabaseClient };
-
-const supabaseUrl = require(process.env.NEXT_PUBLIC_SUPABASE_URL);
-
-function require(v: string | undefined | null): string {
-  if (!v) {
-    throw new Error(`Missing required env var: ${v}`);
-  }
-  return v;
-}
 
 function requireEnv(v: string): string {
   const value = process.env[v];
