@@ -24,7 +24,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "lib/legacy/scores_sync/pgaTourLbDataScraperReader.ts.off"  ],
   "exclude": [
     "node_modules",
     "off"

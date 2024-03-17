@@ -1,73 +1,63 @@
-import { load } from 'cheerio';
-import { writeFileSync } from 'fs';
 import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
-import { createPuppeteerBrowser } from './puppeteer';
+import { PGATourLeaderboardJSONReaderNextData, PlayerElement } from './PgaTourLeaderboardJsonReaderNextData';
 import { Reader, ReaderResult, Score, Thru, UpdateGolfer } from './Types';
 
-function requireParseInt(intStr: string, errMsg: string): number {
-  const n = parseInt(intStr, 10);
-  if (isNaN(n)) {
-    throw new Error(`Failed to parse int: '${intStr}' - ${errMsg}`);
-  }
-  return n;
-}
-
-class PgaTourDotComScraper2Reader implements Reader {
+class PgaTourLeaderboardJsonReader implements Reader {
   async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
-    const html = await getLeaderboardHTML(url);
-    return parse(html, config.par);
+    const data = await fetchJson(url);
+    const parsed = parse(data.props.pageProps.leaderboard.players, config.par);
+    return parsed;
   }
 }
 
-async function getLeaderboardHTML(leaderboardHTMLUrl: string): Promise<string> {
-  const browser = await createPuppeteerBrowser();
-  try {
-    const page = await browser.newPage();
-    await page.goto(leaderboardHTMLUrl);
-
-    // HACK - taking a screenshot seems to force the table to load, when nothing else will
-    await page.screenshot({ path: '/tmp/last.png' });
-
-    await page.waitForSelector('table tbody tr', { timeout: 1000 * 60 });
-
-    const contents = await page.content();
-    return contents;
-  } finally {
-    await browser.close();
+function grabNextData(html: string): PGATourLeaderboardJSONReaderNextData {
+  const idx = html.indexOf('__NEXT_DATA__');
+  if (idx < 0) {
+    throw new Error('NEXT_DATA not found');
   }
+
+  const startIdx = html.indexOf('>', idx) + 1;
+  const endIdx = html.indexOf('</script>', startIdx);
+  const jsonStr = html.substring(startIdx, endIdx);
+  const json = JSON.parse(jsonStr) as PGATourLeaderboardJSONReaderNextData;
+  return json;
 }
 
-export function parse(html: string | Buffer, par: number): ReaderResult {
-  const $ = load(html);
-  const rows = $('table tbody tr');
+async function fetchJson(url: string) {
+  const res = await fetch(url);
+  const html = await res.text();
+  const data = grabNextData(html);
+  return data;
+}
 
+export function parse(players: PlayerElement[], par: number): ReaderResult {
   const golfers: UpdateGolfer[] = [];
 
-  rows.each((_i, tr) => {
-    const name = $($(tr).children()[2]).text().trim();
-    if (name.length === 0) {
-      return;
+  for (const { player, scoringData } of players) {
+    if (!player || !scoringData) {
+      continue;
     }
 
-    const rawThru = $($(tr).children()[4]).text().replace('*', '').trim();
-    const rawRounds: string[] = [
-      $($(tr).children()[6]),
-      $($(tr).children()[7]),
-      $($(tr).children()[8]),
-      $($(tr).children()[9]),
-    ].map((td) => td.text().trim());
+    const name = player.displayName;
+    if (name.length === 0) {
+      continue;
+    }
 
-    const positionStr = $($(tr).children()[0]).text().trim();
+    const rawThru = scoringData.thru;
+    const rawRounds = scoringData.rounds;
+    const positionStr = scoringData.position;
     const isWD = positionStr === 'WD';
     const isCut = positionStr === 'CUT';
 
-    let scores: Score[] = rawRounds.map(safeParseInt).map((n) => (n !== null ? n - par : null));
+    let scores = rawRounds.map(safeParseInt).map<Score>((n) => (n !== null ? n - par : null));
     let thru = parseThru(rawThru);
+
     const day = calcCurrentDay(scores, rawThru === 'F');
+
     if (rawThru !== 'F') {
       if (!isWD) {
-        const currentRoundScore = parseRoundScore($($(tr).children()[5]).text().trim());
+        const currentRoundScore = parseRoundScore(scoringData.score);
         scores[day] = currentRoundScore;
       } else {
         scores[day] = constants.MISSED_CUT;
@@ -86,7 +76,7 @@ export function parse(html: string | Buffer, par: number): ReaderResult {
 
     const g: UpdateGolfer = { golfer: name, scores: scores.map((s) => s || 0), day: day + 1, thru };
     golfers.push(g);
-  });
+  }
 
   return { par, golfers };
 }
@@ -123,4 +113,12 @@ function parseRoundScore(str: string): number {
   throw new Error(`Unexpected round score: ${str}`);
 }
 
-export default new PgaTourDotComScraper2Reader();
+function requireParseInt(intStr: string, errMsg: string): number {
+  const n = parseInt(intStr, 10);
+  if (isNaN(n)) {
+    throw new Error(`Failed to parse int: '${intStr}' - ${errMsg}`);
+  }
+  return n;
+}
+
+export default new PgaTourLeaderboardJsonReader();
