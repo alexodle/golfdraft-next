@@ -18,7 +18,7 @@ async function updateScoresApi(req: NextApiRequest, res: NextApiResponse) {
     return res.status(401).end();
   }
 
-  res.send('Running');
+  // res.send('Running');
 
   const supabase = adminSupabase();
   const tourneyId = await getActiveTourneyId(supabase);
