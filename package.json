@@ -39,7 +39,7 @@
     "next-compose-plugins": "^2.2.1",
     "prettier": "^3.2.5",
     "supabase": "^1.148.6",
-    "typescript": "^4.6.4"
+    "typescript": "^5.4.2"
   },
   "engines": {
     "node": "18"
