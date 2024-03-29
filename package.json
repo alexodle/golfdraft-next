@@ -38,7 +38,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "next-compose-plugins": "^2.2.1",
     "prettier": "^3.2.5",
-    "supabase": "^1.150.0",
+    "supabase": "^1.151.1",
     "typescript": "^5.4.3"
   },
   "engines": {
