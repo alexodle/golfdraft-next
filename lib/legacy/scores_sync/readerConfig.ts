@@ -1,7 +1,7 @@
 import pgaTourLeaderboardJsonReader from './pgaTourLeaderboardJsonReader';
 import { Reader } from './Types';
 
-export interface ReaderConfig {
+interface ReaderConfig {
   [key: string]: { reader: Reader };
 }
 

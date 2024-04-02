@@ -8,7 +8,7 @@ import Loading from '../../../Loading';
 import { toGolferScoreStr } from '../../common/utils';
 import GolferLogic from '../logic/GolferLogic';
 import ChatRoom from './ChatRoom';
-import GolfDraftPanel from './GolfDraftPanel';
+import { GolfDraftPanel } from './GolfDraftPanel';
 import { UserDetails } from './UserDetails';
 import { UserStandings } from './UserStandings';
 

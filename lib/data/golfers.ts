@@ -13,7 +13,7 @@ export const PENDING_GOLFER: Omit<Golfer, 'tourneyId'> = {
   name: 'Pending...',
 };
 
-export type GolferLookup = Readonly<{
+type GolferLookup = Readonly<{
   /** Lookup golfers by ID, including PENDING_GOLFER. Throws if not found. */
   getGolfer: (gid: number) => Golfer;
   /** Unordered list of all golfers */
@@ -40,7 +40,7 @@ export function useGolfers(): UseQueryResult<GolferLookup> {
       },
     };
     return lookup;
-  }, [golfersResults.data]);
+  }, [tourneyId, golfersResults.data]);
   return { ...golfersResults, data } as UseQueryResult<GolferLookup>;
 }
 

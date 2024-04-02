@@ -4,7 +4,7 @@ import Loading from '../../../Loading';
 import { useSession } from '../../../ctx/SessionContext';
 import { useCurrentUser } from '../../../data/users';
 
-export const LogoutButton: React.FC = () => {
+const LogoutButton: React.FC = () => {
   const router = useRouter();
 
   const { isLoading: userIsLoading, data: currentUser } = useCurrentUser();

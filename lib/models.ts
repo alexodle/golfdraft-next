@@ -37,11 +37,6 @@ export type TourneyConfig = Readonly<{
   };
 }>;
 
-export type DraftAutoPick = Readonly<{
-  tourneyId: number;
-  userId: number;
-}>;
-
 export type GDUser = Readonly<{
   id: number;
   name: string;
@@ -103,8 +98,6 @@ export type DbGolferScore = BaseGolferScore &
   }>;
 
 export type GolferScoreOverride = { golferId: number } & Omit<Partial<GolferScore>, 'golferId'>;
-
-export type DbGolferScoreOverride = { golferId: number } & Omit<Partial<DbGolferScore>, 'golferId'>;
 
 type BaseTourneyStandings = Readonly<{
   tourneyId: number;

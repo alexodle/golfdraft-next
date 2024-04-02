@@ -7,7 +7,7 @@ import { useTourneyStandings } from '../../../data/tourneyStandings';
 import { useAllUsers } from '../../../data/users';
 import * as utils from '../../common/utils';
 
-export type UserDetailsProps = Readonly<{
+type UserDetailsProps = Readonly<{
   userId: number;
 }>;
 
@@ -42,7 +42,7 @@ export const UserDetails = ({ userId }: UserDetailsProps) => {
     .sortBy(([golfer]) => golferPickNumbers[golfer])
     .value();
 
-  const trs = _.map(golferScores, ([golferId, golferScores], i) => {
+  const trs = _.map(golferScores, ([golferId, golferScores]) => {
     const golferTotal = _.sumBy(golferScores, (gs) => gs.score);
     const golfer = golferLookup.data.getGolfer(Number(golferId));
     return (

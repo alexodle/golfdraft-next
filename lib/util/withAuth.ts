@@ -4,13 +4,13 @@ import { ParsedUrlQuery } from 'querystring';
 import { getActiveTourneyId } from '../data/appState';
 import { createClient } from '../supabase/server-props';
 
-export type ActiveProps = Readonly<{
+type ActiveProps = Readonly<{
   activeTourneyId: number;
   initialSession: Session;
   user: User;
 }>;
 
-export const withAuth = <P extends { [key: string]: any }>(
+export const withAuth = <P extends { [key: string]: unknown }>(
   getServerSideProps: (
     props: ActiveProps,
     ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>,

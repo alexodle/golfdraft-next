@@ -16,7 +16,7 @@ export async function updateWgr(tourneyId: number) {
   const nameMap = tourneyCfg.wgr.nameMap;
 
   console.log('downloading and parsing');
-  let wgrEntries = await rawWgrReader(url);
+  const wgrEntries = await rawWgrReader(url);
   console.log('parsed %d entries', wgrEntries.length);
 
   const golfersByName = keyBy([...golfers], (g) => g.name);

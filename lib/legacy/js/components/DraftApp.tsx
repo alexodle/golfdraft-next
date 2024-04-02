@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
+import Loading from '../../../Loading';
 import { isCompletedDraftPick, useCurrentPick, useDraftPicks } from '../../../data/draft';
 import { useDraftSettings } from '../../../data/draftSettings';
 import { useCurrentTourney } from '../../../data/tourney';
 import { useCurrentUser } from '../../../data/users';
-import Loading from '../../../Loading';
 import { DraftPick } from '../../../models';
 import Assets from '../constants/Assets';
 import AppPausedStatus from './AppPausedStatus';
@@ -14,7 +14,7 @@ import DraftClock from './DraftClock';
 import DraftHistory from './DraftHistory';
 import DraftPickOrderView from './DraftPickOrderView';
 import DraftStatus from './DraftStatus';
-import GolfDraftPanel from './GolfDraftPanel';
+import { GolfDraftPanel } from './GolfDraftPanel';
 import { PickListEditor } from './PickListEditor';
 
 let myTurnSound: HTMLAudioElement | undefined = undefined;
@@ -26,7 +26,7 @@ try {
   console.warn('Could not load my turn sounds');
 }
 
-export const DraftApp: React.FC = () => {
+const DraftApp: React.FC = () => {
   const { data: draftSettings } = useDraftSettings();
   const { data: currentUser } = useCurrentUser();
 
@@ -123,7 +123,9 @@ const useMyTurnSoundFx = (isMyDraftPick: boolean | undefined) => {
     if (isMyDraftPick !== undefined && lastIsMyDraftPick !== undefined && isMyDraftPick && !lastIsMyDraftPick) {
       try {
         myTurnSound?.play();
-      } catch (e) {}
+      } catch (e) {
+        // noop
+      }
     }
   }, [isMyDraftPick, lastIsMyDraftPick]);
 };
@@ -135,7 +137,9 @@ const usePickMadeSoundFx = (draftPicks: DraftPick[] | undefined) => {
     if (draftPickCount !== undefined && lastDraftPickCount !== undefined && draftPickCount > lastDraftPickCount) {
       try {
         pickMadeSound?.play();
-      } catch (e) {}
+      } catch (e) {
+        // noop
+      }
     }
   }, [draftPickCount, lastDraftPickCount]);
 };

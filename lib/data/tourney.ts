@@ -42,20 +42,6 @@ export function prefetchTourney(tourneyId: number, queryClient: QueryClient, sup
   });
 }
 
-export type TourneyInfo = Pick<Tourney, 'id' | 'name' | 'startDateEpochMillis' | 'lastUpdatedEpochMillis'>;
-
-export async function getAllTourneys(supabase: SupabaseClient): Promise<TourneyInfo[]> {
-  const result = await supabase
-    .from(TOURNEY_TABLE)
-    .select('id, name, startDateEpochMillis, lastUpdatedEpochMillis')
-    .order('startDateEpochMillis', { ascending: false });
-  if (result.error) {
-    console.dir(result.error);
-    throw new Error(`Failed to fetch tourneys`);
-  }
-  return result.data;
-}
-
 export async function getTourney(tourneyId: number, supabase: SupabaseClient): Promise<Tourney> {
   const result = await supabase
     .from(TOURNEY_TABLE)
@@ -93,19 +79,6 @@ export async function upsertTourney(tourney: Omit<Tourney, 'id'>): Promise<Tourn
   await updateCommissioners(result.data.id, commissioners);
 
   return { ...tourney, ...result.data };
-}
-
-export async function updateTourney(tourney: Partial<Tourney> & { id: number }): Promise<void> {
-  const { commissioners, ...tourneyData } = tourney;
-
-  const result = await adminSupabase().from(TOURNEY_TABLE).update(tourneyData).eq('id', tourney.id);
-
-  await updateCommissioners(tourney.id, commissioners);
-
-  if (result.error) {
-    console.dir(result.error);
-    throw new Error(`Failed to update tourney`);
-  }
 }
 
 export async function touchTourney(tourneyId: number): Promise<Tourney> {

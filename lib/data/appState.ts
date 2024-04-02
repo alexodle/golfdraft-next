@@ -4,7 +4,7 @@ import { adminSupabase, SupabaseClient } from '../supabase';
 const APP_STATE_TABLE = 'app_state';
 const ID = 1;
 
-export async function getAppStateFromDb(supabase: SupabaseClient): Promise<AppState> {
+async function getAppStateFromDb(supabase: SupabaseClient): Promise<AppState> {
   const result = await supabase.from(APP_STATE_TABLE).select('*').eq('id', ID).single();
   if (result.error) {
     console.dir(result.error);

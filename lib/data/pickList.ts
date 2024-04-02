@@ -62,7 +62,7 @@ export function prefetchPickList(
   });
 }
 
-export type UpdatePickListRequest = {
+type UpdatePickListRequest = {
   pickList: number[];
 };
 
@@ -100,7 +100,7 @@ export function usePickListUpdater():
   return myUser ? result : undefined;
 }
 
-export async function getDraftPickListUsers(tourneyId: number, supabase: SupabaseClient): Promise<number[]> {
+async function getDraftPickListUsers(tourneyId: number, supabase: SupabaseClient): Promise<number[]> {
   const result = await supabase.from(PICK_LIST_USER_TABLE).select('userId').eq('tourneyId', tourneyId);
   if (result.error) {
     console.dir(result.error);
@@ -109,11 +109,7 @@ export async function getDraftPickListUsers(tourneyId: number, supabase: Supabas
   return result.data.map((pl) => pl.userId);
 }
 
-export async function getDraftPickList(
-  tourneyId: number,
-  userId: number,
-  supabase: SupabaseClient,
-): Promise<number[] | null> {
+async function getDraftPickList(tourneyId: number, userId: number, supabase: SupabaseClient): Promise<number[] | null> {
   const result = await supabase
     .from(DRAFT_PICK_LIST_TABLE)
     .select('golferId')

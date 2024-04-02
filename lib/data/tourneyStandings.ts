@@ -60,7 +60,7 @@ export async function prefetchTourneyStandings(
   });
 }
 
-export async function getTourneyStandings(tourneyId: number, supabase: SupabaseClient): Promise<TourneyStandings> {
+async function getTourneyStandings(tourneyId: number, supabase: SupabaseClient): Promise<TourneyStandings> {
   const result = await supabase
     .from(TOURNEY_STANDINGS_TABLE)
     .select(

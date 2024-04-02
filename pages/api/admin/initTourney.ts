@@ -32,7 +32,7 @@ const tourneyConfigValidations: [(cfg: Partial<TourneyConfig>) => boolean, strin
   [(cfg) => typeof cfg.par === 'number' && cfg.par >= 68, 'invalid par'],
   [(cfg) => typeof cfg.scores?.type === 'string', 'invalid scores.type'],
   [(cfg) => typeof cfg.scores?.url === 'string' && cfg.scores.url.length > 0, 'invalid scores.url'],
-  [(cfg) => typeof cfg.scores?.nameMap === 'object' && typeof cfg.scores.nameMap !== null, 'invalid scores.nameMap'],
+  [(cfg) => typeof cfg.scores?.nameMap === 'object' && cfg.scores.nameMap !== null, 'invalid scores.nameMap'],
   [(cfg) => Array.isArray(cfg.commissioners) && cfg.commissioners.length > 0, 'invalid commissioners'],
   [(cfg) => Array.isArray(cfg.draftOrder) && cfg.draftOrder.length > 0, 'invalid draft order'],
   [(cfg) => typeof cfg.wgr?.url === 'string' && cfg.wgr.url.length > 0, 'invalid wgr url'],

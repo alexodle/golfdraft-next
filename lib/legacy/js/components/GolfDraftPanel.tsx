@@ -1,22 +1,20 @@
 import React, { ReactNode } from 'react';
 
-export interface GolfDraftPanelProps {
+interface GolfDraftPanelProps {
   heading?: JSX.Element | string;
   height?: string;
   children?: ReactNode;
 }
 
-export default class GolfDraftPanel extends React.Component<GolfDraftPanelProps, {}> {
-  render() {
-    return (
-      <div className="panel panel-default golfdraft-panel" style={{ height: this.props.height }}>
-        {!this.props.heading ? null : (
-          <div className="panel-heading">
-            <h3 className="panel-title">{this.props.heading}</h3>
-          </div>
-        )}
-        <div className="panel-body">{this.props.children}</div>
-      </div>
-    );
-  }
+export function GolfDraftPanel({ heading, height, children }: GolfDraftPanelProps) {
+  return (
+    <div className="panel panel-default golfdraft-panel" style={{ height: height }}>
+      {!heading ? null : (
+        <div className="panel-heading">
+          <h3 className="panel-title">{heading}</h3>
+        </div>
+      )}
+      <div className="panel-body">{children}</div>
+    </div>
+  );
 }

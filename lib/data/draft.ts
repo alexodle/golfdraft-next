@@ -160,7 +160,7 @@ export function useDraftPicker(): {
   };
 }
 
-export function useUndoLastPickMutation(): UseMutationResult<PostgrestResponse<any>, unknown, void, unknown> {
+export function useUndoLastPickMutation(): UseMutationResult<PostgrestResponse<unknown>, unknown, void, unknown> {
   const supabase = createClient();
   const tourneyId = useTourneyId();
 
@@ -303,7 +303,7 @@ export async function setDraftPicks(tourneyId: number, draftPicks: PendingDraftP
   return result.data;
 }
 
-export async function getAutoPickUsers(tourneyId: number, supabase: SupabaseClient): Promise<number[]> {
+async function getAutoPickUsers(tourneyId: number, supabase: SupabaseClient): Promise<number[]> {
   const result = await supabase.from(DRAFT_AUTO_PICK_TABLE).select('userId').eq('tourneyId', tourneyId);
   if (result.error) {
     console.dir(result.error);

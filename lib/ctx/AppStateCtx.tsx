@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 
-export interface AppStateType {
+interface AppStateType {
   tourneyId: number;
 }
 
@@ -13,7 +13,7 @@ export const AppStateCtxProvider: React.FC<{ appState: AppStateType; children?: 
   return <AppStateCtx.Provider value={appState}>{children}</AppStateCtx.Provider>;
 };
 
-export const useAppState = (): AppStateType => {
+const useAppState = (): AppStateType => {
   const ctx = useContext(AppStateCtx);
   if (!ctx) {
     throw new Error(`Missing app state context`);

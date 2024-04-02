@@ -15,12 +15,12 @@ import {
   useAllUsers,
   useCurrentUser,
   UserMapping,
-  userUserMappingsMutationCommishOnly,
+  useUserMappingsMutationCommishOnly,
   useUserMappingsCommishOnly,
 } from '../lib/data/users';
 import AppHeader from '../lib/legacy/js/components/AppHeader';
 import DraftHistory from '../lib/legacy/js/components/DraftHistory';
-import GolfDraftPanel from '../lib/legacy/js/components/GolfDraftPanel';
+import { GolfDraftPanel } from '../lib/legacy/js/components/GolfDraftPanel';
 import Loading from '../lib/Loading';
 import { GDUser } from '../lib/models';
 import { withAuth } from '../lib/util/withAuth';
@@ -194,7 +194,7 @@ const InnerCommish: React.FC = () => {
 };
 
 const UserMappingEntry = ({ userMapping, sortedUsers }: { userMapping: UserMapping; sortedUsers: GDUser[] }) => {
-  const userMappingsMutation = userUserMappingsMutationCommishOnly();
+  const userMappingsMutation = useUserMappingsMutationCommishOnly();
   const inputId = `user-mapping-${userMapping.profileId}`;
 
   return (

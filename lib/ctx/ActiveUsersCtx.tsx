@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { useActiveUsersData } from '../data/activeUsers';
 
-export type ActiveUsersCtxType = Readonly<{
+type ActiveUsersCtxType = Readonly<{
   activeUsers: Set<number>;
 }>;
 

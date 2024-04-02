@@ -3,7 +3,7 @@ import { useAllUsers } from '../../../data/users';
 import Loading from '../../../Loading';
 import { PendingDraftPick } from '../../../models';
 
-export const DraftStatus: React.FC<{
+const DraftStatus: React.FC<{
   currentPick: PendingDraftPick;
   onDraftForUser: (pid: number) => void;
 }> = ({ currentPick, onDraftForUser }) => {

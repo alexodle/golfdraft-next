@@ -9,7 +9,7 @@ import { useSession } from '../ctx/SessionContext';
 const USER_TABLE = 'gd_user';
 const USER_MAP_TABLE = 'gd_user_map';
 
-export type IndexedUsers = Record<number, GDUser>;
+type IndexedUsers = Record<number, GDUser>;
 
 export type UserMapping = Readonly<{
   userId: number | null;
@@ -74,7 +74,7 @@ export function useUserMappingsCommishOnly(): UseQueryResult<UserMapping[]> {
   return results;
 }
 
-export function userUserMappingsMutationCommishOnly() {
+export function useUserMappingsMutationCommishOnly() {
   const supabase = createClient();
   return useMutation({
     mutationFn: async ({ userId, profileId }: { userId?: number; profileId: string }) => {
@@ -127,7 +127,7 @@ export async function getAllUsers(supabase: SupabaseClient): Promise<IndexedUser
   return keyBy(result.data, (u) => u.id);
 }
 
-export async function getUserMappings(supabase: SupabaseClient): Promise<UserMapping[]> {
+async function getUserMappings(supabase: SupabaseClient): Promise<UserMapping[]> {
   const result = await supabase.rpc('get_user_mappings');
   if (result.error) {
     console.dir(result.error);

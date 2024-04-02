@@ -28,13 +28,3 @@ function asArray<T>(v: Set<T> | T[] | T | undefined | null): T[] {
   }
   return v ? [v] : [];
 }
-
-function asSet<T>(v: Set<T> | T[] | T | undefined | null): Set<T> {
-  if (v instanceof Set) {
-    return v;
-  }
-  if (Array.isArray(v)) {
-    return new Set(v);
-  }
-  return new Set<T>(v ? [v] : undefined);
-}

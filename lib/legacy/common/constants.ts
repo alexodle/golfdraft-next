@@ -1,4 +1,4 @@
-export default {
+const constants = {
   NHOLES: 18,
 
   // Tournaments are 4 days
@@ -10,7 +10,7 @@ export default {
   // We take the top 2 golfer scores for each day
   NSCORES_PER_DAY: 2,
 
-  MISSED_CUT: 'MC' as 'MC',
+  MISSED_CUT: 'MC' as const,
 
   // Either too high, or non-existent
   UNKNOWN_WGR: Number.MAX_VALUE,
@@ -20,4 +20,6 @@ export default {
   ABSENT_PICK_NTH_BEST_WGR: 7,
 
   TOURNEY_ID_PARAM: ':tourneyId([0-9a-f]{24})',
-};
+} as const;
+
+export default constants;

@@ -31,7 +31,7 @@ async function fetchJson(url: string) {
   return data;
 }
 
-export function parse(players: PlayerElement[], par: number): ReaderResult {
+function parse(players: PlayerElement[], par: number): ReaderResult {
   const golfers: UpdateGolfer[] = [];
 
   for (const { player, scoringData } of players) {
@@ -81,7 +81,7 @@ export function parse(players: PlayerElement[], par: number): ReaderResult {
   return { par, golfers };
 }
 
-export function calcCurrentDay(rounds: Score[], isFinished: boolean): number {
+function calcCurrentDay(rounds: Score[], isFinished: boolean): number {
   let d = isFinished ? -1 : 0;
   for (let i = 0; i < rounds.length && rounds[i] !== null; i++) {
     d++;
@@ -121,4 +121,6 @@ function requireParseInt(intStr: string, errMsg: string): number {
   return n;
 }
 
-export default new PgaTourLeaderboardJsonReader();
+const instance = new PgaTourLeaderboardJsonReader();
+
+export default instance;

@@ -3,15 +3,10 @@ import { memoize } from 'lodash';
 import { useEffect, useState } from 'react';
 import { createClient } from '../supabase/component';
 
-export type SubscriptionCallback<T extends { [key: string]: any }> = (ev: RealtimePostgresChangesPayload<T>) => void;
-
-export type Subscription<T extends { [key: string]: any }> = {
-  onAll(cb: SubscriptionCallback<T>): object;
-  unsubscribe(sub: object): void;
-};
+type SubscriptionCallback<T extends { [key: string]: unknown }> = (ev: RealtimePostgresChangesPayload<T>) => void;
 
 const getOrCreateSub = memoize(
-  <T extends { [key: string]: any }>(table: string, filter: string, supabase: SupabaseClient) => {
+  <T extends { [key: string]: unknown }>(table: string, filter: string, supabase: SupabaseClient) => {
     const cbs: SubscriptionCallback<T>[] = [];
 
     const createSub = (): RealtimeChannel => {
@@ -58,7 +53,7 @@ const getOrCreateSub = memoize(
   },
 );
 
-const openSharedSubscription = <T extends { [key: string]: any }>(
+const openSharedSubscription = <T extends { [key: string]: unknown }>(
   table: string,
   filter: string,
   cb: SubscriptionCallback<T>,
@@ -76,7 +71,7 @@ const openSharedSubscription = <T extends { [key: string]: any }>(
 /**
  * Opens a supabase subscription and shares it among all consumers. Handles closing and opening as needed.
  */
-export const useSharedSubscription = <T extends { [key: string]: any }>(
+export const useSharedSubscription = <T extends { [key: string]: unknown }>(
   table: string,
   filter: string,
   cb: SubscriptionCallback<T>,

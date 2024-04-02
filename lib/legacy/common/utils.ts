@@ -1,4 +1,3 @@
-import { some } from 'lodash';
 import constants from './constants';
 
 export function getOrdinal(n: number): string {
@@ -25,13 +24,4 @@ export function toThruStr(thru: number): string {
   } else {
     return 'thru ' + thru;
   }
-}
-
-export function oidsAreEqual(a: any, b: any) {
-  // We may have ObjectId OR String values, so ensure to convert both toString before comparing
-  return a.toString() === b.toString();
-}
-
-export function containsObjectId(oidList: any[], targetOid: any) {
-  return some(oidList, (oid) => oidsAreEqual(oid, targetOid));
 }

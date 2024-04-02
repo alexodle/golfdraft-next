@@ -1,16 +1,15 @@
-import '../styles/globals.css';
 import '../lib/legacy/less/app.css';
 import '../lib/legacy/less/app_header.css';
 import '../lib/legacy/less/bootstrap_repl.css';
 import '../lib/legacy/less/chat.css';
 import '../lib/legacy/less/tourney_app.css';
+import '../styles/globals.css';
 
+import { Session } from '@supabase/supabase-js';
 import type { AppProps } from 'next/app';
 import { useState } from 'react';
 import { Hydrate, QueryClient, QueryClientProvider } from 'react-query';
-import { createClient } from '../lib/supabase/component';
 import { SessionContext } from '../lib/ctx/SessionContext';
-import { Session } from '@supabase/supabase-js';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(

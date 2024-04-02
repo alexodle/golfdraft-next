@@ -15,7 +15,7 @@ try {
   console.warn(`Could not load PICK_WARNING_SOUND: ${Assets.PICK_WARNING_SOUND}`);
 }
 
-export const DraftClock: React.FC<{
+const DraftClock: React.FC<{
   isMyPick: boolean;
   disableClock?: boolean;
 }> = ({ isMyPick, disableClock = false }) => {
@@ -50,7 +50,9 @@ export const DraftClock: React.FC<{
     const id = setInterval(() => {
       try {
         pickWarningSound?.play();
-      } catch (e) {}
+      } catch (e) {
+        // noop
+      }
     }, WARNING_SOUND_INTERVAL_SECONDS * 1000);
 
     return () => {

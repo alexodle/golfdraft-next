@@ -1,20 +1,19 @@
 import cx from 'classnames';
 import { keyBy, sortBy } from 'lodash';
 import React, { useMemo, useState } from 'react';
+import Loading from '../../../Loading';
 import { useDraftPicker, useRemainingGolfers } from '../../../data/draft';
 import { useGolfers } from '../../../data/golfers';
 import { usePickList, usePickListUsers } from '../../../data/pickList';
 import { useAllUsers, useCurrentUser } from '../../../data/users';
-import Loading from '../../../Loading';
 import { PendingDraftPick } from '../../../models';
 import constants from '../../common/constants';
-import * as utils from '../../common/utils';
 import GolferLogic from '../logic/GolferLogic';
-import GolfDraftPanel from './GolfDraftPanel';
+import { GolfDraftPanel } from './GolfDraftPanel';
 
 type SortKey = 'pickList' | 'wgr' | 'name';
 
-export const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraftingForUser: () => void }> = ({
+const DraftChooser: React.FC<{ currentPick: PendingDraftPick; onStopDraftingForUser: () => void }> = ({
   currentPick,
   onStopDraftingForUser,
 }) => {

@@ -1,7 +1,6 @@
 import { GetServerSideProps, NextPage } from 'next';
 import { getActiveTourneyId } from '../lib/data/appState';
 import { getIsDraftComplete } from '../lib/data/draft';
-import { createClient } from '../lib/supabase/server-props';
 import { adminSupabase } from '../lib/supabase';
 
 const Home: NextPage = () => {

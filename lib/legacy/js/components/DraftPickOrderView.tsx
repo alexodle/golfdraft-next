@@ -6,7 +6,7 @@ import { useAllUsers, useCurrentUser } from '../../../data/users';
 import Loading from '../../../Loading';
 import constants from '../../common/constants';
 
-export const DraftPickOrderView: React.FC<{
+const DraftPickOrderView: React.FC<{
   pickingForUsers: Set<number>;
   onUserSelected: (pid: number) => void;
 }> = ({ pickingForUsers, onUserSelected }) => {

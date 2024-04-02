@@ -4,9 +4,9 @@ import { useGolfers } from '../../../data/golfers';
 import { useAllUsers } from '../../../data/users';
 import Loading from '../../../Loading';
 import GolferLogic from '../logic/GolferLogic';
-import GolfDraftPanel from './GolfDraftPanel';
+import { GolfDraftPanel } from './GolfDraftPanel';
 
-export const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange?: (pid?: number) => void }> = ({
+const DraftHistory: React.FC<{ selectedUserId?: number; onSelectionChange?: (pid?: number) => void }> = ({
   selectedUserId,
   onSelectionChange,
 }) => {

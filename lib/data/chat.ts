@@ -59,7 +59,7 @@ export function useChatMessageMutation(): UseMutationResult<unknown, unknown, st
   return mutation;
 }
 
-export async function getChatMessages(tourneyId: number, supabase: SupabaseClient): Promise<ChatMessage[]> {
+async function getChatMessages(tourneyId: number, supabase: SupabaseClient): Promise<ChatMessage[]> {
   const result = await supabase
     .from('chat_message')
     .select('*')

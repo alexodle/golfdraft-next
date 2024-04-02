@@ -9,13 +9,13 @@ import GolferLogic from '../logic/GolferLogic';
 
 const TEXTAREA_PLACEHOLDER = 'Sergio Garcia\nPhil Mickelson\nTiger Woods\nDustin Johnson\nJason Day\n...';
 
-export const FreeTextPickListEditor: React.FC<{
+const FreeTextPickListEditor: React.FC<{
   onCancel: () => void;
 }> = ({ onCancel }) => {
   const [matches, setMatches] = useState<Match[] | undefined>();
   const [text, setText] = useState<string>('');
   const pickListUpdater = usePickListUpdater();
-  const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
+  const { data: { golfers: allGolfers } = {} } = useGolfers();
 
   useEffect(() => {
     if (pickListUpdater?.isSuccess) {

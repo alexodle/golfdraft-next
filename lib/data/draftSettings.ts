@@ -69,7 +69,7 @@ export function useDraftSettingsMutation(): UseMutationResult<unknown, unknown, 
   return draftSettingsMutation;
 }
 
-export async function getDraftSettings(tourneyId: number, supabase: SupabaseClient): Promise<DraftSettings> {
+async function getDraftSettings(tourneyId: number, supabase: SupabaseClient): Promise<DraftSettings> {
   const result = await supabase.from(DRAFT_SETTINGS_TABLE).select(`*`).eq('tourneyId', tourneyId);
   if (result.error) {
     console.dir(result.error);

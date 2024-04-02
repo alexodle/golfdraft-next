@@ -1,15 +1,15 @@
 import { countBy } from 'lodash';
 import moment from 'moment';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Loading from '../../../Loading';
 import { useActiveUsers } from '../../../ctx/ActiveUsersCtx';
 import { useChatMessageMutation, useChatMessages } from '../../../data/chat';
 import { useAllUsers } from '../../../data/users';
-import Loading from '../../../Loading';
 import { GDUser } from '../../../models';
 
 const BOT_NAME = 'DraftBot';
 
-export const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.ReactElement | null => {
+const ChatRoom = ({ disabled = false }: { disabled?: boolean }): React.ReactElement | null => {
   const messages = useChatMessages();
   const { activeUsers } = useActiveUsers();
   const { data: allUsers } = useAllUsers();

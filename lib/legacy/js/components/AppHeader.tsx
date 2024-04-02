@@ -5,7 +5,7 @@ import Loading from '../../../Loading';
 import LogoutButton from './LogoutButton';
 import { useSession } from '../../../ctx/SessionContext';
 
-export const AppHeader = (): React.ReactElement => {
+const AppHeader = (): React.ReactElement => {
   const { data: tourney } = useCurrentTourney();
   const { isLoading: userIsLoading, data: currentUser } = useCurrentUser();
   const sessionUser = useSession()?.user;

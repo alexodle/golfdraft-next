@@ -1,13 +1,12 @@
 import cx from 'classnames';
-import React from 'react';
-import * as utils from '../../common/utils';
-import constants from '../../common/constants';
+import { useCompleteDraftPicks } from '../../../data/draft';
 import { useCurrentTourney } from '../../../data/tourney';
-import { useAllUsers, useCurrentUser } from '../../../data/users';
 import { useTourneyStandings } from '../../../data/tourneyStandings';
-import { useCompleteDraftPicks, useDraftPicks } from '../../../data/draft';
+import { useAllUsers, useCurrentUser } from '../../../data/users';
+import constants from '../../common/constants';
+import * as utils from '../../common/utils';
 
-export type UserDetailsProps = Readonly<{
+type UserDetailsProps = Readonly<{
   selectedUserId?: number;
   onUserSelected: (userId: number) => void;
 }>;

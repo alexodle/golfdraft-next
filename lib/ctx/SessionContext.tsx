@@ -1,7 +1,7 @@
 import { Session } from '@supabase/supabase-js';
 import { createContext, useContext } from 'react';
 
-export type SessionContextType = Readonly<{
+type SessionContextType = Readonly<{
   session: Session | undefined;
 }>;
 
