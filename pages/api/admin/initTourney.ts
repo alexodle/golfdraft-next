@@ -8,10 +8,12 @@ if (!process.env.ADMIN_SCRIPT_API_KEY?.length) {
 
 async function initTourneyApi(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(404).end();
+    res.status(404).end();
+    return;
   }
   if (req.headers['gd-admin-script-api-key'] !== process.env.ADMIN_SCRIPT_API_KEY) {
-    return res.status(401).end();
+    res.status(401).end();
+    return;
   }
 
   const cfg = req.body as TourneyConfig;

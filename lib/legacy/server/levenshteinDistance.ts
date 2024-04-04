@@ -4,7 +4,7 @@ import { levenshtein } from 'underscore.string';
 export function levenshteinAll<T>(
   sourceStr: string,
   targetList: T[],
-  getValue: (v: T) => string,
+  getValue: (v: T) => string = (v) => String(v),
 ): { target: T; dist: number; coeff: number }[] {
   const results = targetList.map((targetStr) => {
     return { target: targetStr, ...calcLevenshtein(sourceStr, getValue(targetStr)) };
