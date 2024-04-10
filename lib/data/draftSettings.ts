@@ -1,7 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { QueryClient, UseMutationResult, UseQueryResult, useMutation, useQuery, useQueryClient } from 'react-query';
-import { useInterval } from 'usehooks-ts';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftSettings } from '../models';
 import { createClient } from '../supabase/component';
@@ -41,16 +40,23 @@ export function useHasDraftStarted(): UseQueryResult<boolean> {
   const tourneyId = useTourneyId();
   const supabase = createClient();
 
-  const result = useQuery<boolean>(getHasDraftStartedQueryClientKey(tourneyId), async () => {
-    return await getHasDraftStarted(tourneyId, supabase);
-  });
+  const [refetch, setRefetch] = useState(true);
 
-  useInterval(
-    () => {
-      result.refetch();
+  const result = useQuery<boolean>(
+    getHasDraftStartedQueryClientKey(tourneyId),
+    async () => {
+      return await getHasDraftStarted(tourneyId, supabase);
     },
-    result.data !== undefined && !result.data ? 5000 : null,
+    {
+      refetchInterval: refetch ? 5000 : undefined,
+    },
   );
+
+  useEffect(() => {
+    if (refetch && result.data === true) {
+      setRefetch(false);
+    }
+  }, [refetch, result.data]);
 
   return result;
 }
