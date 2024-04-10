@@ -188,8 +188,6 @@ const PostDraft: React.FC = () => {
 const PreDraft: React.FC = () => {
   const { data: draftSettings } = useDraftSettings();
 
-  const [distanceFmt, setDistanceFmt] = useState<string>();
-
   const draftStart = useMemo(() => {
     if (!draftSettings?.draftStart) {
       return undefined;
@@ -197,18 +195,16 @@ const PreDraft: React.FC = () => {
     return new Date(draftSettings.draftStart);
   }, [draftSettings?.draftStart]);
 
+  const [now, setNow] = useState(new Date());
   useInterval(() => {
-    if (!draftStart) {
-      return;
-    }
-    setDistanceFmt(formatDistanceStrict(draftStart, new Date()));
+    setNow(new Date());
   }, 1000);
 
   return (
     <section>
       <div className="jumbotron">
         <h1>Draft not started.</h1>
-        <h2>Starting in {distanceFmt}</h2>
+        <h2>Starting in {draftStart ? formatDistanceStrict(draftStart, now) : '...'}</h2>
       </div>
 
       <section>
