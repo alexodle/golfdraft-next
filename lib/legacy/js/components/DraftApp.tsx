@@ -1,4 +1,4 @@
-import { formatDistance } from 'date-fns';
+import { formatDistanceStrict } from 'date-fns';
 import Link from 'next/link';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useInterval } from 'usehooks-ts';
@@ -201,7 +201,7 @@ const PreDraft: React.FC = () => {
     if (!draftStart) {
       return;
     }
-    setDistanceFmt(formatDistance(draftStart, new Date(), {}));
+    setDistanceFmt(formatDistanceStrict(draftStart, new Date()));
   }, 1000);
 
   return (
