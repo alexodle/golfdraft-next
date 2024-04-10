@@ -15,7 +15,7 @@ export type Tourney = Readonly<{
 
 export type DraftSettings = Readonly<{
   tourneyId: number;
-  draftHasStarted: boolean;
+  draftStart: string;
   isDraftPaused: boolean;
   allowClock: boolean;
 }>;
@@ -23,6 +23,7 @@ export type DraftSettings = Readonly<{
 export type TourneyConfig = Readonly<{
   name: string;
   startDate: string;
+  draftStartDate?: string;
   par: number;
   scores: {
     type: string;

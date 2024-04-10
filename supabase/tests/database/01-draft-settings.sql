@@ -28,20 +28,6 @@ SELECT results_eq(
     'Commissioner should be able to update draft settings'
 );
 
-SELECT lives_ok(
-    $$ 
-        INSERT INTO draft_settings ("tourneyId", "draftHasStarted") 
-        VALUES (tests.get_tourney_id(), true) 
-        ON CONFLICT ("tourneyId") DO
-        UPDATE SET "draftHasStarted" = true
-    $$,
-    'Commissioner should be able to upsert draft settings'
-);
-
-SELECT IS("draftHasStarted", true, 'Expected commissioner upsert to have applied change')
-FROM draft_settings
-WHERE "tourneyId" = tests.get_tourney_id();
-
 SELECT throws_ok(
     $$ 
         INSERT INTO draft_settings ("tourneyId") 

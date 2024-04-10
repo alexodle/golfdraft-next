@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 import Loading from '../../../Loading';
 import { isCompletedDraftPick, useCurrentPick, useDraftPicks } from '../../../data/draft';
-import { useDraftSettings } from '../../../data/draftSettings';
+import { useDraftSettings, useHasDraftStarted } from '../../../data/draftSettings';
 import { useCurrentTourney } from '../../../data/tourney';
 import { useCurrentUser } from '../../../data/users';
 import { DraftPick } from '../../../models';
@@ -28,6 +28,8 @@ try {
 
 const DraftApp: React.FC = () => {
   const { data: draftSettings } = useDraftSettings();
+  const hasDraftStarted = useHasDraftStarted();
+
   const { data: currentUser } = useCurrentUser();
 
   const { data: draftPicks } = useDraftPicks();
@@ -48,7 +50,7 @@ const DraftApp: React.FC = () => {
     return <Loading />;
   }
 
-  if (!draftSettings.draftHasStarted) {
+  if (!hasDraftStarted) {
     return <PreDraft />;
   }
 

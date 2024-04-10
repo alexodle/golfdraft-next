@@ -1,3 +1,5 @@
+import { setHours, subDays } from 'date-fns';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { keyBy } from 'lodash';
 import { adminSupabase } from '../../../../lib/supabase';
 import { upsertAppState } from '../../../data/appState';
@@ -55,10 +57,18 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
     sortedUsers.map((u) => u.id),
   );
 
+  const draftStartTime = (
+    tourneyCfg.draftStartDate
+      ? new Date(tourneyCfg.draftStartDate)
+      : draftStartTimeFromTourneyDate(tourneyCfg.startDate)
+  ).toISOString();
+
+  console.log(`Setting draft start time to: ${draftStartTime}`);
+
   await upsertDraftSettings(
     {
       tourneyId: tourney.id,
-      draftHasStarted: false,
+      draftStart: draftStartTime,
       isDraftPaused: false,
       allowClock: true,
     },
@@ -78,4 +88,15 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
   await updateWgr(tourney.id);
 
   return tourney.id;
+}
+
+// 5:55pm, Pacific time
+const TIMEZONE = 'America/Los_Angeles';
+const HOUR = 17;
+const MINUTE = 55;
+
+function draftStartTimeFromTourneyDate(startDate: string): Date {
+  const date = new Date(startDate + 'T00:00:00Z');
+  date.setHours(HOUR, MINUTE, 0, 0);
+  return fromZonedTime(date, TIMEZONE);
 }

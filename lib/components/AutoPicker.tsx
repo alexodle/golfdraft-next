@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { useAutoPickUsers, useCurrentPick } from '../data/draft';
-import { useDraftSettings } from '../data/draftSettings';
+import { useDraftSettings, useHasDraftStarted } from '../data/draftSettings';
 import { createClient } from '../supabase/component';
 
 const INTERVAL = 1000;
@@ -37,12 +37,15 @@ export const AutoPicker = () => {
 
 const useIsAutoPickUser = (): boolean => {
   const { data: autoPickUsers } = useAutoPickUsers();
-  const currentPick = useCurrentPick();
   const { data: draftSettings } = useDraftSettings();
+
+  const currentPick = useCurrentPick();
+  const hasDraftStarted = useHasDraftStarted();
+
   if (!draftSettings || !autoPickUsers || !currentPick || currentPick === 'none') {
     return false;
   }
-  if (!draftSettings.draftHasStarted || draftSettings.isDraftPaused) {
+  if (!hasDraftStarted || draftSettings.isDraftPaused) {
     return false;
   }
   return autoPickUsers.has(currentPick.userId);

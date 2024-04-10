@@ -125,17 +125,6 @@ const InnerCommish: React.FC = () => {
           </ul>
         </div>
       </GolfDraftPanel>
-      <GolfDraftPanel heading={draftSettings.draftHasStarted ? 'Draft STARTED' : 'Draft NOT STARTED'}>
-        <button
-          className="btn btn-default"
-          disabled={draftSettingsMutation.isLoading}
-          onClick={() => {
-            draftSettingsMutation.mutate({ ...draftSettings, draftHasStarted: !draftSettings.draftHasStarted });
-          }}
-        >
-          {draftSettings.draftHasStarted ? 'Unstart Draft' : 'Start Draft'}
-        </button>
-      </GolfDraftPanel>
       <GolfDraftPanel heading={draftSettings.isDraftPaused ? 'Draft PAUSED' : 'Draft NOT PAUSED'}>
         <button
           className="btn btn-default"

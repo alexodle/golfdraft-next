@@ -1,10 +1,11 @@
 import { createClient } from '../supabase/component';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftSettings } from '../models';
 import { useSharedSubscription } from './subscription';
+import { useInterval } from 'usehooks-ts';
 
 const DRAFT_SETTINGS_TABLE = 'draft_settings';
 
@@ -33,6 +34,24 @@ export function useDraftSettings(): UseQueryResult<DraftSettings> {
   );
 
   return result;
+}
+
+export function useHasDraftStarted(): boolean {
+  const settings = useDraftSettings();
+
+  const [nowEpoch, setNowEpoch] = useState(Date.now());
+
+  const startEpoch = settings.data ? new Date(settings.data.draftStart).getTime() : undefined;
+  const hasDraftStarted = !!startEpoch && startEpoch <= nowEpoch;
+
+  useInterval(
+    () => {
+      setNowEpoch(Date.now());
+    },
+    !hasDraftStarted ? 5000 : null,
+  );
+
+  return hasDraftStarted;
 }
 
 export function prefetchDraftSettings(
@@ -78,7 +97,7 @@ async function getDraftSettings(tourneyId: number, supabase: SupabaseClient): Pr
   return (
     result.data[0] ?? {
       tourneyId,
-      draftHasStarted: false,
+      draftStart: new Date(2050, 1, 1),
       isDraftPaused: false,
       allowClock: true,
     }
