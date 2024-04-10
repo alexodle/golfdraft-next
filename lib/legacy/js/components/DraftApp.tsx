@@ -1,5 +1,7 @@
+import { formatDistance } from 'date-fns';
 import Link from 'next/link';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useInterval } from 'usehooks-ts';
 import Loading from '../../../Loading';
 import { isCompletedDraftPick, useCurrentPick, useDraftPicks } from '../../../data/draft';
 import { useDraftSettings, useHasDraftStarted } from '../../../data/draftSettings';
@@ -184,10 +186,29 @@ const PostDraft: React.FC = () => {
 };
 
 const PreDraft: React.FC = () => {
+  const { data: draftSettings } = useDraftSettings();
+
+  const [distanceFmt, setDistanceFmt] = useState<string>();
+
+  const draftStart = useMemo(() => {
+    if (!draftSettings?.draftStart) {
+      return undefined;
+    }
+    return new Date(draftSettings.draftStart);
+  }, [draftSettings?.draftStart]);
+
+  useInterval(() => {
+    if (!draftStart) {
+      return;
+    }
+    setDistanceFmt(formatDistance(draftStart, new Date(), {}));
+  }, 1000);
+
   return (
     <section>
       <div className="jumbotron">
         <h1>Draft not started.</h1>
+        <h2>Starting in {distanceFmt}</h2>
       </div>
 
       <section>
