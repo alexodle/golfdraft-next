@@ -40,7 +40,7 @@ const useIsAutoPickUser = (): boolean => {
   const { data: draftSettings } = useDraftSettings();
 
   const currentPick = useCurrentPick();
-  const hasDraftStarted = useHasDraftStarted();
+  const { data: hasDraftStarted } = useHasDraftStarted();
 
   if (!draftSettings || !autoPickUsers || !currentPick || currentPick === 'none') {
     return false;

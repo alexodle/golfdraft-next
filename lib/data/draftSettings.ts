@@ -1,13 +1,14 @@
-import { createClient } from '../supabase/component';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { QueryClient, useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from 'react-query';
+import { useCallback, useMemo } from 'react';
+import { QueryClient, UseMutationResult, UseQueryResult, useMutation, useQuery, useQueryClient } from 'react-query';
+import { useInterval } from 'usehooks-ts';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { DraftSettings } from '../models';
+import { createClient } from '../supabase/component';
 import { useSharedSubscription } from './subscription';
-import { useInterval } from 'usehooks-ts';
 
 const DRAFT_SETTINGS_TABLE = 'draft_settings';
+const HAS_DRAFT_STARTED_FUNC = 'has_draft_started';
 
 export function useDraftSettings(): UseQueryResult<DraftSettings> {
   const tourneyId = useTourneyId();
@@ -36,22 +37,22 @@ export function useDraftSettings(): UseQueryResult<DraftSettings> {
   return result;
 }
 
-export function useHasDraftStarted(): boolean {
-  const settings = useDraftSettings();
+export function useHasDraftStarted(): UseQueryResult<boolean> {
+  const tourneyId = useTourneyId();
+  const supabase = createClient();
 
-  const [nowEpoch, setNowEpoch] = useState(Date.now());
-
-  const startEpoch = settings.data ? new Date(settings.data.draftStart).getTime() : undefined;
-  const hasDraftStarted = !!startEpoch && startEpoch <= nowEpoch;
+  const result = useQuery<boolean>(getHasDraftStartedQueryClientKey(tourneyId), async () => {
+    return await getHasDraftStarted(tourneyId, supabase);
+  });
 
   useInterval(
     () => {
-      setNowEpoch(Date.now());
+      result.refetch();
     },
-    !hasDraftStarted ? 5000 : null,
+    result.data !== undefined && !result.data ? 5000 : null,
   );
 
-  return hasDraftStarted;
+  return result;
 }
 
 export function prefetchDraftSettings(
@@ -61,6 +62,16 @@ export function prefetchDraftSettings(
 ): Promise<void> {
   return queryClient.prefetchQuery(getDraftSettingsQueryClientKey(tourneyId), async () => {
     return await getDraftSettings(tourneyId, supabase);
+  });
+}
+
+export function prefetchHasDraftStarted(
+  tourneyId: number,
+  queryClient: QueryClient,
+  supabase: SupabaseClient,
+): Promise<void> {
+  return queryClient.prefetchQuery(getHasDraftStartedQueryClientKey(tourneyId), async () => {
+    return await getHasDraftStarted(tourneyId, supabase);
   });
 }
 
@@ -88,6 +99,15 @@ export function useDraftSettingsMutation(): UseMutationResult<unknown, unknown, 
   return draftSettingsMutation;
 }
 
+async function getHasDraftStarted(tourneyId: number, supabase: SupabaseClient): Promise<boolean> {
+  const result = await supabase.rpc(HAS_DRAFT_STARTED_FUNC, { tourney_id: tourneyId });
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error(`Failed to fetch has_draft_started: ${tourneyId}`);
+  }
+  return result.data;
+}
+
 async function getDraftSettings(tourneyId: number, supabase: SupabaseClient): Promise<DraftSettings> {
   const result = await supabase.from(DRAFT_SETTINGS_TABLE).select(`*`).eq('tourneyId', tourneyId);
   if (result.error) {
@@ -98,6 +118,7 @@ async function getDraftSettings(tourneyId: number, supabase: SupabaseClient): Pr
     result.data[0] ?? {
       tourneyId,
       draftStart: new Date(2050, 1, 1),
+      hasDraftStarted: false,
       isDraftPaused: false,
       allowClock: true,
     }
@@ -121,4 +142,8 @@ export async function upsertDraftSettings(settings: DraftSettings, supabase: Sup
 
 function getDraftSettingsQueryClientKey(tourneyId: number): unknown[] {
   return [DRAFT_SETTINGS_TABLE, tourneyId];
+}
+
+function getHasDraftStartedQueryClientKey(tourneyId: number): unknown[] {
+  return [HAS_DRAFT_STARTED_FUNC, tourneyId];
 }

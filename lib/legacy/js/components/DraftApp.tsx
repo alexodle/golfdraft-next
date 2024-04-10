@@ -28,7 +28,7 @@ try {
 
 const DraftApp: React.FC = () => {
   const { data: draftSettings } = useDraftSettings();
-  const hasDraftStarted = useHasDraftStarted();
+  const { data: hasDraftStarted } = useHasDraftStarted();
 
   const { data: currentUser } = useCurrentUser();
 

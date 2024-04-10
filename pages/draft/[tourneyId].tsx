@@ -5,7 +5,7 @@ import { dehydrate, QueryClient } from 'react-query';
 import App from '../../lib/App';
 import { AutoPicker } from '../../lib/components/AutoPicker';
 import { prefetchDraftPicks } from '../../lib/data/draft';
-import { prefetchDraftSettings } from '../../lib/data/draftSettings';
+import { prefetchDraftSettings, prefetchHasDraftStarted } from '../../lib/data/draftSettings';
 import { prefetchGolfers } from '../../lib/data/golfers';
 import { prefetchPickList } from '../../lib/data/pickList';
 import { prefetchTourney } from '../../lib/data/tourney';
@@ -59,6 +59,7 @@ export const getServerSideProps = withAuth(async (props, ctx, supabase) => {
     prefetchGolfers(tourneyId, queryClient, supabase),
     prefetchAllUsers(queryClient, supabase),
     prefetchDraftSettings(tourneyId, queryClient, supabase),
+    prefetchHasDraftStarted(tourneyId, queryClient, supabase),
     prefetchPickList({ userId: gdUser.id, tourneyId }, queryClient, supabase),
   ]);
 
