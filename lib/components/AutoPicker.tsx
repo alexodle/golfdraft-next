@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useInterval } from 'usehooks-ts';
 import { useTourneyId } from '../ctx/AppStateCtx';
 import { useAutoPickUsers, useCurrentPick } from '../data/draft';
 import { useDraftSettings, useHasDraftStarted } from '../data/draftSettings';
@@ -7,30 +7,17 @@ import { createClient } from '../supabase/component';
 const INTERVAL = 1000;
 
 export const AutoPicker = () => {
+  const supabase = createClient();
   const tourneyId = useTourneyId();
   const isAutoPickUser = useIsAutoPickUser();
-  const supabase = useMemo(() => createClient(), []);
 
-  useEffect(() => {
-    if (!isAutoPickUser) {
-      return;
+  useInterval(async () => {
+    if (isAutoPickUser) {
+      await supabase.rpc('run_auto_pick', {
+        tourney_id: tourneyId,
+      });
     }
-
-    (async () => {
-      await supabase.rpc('run_auto_pick', {
-        tourney_id: tourneyId,
-      });
-    })();
-    const id = setInterval(async () => {
-      await supabase.rpc('run_auto_pick', {
-        tourney_id: tourneyId,
-      });
-    }, INTERVAL);
-
-    return () => {
-      clearInterval(id);
-    };
-  }, [tourneyId, isAutoPickUser, supabase]);
+  }, INTERVAL);
 
   return null;
 };
