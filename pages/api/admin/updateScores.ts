@@ -5,7 +5,6 @@ import readerConfig from '../../../lib/legacy/scores_sync/readerConfig';
 import * as updateScore from '../../../lib/legacy/scores_sync/updateScore';
 import { TourneyConfig } from '../../../lib/models';
 import { adminSupabase } from '../../../lib/supabase';
-import { toZonedTime } from 'date-fns-tz';
 
 if (!process.env.ADMIN_SCRIPT_API_KEY?.length) {
   throw new Error('Missing ADMIN_SCRIPT_API_KEY env var');
