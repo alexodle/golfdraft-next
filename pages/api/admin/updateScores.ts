@@ -5,7 +5,6 @@ import readerConfig from '../../../lib/legacy/scores_sync/readerConfig';
 import * as updateScore from '../../../lib/legacy/scores_sync/updateScore';
 import { TourneyConfig } from '../../../lib/models';
 import { adminSupabase } from '../../../lib/supabase';
-import { fromZonedTime } from 'date-fns-tz';
 
 if (!process.env.ADMIN_SCRIPT_API_KEY?.length) {
   throw new Error('Missing ADMIN_SCRIPT_API_KEY env var');
@@ -53,8 +52,12 @@ async function updateScoresApi(req: NextApiRequest, res: NextApiResponse) {
 }
 
 function localHourIn(timezone: string) {
-  const d = fromZonedTime(new Date(), timezone);
-  return d.getHours();
+  const hourString = new Date().toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    hour12: false,
+    timeZone: timezone,
+  });
+  return parseInt(hourString, 10);
 }
 
 export default updateScoresApi;
