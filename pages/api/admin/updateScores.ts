@@ -32,10 +32,13 @@ async function updateScoresApi(req: NextApiRequest, res: NextApiResponse) {
   if (tourneyConfig.timezone) {
     const currLocalTourneyHour = localHourIn(tourneyConfig.timezone);
     if (currLocalTourneyHour < MIN_LOCAL_HOUR || currLocalTourneyHour > MAX_LOCAL_HOUR) {
-      res.status(200).send({
-        status: `NOOP. Outside tourney hours. timezone:${tourneyConfig.timezone}, currentHour:${currLocalTourneyHour}`,
-      });
-      return;
+      // res.status(200).send({
+      //   status: `NOOP. Outside tourney hours. timezone:${tourneyConfig.timezone}, currentHour:${currLocalTourneyHour}`,
+      // });
+      console.log(
+        `TODO: NOOP. Outside tourney hours. timezone:${tourneyConfig.timezone}, currentHour:${currLocalTourneyHour}`,
+      );
+      // return;
     }
   }
 
