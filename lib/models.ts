@@ -23,6 +23,8 @@ export type DraftSettings = Readonly<{
 export type TourneyConfig = Readonly<{
   name: string;
   startDate: string;
+  // Optional for back-compat, but required for all future tourney configs
+  timezone?: string;
   draftStartDate?: string;
   par: number;
   scores: {

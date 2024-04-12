@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { initTourney } from '../../../lib/legacy/server/scripts/initTourney';
 import { TourneyConfig } from '../../../lib/models';
+import { fromZonedTime } from 'date-fns-tz';
 
 if (!process.env.ADMIN_SCRIPT_API_KEY?.length) {
   throw new Error('Missing ADMIN_SCRIPT_API_KEY env var');
@@ -39,11 +40,16 @@ const tourneyConfigValidations: [(cfg: Partial<TourneyConfig>) => boolean, strin
   [(cfg) => Array.isArray(cfg.draftOrder) && cfg.draftOrder.length > 0, 'invalid draft order'],
   [(cfg) => typeof cfg.wgr?.url === 'string' && cfg.wgr.url.length > 0, 'invalid wgr url'],
   [(cfg) => typeof cfg.wgr?.nameMap === 'object' && cfg.wgr.nameMap !== null, 'invalid wgr name map'],
+  [(cfg) => typeof cfg.timezone === 'string' && isValidTimezone(cfg.timezone), 'invalid timezone'],
 ];
 
 function validateTourneyConfig(cfg: TourneyConfig): [boolean, string[]] {
   const issues = tourneyConfigValidations.filter(([v]) => !v(cfg)).map(([, issue]) => issue);
   return [issues.length === 0, issues];
+}
+
+function isValidTimezone(timezone: string): boolean {
+  return !isNaN(fromZonedTime(new Date(), timezone).getTime());
 }
 
 export default initTourneyApi;
