@@ -34,11 +34,11 @@ async function updateScoresApi(req: NextApiRequest, res: NextApiResponse) {
       // res.status(200).send({
       //   status: `NOOP. Outside tourney hours. timezone:${tourneyConfig.timezone}, currentHour:${currLocalTourneyHour}`,
       // });
-      console.log(
-        `TODO: NOOP. Outside tourney hours. timezone:${tourneyConfig.timezone}, currentHour:${currLocalTourneyHour}`,
-      );
       // return;
     }
+    console.log(
+      `TODO: NOOP. Outside tourney hours. timezone:${tourneyConfig.timezone}, currentHour:${currLocalTourneyHour}`,
+    );
   }
 
   const reader = readerConfig[tourneyConfig.scores.type]?.reader;
