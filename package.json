@@ -32,7 +32,7 @@
     "usehooks-ts": "^3.1.0"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^14.2.2",
+    "@next/eslint-plugin-next": "^14.2.3",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.79",
     "@types/underscore.string": "0.0.41",
