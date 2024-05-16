@@ -122,7 +122,7 @@ export async function run(tourneyId: number, reader: Reader, config: TourneyConf
   await updateTourneyStandings.run(tourneyId);
 
   // Mark as updated
-  touchTourney(tourneyId);
+  await touchTourney(tourneyId);
 
   console.log('HOORAY! - scores updated');
 }

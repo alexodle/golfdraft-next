@@ -56,7 +56,6 @@ function buildPlayerScore(
   });
 
   const totalScore = sumBy(dayScores, (sbd) => sbd.totalScore);
-
   return {
     tourneyId,
     userId,
@@ -152,7 +151,7 @@ export async function run(tourneyId: number): Promise<TourneyStandings> {
   const currentDay = estimateCurrentDay(scores);
 
   const tourneyStandings: TourneyStandings = { tourneyId, currentDay, worstScoresForDay, standings: playerScores };
-  updateTourneyStandings(tourneyStandings);
+  await updateTourneyStandings(tourneyStandings);
 
   console.log('DONE Running player score update');
 

@@ -44,7 +44,7 @@ function parse(players: PlayerElement[], par: number): ReaderResult {
       continue;
     }
 
-    const rawThru = scoringData.thru;
+    const rawThru = scoringData.thru.replace('*', '');
     const rawRounds = scoringData.rounds;
     const positionStr = scoringData.position;
     const isWD = positionStr === 'WD';
