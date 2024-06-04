@@ -44,7 +44,7 @@
     "jest": "^29.7.0",
     "knip": "^5.17.3",
     "prettier": "^3.3.0",
-    "supabase": "^1.169.8",
+    "supabase": "^1.172.2",
     "typescript": "^5.4.5",
     "typescript-eslint": "^7.11.0"
   },
