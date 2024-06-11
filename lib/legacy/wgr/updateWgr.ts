@@ -40,12 +40,13 @@ export async function updateWgr(tourneyId: number) {
       continue;
     }
 
-    const name = nameMap[golfer.name] ?? golfer.name;
-    const closestMatch = findCloseMatch(name, allWgrGolfers);
+    const closestMatch = findCloseMatch(golfer.name, allWgrGolfers);
     if (closestMatch) {
-      console.log(`WGR golfer not found: '${name}'. Did you mean '${closestMatch}'?`);
+      console.log(
+        `WGR golfer not found: '${closestMatch}'. Did you mean '${golfer.name}'? -- "${closestMatch}": "${golfer.name}",`,
+      );
     } else {
-      console.log(`WGR golfer not found: '${name}'.`);
+      console.log(`WGR golfer not found: '${golfer.name}'.`);
     }
   }
 
