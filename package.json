@@ -47,7 +47,7 @@
     "prettier": "^3.3.1",
     "supabase": "^1.176.10",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^7.13.0"
+    "typescript-eslint": "^7.13.1"
   },
   "engines": {
     "node": "18"
