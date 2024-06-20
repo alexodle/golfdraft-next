@@ -1,6 +1,6 @@
 BEGIN;
 
-select plan(8);
+select plan(6);
 
 select tests.create_test_tourney();
 -- user 2 is commissioner
