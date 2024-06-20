@@ -1,6 +1,6 @@
 import { every, has, includes, isFinite, keyBy, omitBy, pick, range } from 'lodash';
 import moment from 'moment';
-import { getGolfers, upsertGolfers } from '../../data/golfers';
+import { getGolfers, invalidateGolfers, upsertGolfers } from '../../data/golfers';
 import { getGolferScoreOverrides, updateScores } from '../../data/scores';
 import { touchTourney } from '../../data/tourney';
 import { Golfer, GolferScore, GolferScoreOverride, TourneyConfig } from '../../models';
@@ -8,6 +8,7 @@ import { adminSupabase } from '../../supabase';
 import constants from '../common/constants';
 import { Reader, ReaderResult } from './Types';
 import * as updateTourneyStandings from './updateTourneyStandings';
+import { difference } from '../../util/sets';
 
 const DAYS = constants.NDAYS;
 const MISSED_CUT = constants.MISSED_CUT;
@@ -62,7 +63,7 @@ export function mergeOverrides(scores: GolferScore[], scoreOverrides: GolferScor
   return newScores;
 }
 
-export async function run(tourneyId: number, reader: Reader, config: TourneyConfig, populateGolfers = true) {
+export async function run(tourneyId: number, reader: Reader, config: TourneyConfig) {
   const url = config.scores.url;
 
   const ts = moment().format('YMMDD_HHmmss');
@@ -80,13 +81,18 @@ export async function run(tourneyId: number, reader: Reader, config: TourneyConf
   const nameMap = config.scores.nameMap;
   rawTourney.golfers.forEach((g) => (g.golfer = nameMap[g.golfer] || g.golfer));
 
-  let golfers: Golfer[];
-  if (populateGolfers) {
-    // Ensure golfers
-    const golfersPre = rawTourney.golfers.map<Omit<Golfer, 'id'>>((g) => ({ tourneyId, name: g.golfer }));
-    golfers = await upsertGolfers(golfersPre);
-  } else {
-    golfers = await getGolfers(tourneyId, adminSupabase());
+  const golferIdsBefore = new Set((await getGolfers(tourneyId, adminSupabase())).map((g) => g.id));
+  const golfers = await upsertGolfers(
+    rawTourney.golfers.map<Omit<Golfer, 'id'>>((g) => ({ tourneyId, name: g.golfer, invalid: false })),
+  );
+
+  // Invalidate all golfers who are no longer in the update (assume they withdrew)
+  const newlyInvalidGolfers = difference(
+    golferIdsBefore,
+    golfers.map((g) => g.id),
+  );
+  if (newlyInvalidGolfers.size) {
+    await invalidateGolfers(tourneyId, [...newlyInvalidGolfers]);
   }
 
   const scoreOverrides = await getGolferScoreOverrides(tourneyId, adminSupabase());

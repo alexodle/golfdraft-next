@@ -11,6 +11,7 @@ const GOLFERS_TABLE = 'golfer';
 export const PENDING_GOLFER: Omit<Golfer, 'tourneyId'> = {
   id: -2,
   name: 'Pending...',
+  invalid: false,
 };
 
 type GolferLookup = Readonly<{
@@ -63,7 +64,7 @@ export async function prefetchGolfers(
 }
 
 export async function getGolfers(tourneyId: number, supabase: SupabaseClient): Promise<Golfer[]> {
-  const result = await supabase.from(GOLFERS_TABLE).select('*').eq('tourneyId', tourneyId);
+  const result = await supabase.from(GOLFERS_TABLE).select('*').eq('tourneyId', tourneyId).eq('invalid', false);
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to get golfers for tourneyId: ${tourneyId}`);
@@ -82,4 +83,16 @@ export async function upsertGolfers(golfers: Omit<Golfer, 'id'>[]): Promise<Golf
     throw new Error(`Failed to upsert golfers`);
   }
   return result.data;
+}
+
+export async function invalidateGolfers(tourneyId: number, golferIds: number[]): Promise<void> {
+  const result = await adminSupabase()
+    .from(GOLFERS_TABLE)
+    .update({ invalid: true })
+    .eq('tourneyId', tourneyId)
+    .in('id', golferIds);
+  if (result.error) {
+    console.dir(result.error);
+    throw new Error(`Failed to invalidate golfers`);
+  }
 }

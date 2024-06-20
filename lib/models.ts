@@ -50,6 +50,7 @@ export type Golfer = Readonly<{
   id: number;
   tourneyId: number;
   name: string;
+  invalid: boolean;
   wgr?: number;
 }>;
 

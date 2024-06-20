@@ -77,7 +77,7 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
 
   await setDraftPicks(tourney.id, pickOrder);
 
-  await updateScore.run(tourney.id, reader, tourneyCfg, true);
+  await updateScore.run(tourney.id, reader, tourneyCfg);
   await updateTourneyStandings.run(tourney.id);
 
   await upsertAppState({
