@@ -36,7 +36,7 @@ SELECT results_eq(
 
 SELECT results_eq(
     $$ SELECT "golferId" FROM draft_pick WHERE "tourneyId" = tests.get_tourney_id() AND "pickNumber" = 1 $$,
-    $$ SELECT "id" FROM golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 7 $$,
+    $$ SELECT "id" FROM golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 17 $$,
     'proxy pick should pick 7th best wgr'
 );
 
@@ -59,7 +59,7 @@ SELECT lives_ok(
 
 SELECT results_eq(
     $$ SELECT "golferId" FROM draft_pick WHERE "tourneyId" = tests.get_tourney_id() AND "pickNumber" = 2 $$,
-    $$ SELECT "id" FROM golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 8 $$,
+    $$ SELECT "id" FROM golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 18 $$,
     'proxy pick should pick 7th best wgr available'
 );
 

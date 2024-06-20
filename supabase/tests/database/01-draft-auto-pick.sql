@@ -28,13 +28,13 @@ FROM draft_pick WHERE "tourneyId" = tests.get_tourney_id() AND "pickNumber" = 1;
 
 SELECT results_eq(
     $$ SELECT "golferId" FROM draft_pick WHERE "tourneyId" = tests.get_tourney_id() AND "pickNumber" = 1 $$,
-    $$ SELECT id FROM golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 7 $$,
+    $$ SELECT id FROM golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 17 $$,
     'auto pick should pick 7th best wgr if no pick list'
 );
 
 SELECT results_eq(
     $$ SELECT "message" FROM chat_message WHERE "tourneyId" = tests.get_tourney_id() $$,
-    $$ SELECT 'Pick #1: User One selects ' || "name" || ' (WGR+7)' FROM  golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 7 $$,
+    $$ SELECT 'Pick #1: User One selects ' || "name" || ' (WGR+7)' FROM  golfer WHERE "tourneyId" = tests.get_tourney_id() AND "wgr" = 17 $$,
     'expected chat message for new pick'
 );
 

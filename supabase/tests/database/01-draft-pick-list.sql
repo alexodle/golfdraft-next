@@ -8,7 +8,8 @@ select tests.authenticate_as('sbuser2');
 -- prep
 select tests.authenticate_as('sbuser1');
 INSERT INTO draft_pick_list ("tourneyId", "userId", "golferId", "pickOrder") VALUES 
-    (tests.get_tourney_id(), tests.get_gd_user1(), tests.get_golfer_id('Sungjae Im'), 1);
+    (tests.get_tourney_id(), tests.get_gd_user1(), tests.get_golfer_id('Withdraw Williams'), 1),
+    (tests.get_tourney_id(), tests.get_gd_user1(), tests.get_golfer_id('Sungjae Im'), 2);
 select tests.authenticate_as('sbuser2');
 INSERT INTO draft_pick_list ("tourneyId", "userId", "golferId", "pickOrder") VALUES 
     (tests.get_tourney_id(), tests.get_gd_user2(), tests.get_golfer_id('Sungjae Im'), 1),

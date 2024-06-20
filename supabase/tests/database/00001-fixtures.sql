@@ -48,29 +48,30 @@ BEGIN
         (tourney_id, 8, tests.get_gd_user1());
 
     -- golfers
-    INSERT INTO golfer ("tourneyId", "name", "wgr") VALUES 
-        (tourney_id, 'Tiger Woods', 1),
-        (tourney_id, 'Rory McIlroy', 2),
-        (tourney_id, 'Jon Rahm', 3),
-        (tourney_id, 'Justin Thomas', 4),
-        (tourney_id, 'Brooks Koepka', 5),
-        (tourney_id, 'Dustin Johnson', 6),
-        (tourney_id, 'Xander Schauffele', 7),
-        (tourney_id, 'Patrick Cantlay', 8),
-        (tourney_id, 'Collin Morikawa', 9),
-        (tourney_id, 'Webb Simpson', 10),
-        (tourney_id, 'Hideki Matsuyama', 11),
-        (tourney_id, 'Bryson DeChambeau', 12),
-        (tourney_id, 'Viktor Hovland', 13),
-        (tourney_id, 'Matthew Wolff', 14),
-        (tourney_id, 'Patrick Reed', 15),
-        (tourney_id, 'Tony Finau', 16),
-        (tourney_id, 'Louis Oosthuizen', 17),
-        (tourney_id, 'Adam Scott', 18),
-        (tourney_id, 'Marc Leishman', 19),
-        (tourney_id, 'Sungjae Im', 20),
-        (tourney_id, 'Cameron Smith', NULL),
-        (tourney_id, 'Paul Casey', NULL);
+    INSERT INTO golfer ("tourneyId", "name", "wgr", "invalid") VALUES
+        (tourney_id, 'Withdraw Williams', 1, true), -- INVALID - should be skipped
+        (tourney_id, 'Tiger Woods', 11, false),
+        (tourney_id, 'Rory McIlroy', 12, false),
+        (tourney_id, 'Jon Rahm', 13, false),
+        (tourney_id, 'Justin Thomas', 14, false),
+        (tourney_id, 'Brooks Koepka', 15, false),
+        (tourney_id, 'Dustin Johnson', 16, false),
+        (tourney_id, 'Xander Schauffele', 17, false),
+        (tourney_id, 'Patrick Cantlay', 18, false),
+        (tourney_id, 'Collin Morikawa', 19, false),
+        (tourney_id, 'Webb Simpson', 20, false),
+        (tourney_id, 'Hideki Matsuyama', 21, false),
+        (tourney_id, 'Bryson DeChambeau', 22, false),
+        (tourney_id, 'Viktor Hovland', 23, false),
+        (tourney_id, 'Matthew Wolff', 24, false),
+        (tourney_id, 'Patrick Reed', 25, false),
+        (tourney_id, 'Tony Finau', 26, false),
+        (tourney_id, 'Louis Oosthuizen', 27, false),
+        (tourney_id, 'Adam Scott', 28, false),
+        (tourney_id, 'Marc Leishman', 29, false),
+        (tourney_id, 'Sungjae Im', 30, false),
+        (tourney_id, 'Cameron Smith', NULL, false),
+        (tourney_id, 'Paul Casey', NULL, false);
 
     RETURN;
 END;

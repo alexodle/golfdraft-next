@@ -6,9 +6,9 @@ $$
 DECLARE
   next_pick_user_id int;
   next_pick_number int;
-  already_picked_golfer_id int;
   picked_by_user_id int;
   pick_proxy_message varchar;
+  is_invalid_golfer boolean;
   tx varchar;
 BEGIN
   SELECT pg_try_advisory_xact_lock(tourney_id) INTO tx;
@@ -24,6 +24,14 @@ BEGIN
   END IF;
   IF next_pick_number <> pick_number THEN
     raise exception 'Invalid pick number: %, expected %', pick_number, next_pick_number;
+  END IF;
+
+  -- Validate golfer
+  SELECT "invalid" INTO is_invalid_golfer
+  FROM golfer
+  WHERE "tourneyId" = tourney_id AND "id" = golfer_id AND invalid;
+  IF is_invalid_golfer THEN
+    raise exception 'Invalid golfer: %', golfer_id;
   END IF;
 
   SELECT get_user_id(auth.uid()) INTO picked_by_user_id;

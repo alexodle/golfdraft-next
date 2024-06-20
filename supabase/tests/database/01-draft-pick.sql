@@ -1,6 +1,6 @@
 BEGIN;
 
-select plan(11);
+select plan(12);
 
 select tests.create_test_tourney();
 select tests.authenticate_as('sbuser2');
@@ -15,6 +15,12 @@ SELECT throws_ok(
     $$ SELECT make_pick(tests.get_tourney_id(), tests.get_gd_user2(), 1, tests.get_golfer_id('Tiger Woods')) $$,
     NULL,
     'should not be able to make pick for wrong user'
+);
+
+SELECT throws_ok(
+    $$ SELECT make_pick(tests.get_tourney_id(), tests.get_gd_user1(), 1, tests.get_golfer_id('Withdraw Williams')) $$,
+    NULL,
+    'should not be able to pick invalid golfer'
 );
 
 SELECT lives_ok(
