@@ -46,7 +46,7 @@
     "knip": "^5.19.0",
     "prettier": "^3.3.1",
     "supabase": "^1.176.10",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.2",
     "typescript-eslint": "^7.14.1"
   },
   "engines": {
