@@ -36,7 +36,7 @@ export const TourneyApp = () => {
     <section>
       <p>
         <small>
-          Scores sync every 10 minutes. Last sync: <b>{moment(tourney.data.lastUpdatedEpochMillis).calendar()}</b>
+          Scores sync every 30 minutes. Last sync: <b>{moment(tourney.data.lastUpdatedEpochMillis).calendar()}</b>
         </small>
       </p>
 
