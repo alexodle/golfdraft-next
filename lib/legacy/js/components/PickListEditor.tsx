@@ -30,6 +30,24 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean 
   const [draggingHoverIndex, setDraggingHoverIndex] = useState<number | null>(null);
   const [isFreeTextMode, setIsFreeTextMode] = useState<boolean>(false);
 
+  const displayPickListOrigAll = ((): number[] => {
+    let displayPickList = pendingPickList ?? syncedPickList;
+    if (!preDraftMode) {
+      displayPickList = displayPickList ?? remainingGolfersByWgr;
+    }
+    return displayPickList ?? [];
+  })();
+
+  const displayPickListOrig = useMemo(() => { 
+    if (remainingGolfers === undefined) {
+      return displayPickListOrigAll;
+    }
+    const validIds = new Set(remainingGolfers.map((g) => g.id));
+    return displayPickListOrigAll.filter((gid) => {
+      return validIds.has(gid)
+    });
+  }, [remainingGolfers, displayPickListOrigAll]);
+
   if (isLoading || !pickListUpdater || !getGolfer) {
     return <Loading />;
   }
@@ -37,15 +55,6 @@ export const PickListEditor: React.FC<{ height?: string; preDraftMode?: boolean 
   if (isFreeTextMode || (preDraftMode && !syncedPickList?.length)) {
     return <FreeTextPickListEditor onCancel={() => setIsFreeTextMode(false)} />;
   }
-
-  const getDisplayPickList = (): number[] => {
-    let displayPickList = pendingPickList ?? syncedPickList;
-    if (!preDraftMode) {
-      displayPickList = displayPickList ?? remainingGolfersByWgr;
-    }
-    return displayPickList ?? [];
-  };
-  const displayPickListOrig = getDisplayPickList();
 
   const newOrder = (fromIndex: number, toIndex: number): number[] => {
     const movingGolfer = displayPickListOrig[fromIndex];

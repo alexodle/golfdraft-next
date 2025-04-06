@@ -21,17 +21,17 @@ type GolferLookup = Readonly<{
   golfers: Golfer[];
 }>;
 
-export function useGolfers(): UseQueryResult<GolferLookup> {
+export function useGolfers({ includeInvalid }: { includeInvalid?: boolean } = {}): UseQueryResult<GolferLookup> {
   const tourneyId = useTourneyId();
   const golfersResults = useGolfersQuery();
+
   const data = useMemo(() => {
     if (!golfersResults.data) {
       return undefined;
     }
-    const golfers = golfersResults.data as Golfer[];
-    const map = keyBy([...golfers, { ...PENDING_GOLFER, tourneyId }], (g) => g.id);
+    const map = keyBy([...golfersResults.data, { ...PENDING_GOLFER, tourneyId }], (g) => g.id);
     const lookup: GolferLookup = {
-      golfers,
+      golfers: includeInvalid ? golfersResults.data : golfersResults.data.filter(g => !g.invalid),
       getGolfer: (gid: number) => {
         const g = map[gid];
         if (!g) {
@@ -41,7 +41,8 @@ export function useGolfers(): UseQueryResult<GolferLookup> {
       },
     };
     return lookup;
-  }, [tourneyId, golfersResults.data]);
+  }, [includeInvalid, tourneyId, golfersResults.data]);
+
   return { ...golfersResults, data } as UseQueryResult<GolferLookup>;
 }
 
@@ -64,7 +65,8 @@ export async function prefetchGolfers(
 }
 
 export async function getGolfers(tourneyId: number, supabase: SupabaseClient): Promise<Golfer[]> {
-  const result = await supabase.from(GOLFERS_TABLE).select('*').eq('tourneyId', tourneyId).eq('invalid', false);
+  debugger;
+  const result = await supabase.from(GOLFERS_TABLE).select('*').eq('tourneyId', tourneyId);
   if (result.error) {
     console.dir(result.error);
     throw new Error(`Failed to get golfers for tourneyId: ${tourneyId}`);

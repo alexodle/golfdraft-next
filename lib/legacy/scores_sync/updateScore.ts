@@ -81,14 +81,14 @@ export async function run(tourneyId: number, reader: Reader, config: TourneyConf
   const nameMap = config.scores.nameMap;
   rawTourney.golfers.forEach((g) => (g.golfer = nameMap[g.golfer] || g.golfer));
 
-  const golferIdsBefore = new Set((await getGolfers(tourneyId, adminSupabase())).map((g) => g.id));
+  const validGolferIdsBefore = new Set((await getGolfers(tourneyId, adminSupabase())).filter(g => !g.invalid).map((g) => g.id));
   const golfers = await upsertGolfers(
     rawTourney.golfers.map<Omit<Golfer, 'id'>>((g) => ({ tourneyId, name: g.golfer, invalid: false })),
   );
 
   // Invalidate all golfers who are no longer in the update (assume they withdrew)
   const newlyInvalidGolfers = difference(
-    golferIdsBefore,
+    validGolferIdsBefore,
     golfers.map((g) => g.id),
   );
   if (newlyInvalidGolfers.size) {

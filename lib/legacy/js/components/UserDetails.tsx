@@ -6,6 +6,7 @@ import { useCurrentTourney } from '../../../data/tourney';
 import { useTourneyStandings } from '../../../data/tourneyStandings';
 import { useAllUsers } from '../../../data/users';
 import * as utils from '../../common/utils';
+import GolferLogic from '../logic/GolferLogic';
 
 type UserDetailsProps = Readonly<{
   userId: number;
@@ -48,7 +49,7 @@ export const UserDetails = ({ userId }: UserDetailsProps) => {
     return (
       <tr key={golferId}>
         <td>
-          {golfer.name}
+          {GolferLogic.renderGolfer(golfer, { excludeWgr: true })}
           <small> ({utils.getOrdinal(golferPickNumbers[golferId] + 1)} pick)</small>
         </td>
         <td>{utils.toGolferScoreStr(golferTotal)}</td>
