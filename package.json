@@ -16,7 +16,7 @@
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.45.4",
+    "@supabase/supabase-js": "^2.50.0",
     "@types/classnames": "^2.3.1",
     "@types/lodash": "^4.17.7",
     "classnames": "^2.5.1",
