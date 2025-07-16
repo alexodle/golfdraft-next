@@ -1,17 +1,36 @@
+import { writeFileSync } from 'fs';
 import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
-import { PGATourLeaderboardJSONReaderNextData, PlayerElement } from './PgaTourLeaderboardJsonReaderNextData';
 import { Reader, ReaderResult, Score, Thru, UpdateGolfer } from './Types';
+import { DataClass, PGATourLeaderboardJSONReaderNextData2, PurplePlayer } from './PgaTourLeaderboardJsonReaderNextData2';
 
 class PgaTourLeaderboardJsonReader implements Reader {
   async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
     const data = await fetchJson(url);
-    const parsed = parse(data.props.pageProps.leaderboard.players, config.par);
+
+    // TODO generalize
+    const players = grabTourneyPlayers('R2025100', data);
+
+    const parsed = parse(players, config.par);
     return parsed;
   }
 }
 
-function grabNextData(html: string): PGATourLeaderboardJSONReaderNextData {
+function grabTourneyPlayers(sourceTourneyId: string, data: PGATourLeaderboardJSONReaderNextData2): PurplePlayer[] {
+  for (const query of data.props.pageProps.dehydratedState.queries) {
+    if (
+      query.state.data 
+      && 'players' in query.state.data 
+      && query.state.data.id?.startsWith(sourceTourneyId) 
+      && Array.isArray(query.state.data.players) 
+      && typeof query.state.data.players[0] === 'object') {
+      return query.state.data.players as PurplePlayer[];
+    }
+  }
+  throw new Error('Players not found in NEXT_DATA');
+}
+
+function grabNextData(html: string): PGATourLeaderboardJSONReaderNextData2 {
   const idx = html.indexOf('__NEXT_DATA__');
   if (idx < 0) {
     throw new Error('NEXT_DATA not found');
@@ -20,7 +39,7 @@ function grabNextData(html: string): PGATourLeaderboardJSONReaderNextData {
   const startIdx = html.indexOf('>', idx) + 1;
   const endIdx = html.indexOf('</script>', startIdx);
   const jsonStr = html.substring(startIdx, endIdx);
-  const json = JSON.parse(jsonStr) as PGATourLeaderboardJSONReaderNextData;
+  const json = JSON.parse(jsonStr) as PGATourLeaderboardJSONReaderNextData2;
   return json;
 }
 
@@ -31,7 +50,7 @@ async function fetchJson(url: string) {
   return data;
 }
 
-function parse(players: PlayerElement[], par: number): ReaderResult {
+function parse(players: PurplePlayer[], par: number): ReaderResult {
   const golfers: UpdateGolfer[] = [];
 
   for (const { player, scoringData } of players) {
@@ -46,7 +65,7 @@ function parse(players: PlayerElement[], par: number): ReaderResult {
 
     const rawThru = scoringData.thru.replace('*', '');
     const rawRounds = scoringData.rounds;
-    const positionStr = scoringData.position;
+    const positionStr = scoringData.position as string; // TODO update types to include all possible values
     const isWD = positionStr === 'WD';
     const isCut = positionStr === 'CUT';
 
