@@ -1,18 +1,31 @@
-import { writeFileSync } from 'fs';
+import { write, writeFileSync } from 'fs';
 import { TourneyConfig } from '../../models';
 import constants from '../common/constants';
 import { Reader, ReaderResult, Score, Thru, UpdateGolfer } from './Types';
 import { DataClass, PGATourLeaderboardJSONReaderNextData2, PurplePlayer } from './PgaTourLeaderboardJsonReaderNextData2';
+import { writeFile } from 'fs/promises';
 
 class PgaTourLeaderboardJsonReader implements Reader {
   async run(config: TourneyConfig, url: string): Promise<ReaderResult> {
     const data = await fetchJson(url);
 
-    // TODO generalize
-    const players = grabTourneyPlayers('R2025100', data);
+    const tourneyId = grabTourneyId(data);
+    const players = grabTourneyPlayers(tourneyId, data);
 
     const parsed = parse(players, config.par);
     return parsed;
+  }
+}
+
+function grabTourneyId(data: PGATourLeaderboardJSONReaderNextData2): string {
+  try {
+    const tourneyId = data.props.pageProps.pageContext.tournaments[0].id;
+    if (tourneyId.length > 0) {
+      return tourneyId;
+    }
+    throw new Error('Tourney ID not found in NEXT_DATA');
+  } catch (error) {
+    throw new Error('Tourney ID not found in NEXT_DATA');
   }
 }
 
