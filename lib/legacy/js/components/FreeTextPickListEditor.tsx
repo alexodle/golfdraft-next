@@ -95,7 +95,8 @@ const SuggestionSelector: React.FC<{
   match: Match;
   selection?: Golfer;
   onSelectionChange: (g: Golfer) => void;
-}> = ({ match, selection, onSelectionChange }) => {
+  onRemove: () => void;
+}> = ({ match, selection, onSelectionChange, onRemove }) => {
   const [forceViewAll, setForceViewAll] = useState(false);
   const { data: { golfers: allGolfers, getGolfer } = {} } = useGolfers();
 
@@ -131,6 +132,14 @@ const SuggestionSelector: React.FC<{
             <p>
               <em>You entered:</em>
             </p>
+            <div style={{ float: 'right', position: 'relative', top: '-3em' }} onClick={() => onRemove()}>
+              <a href="#" onClick={(ev) => {
+                ev.preventDefault(); 
+                onRemove();
+              }}>
+                X
+              </a>
+            </div>
           </div>
           <div className="col-md-10">
             <b>{match.given}</b>
@@ -197,16 +206,23 @@ const SuggestionSelectors: React.FC<{
   onCancel?: () => void;
   isDisabled: boolean;
 }> = ({ matches, onSave, onCancel, isDisabled }) => {
-  const [selections, setSelections] = useState<Record<number, Golfer>>([]);
+  const [selections, setSelections] = useState<Record<number, Golfer | 'removed'>>([]);
 
   const pickList = useMemo(() => {
     const pl: number[] = [];
     for (let i = 0; i < matches.length; i++) {
       const match = matches[i];
-      const pick = isExactMatch(match) ? match.match.id : selections[i]?.id;
+
+      const selection = selections[i];
+      if (selection === 'removed') {
+        continue;
+      }
+
+      const pick = isExactMatch(match) ? match.match.id : selection?.id;
       if (!pick) {
         return undefined;
       }
+
       pl.push(pick);
     }
     return pl;
@@ -226,13 +242,17 @@ const SuggestionSelectors: React.FC<{
         if (isExactMatch(m)) {
           return null;
         }
-        return (
+        const selection = selections[i];
+        return (selection !== 'removed') && (
           <SuggestionSelector
             key={i}
             match={m}
-            selection={selections[i]}
+            selection={selection}
             onSelectionChange={(g) => {
               setSelections((curr) => ({ ...curr, [i]: g }));
+            }}
+            onRemove={() => {
+              setSelections((curr) => ({ ...curr, [i]: 'removed' }));
             }}
           />
         );
