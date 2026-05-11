@@ -90,9 +90,9 @@ export async function initTourney(tourneyCfg: TourneyConfig): Promise<number> {
   return tourney.id;
 }
 
-// 5:55pm, Pacific time
+// 7:55pm, Pacific time
 const TIMEZONE = 'America/Los_Angeles';
-const HOUR = 17;
+const HOUR = 19;
 const MINUTE = 55;
 
 function draftStartTimeFromTourneyDate(startDate: string): Date {
